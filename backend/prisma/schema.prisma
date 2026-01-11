@@ -1,0 +1,167 @@
+// prisma/schema.prisma
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  extensions = [postgis]
+}
+
+enum IssueStatus {
+  REPORTED
+  ACKNOWLEDGED
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+  COMMUNITY_RESOLVED
+}
+
+enum IssueCategory {
+  POTHOLE
+  STREETLIGHT
+  GRAFFITI
+  ILLEGAL_DUMPING
+  BROKEN_SIDEWALK
+  TRAFFIC_SIGNAL
+  OTHER
+}
+
+enum EventStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  passwordHash  String
+  name          String
+  profileImage  String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  issues        Issue[]
+  events        Event[]
+  comments      Comment[]
+  upvotes       Upvote[]
+  eventRsvps    EventRsvp[]
+
+  @@index([email])
+}
+
+model Issue {
+  id          String        @id @default(cuid())
+  title       String
+  description String
+  category    IssueCategory
+  status      IssueStatus   @default(REPORTED)
+  
+  // Location data
+  latitude    Float
+  longitude   Float
+  address     String?
+  
+  // Media
+  images      String[]      // Array of Cloudinary URLs
+  
+  // Metadata
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  
+  // Relationships
+  userId      String
+  user        User          @relation(fields: [userId], references: [id])
+  
+  comments    Comment[]
+  upvotes     Upvote[]
+  events      Event[]
+  
+  // City integration
+  cityRefNumber String?     // 311 reference number
+  
+  @@index([latitude, longitude])
+  @@index([status])
+  @@index([category])
+  @@index([createdAt])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now())
+  
+  issueId   String
+  issue     Issue    @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  
+  @@index([issueId])
+  @@index([createdAt])
+}
+
+model Upvote {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  
+  issueId   String
+  issue     Issue    @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  
+  @@unique([issueId, userId]) // User can only upvote once
+  @@index([issueId])
+}
+
+model Event {
+  id           String      @id @default(cuid())
+  title        String
+  description  String
+  status       EventStatus @default(PLANNED)
+  
+  // Date/time
+  startTime    DateTime
+  endTime      DateTime
+  
+  // Location
+  latitude     Float
+  longitude    Float
+  address      String
+  
+  // Metadata
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  
+  // Relationships
+  organizerId  String
+  organizer    User        @relation(fields: [organizerId], references: [id])
+  
+  issueId      String?     // Optional: event can be linked to an issue
+  issue        Issue?      @relation(fields: [issueId], references: [id])
+  
+  rsvps        EventRsvp[]
+  
+  @@index([startTime])
+  @@index([status])
+}
+
+model EventRsvp {
+  id        String   @id @default(cuid())
+  status    String   // "GOING", "MAYBE", "NOT_GOING"
+  createdAt DateTime @default(now())
+  
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  
+  @@unique([eventId, userId])
+  @@index([eventId])
+}
