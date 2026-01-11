@@ -36,33 +36,22 @@ check installation with ```npm -v```
 git clone https://github.com/your-org/civickit.git
 cd civickit
 ```
-### 2. Set up environment variables
+### 2. backend .env example
 ```bash
-cp .env.example .env
+PG_USER=postgres
+DATABASE_URL="postgresql://postgres:password@localhost:5432/civickit"
+JWT_SECRET="your-super-secret-jwt-key-change-this"
+CLOUDINARY_CLOUD_NAME="your-cloud-name"
+CLOUDINARY_API_KEY="your-api-key"
+CLOUDINARY_API_SECRET="your-api-secret"
+PORT=3000
 ```
 
-### 3. Setup Backend
-```bash
-# From civickit folder
+```
 cd backend
-npm init -y
-
-# Install dependencies
-npm install express typescript @types/express @types/node
-npm install prisma @prisma/client
-npm install dotenv bcryptjs jsonwebtoken
-npm install @types/bcryptjs @types/jsonwebtoken
-npm install zod express-validator
-npm install cors @types/cors
-npm install ts-node-dev --save-dev
-
-# Initialize TypeScript
-npx tsc --init
-
-# Initialize Prisma
-npx prisma init
+npm run dev
+http://localhost:3000
 ```
-
 
 ## License
 MIT License
