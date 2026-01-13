@@ -1,0 +1,14 @@
+title: civickit
+authors:
+  - given-names: bhuelsman
+cff-version: 1.2.0
+message: If you use this software, please cite it using the metadata from this file.
+type: software
+abstract: CivicKit is an open-source platform for geospatial reporting and
+  coordination of local civic issues, enabling community visibility and action
+  through mobile and web interfaces.
+keywords:
+  - civic engagement
+  - city reporting
+license: MIT
+repository-code: https://github.com/oss-slu/civickit
