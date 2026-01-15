@@ -1,4 +1,4 @@
-last updated: 1/6/2026
+last updated: 1/15/2026
 
 # CivicKit
 
@@ -26,11 +26,11 @@ In Development - Capstone II Project (Spring 2026)
 
 ## Getting Started
 ### Prerequisites
-- Node.js 18+: https://nodejs.org/en/download and install tools for native modules
+- Node.js 18+: https://nodejs.org/en/download, install tools for native modules
 check installation with ```npm -v```
 - PostgreSQL 15+ with PostGIS enabled
-- npm
 - Expo Go app installed on your phoone (iOS or Android)
+- npm
 
 ## Running the Project Locally
 ### 1. Clone the repository
@@ -38,7 +38,7 @@ check installation with ```npm -v```
 git clone https://github.com/your-org/civickit.git
 cd civickit
 ```
-### 2. Setup backend .env (example)
+### 2. Setup Backend .env (example)
 ```bash
 PG_USER=postgres
 DATABASE_URL="postgresql://postgres:password@localhost:5432/civickit"
