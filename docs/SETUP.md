@@ -1,4 +1,4 @@
-Last Updated: 1/15/2026
+Last updated 1/16/2026
 # Development Setup
 
 ## Prerequisites
@@ -20,11 +20,28 @@ PORT=3000
 ## Backend Setup
 1. Clone repo
 2. `cd backend && npm install`
-3. Copy `.env.example` to `.env` and fill in values
-4. `npm run db:migrate`
-5. `npm run dev`
-6. http://localhost:3000/health
+3. Copy `.env.example` to `.env` in `backend/` and fill in values
+4. Migrate the databse `npx prisma migrate dev --name init`
+5. Start the backend `npm run dev`
+6. Server runs on http://localhost:3000
 
+### Testing Backend API
+1. Seed/create dev user(if needed) `npx prisma studio`
+2. Test APIs by creating an issue
+```bash
+curl -X POST http://localhost:3000/api/issues \
+-H "Content-Type: application/json" \
+-d '{
+  "title": "Broken sidewalk",
+  "description": "Cracked pavement near campus",
+  "category": "BROKEN_SIDEWALK",
+  "latitude": 41.8781,
+  "longitude": -87.6298,
+  "images": []
+}'
+```
+3. Get nearby issues: `curl "http://localhost:3000/api/issues/nearby?lat=41.8781&lng=-87.6298"`
+4. Get issue by id `curl http://localhost:3000/api/issues/<issue-id>`
 
 ## Mobile Setup
 1. `cd mobile && npm install`
