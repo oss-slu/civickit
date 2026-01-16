@@ -2,6 +2,7 @@
 
 import { IssueCategory } from '@prisma/client';
 
+// represents data coming from the client
 export interface CreateIssueDTO { // Data Transfer Object for creating an issue
   title: string;
   description: string;
