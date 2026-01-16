@@ -1,3 +1,4 @@
+Last Updated: 1/15/2026
 # Development Setup
 
 ## Prerequisites
@@ -27,8 +28,8 @@ PORT=3000
 
 ## Mobile Setup
 1. `cd mobile && npm install`
-2. `npx expo start`
+2. `npx expo start` or `npx expo start --tunnel` if qr code isn't working
 
-## Web Setup
+## Web Setup (not created yet)
 1. `cd web && npm install`
 2. `npm run dev`
