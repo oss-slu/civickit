@@ -19,11 +19,13 @@ PORT=3000
 
 ## Backend Setup
 1. Clone repo
-2. `cd backend && npm install`
-3. Copy `.env.example` to `.env` in `backend/` and fill in values
-4. Migrate the databse `npx prisma migrate dev --name init`
-5. Start the backend `npm run dev`
-6. Server runs on http://localhost:3000
+2. `cd backend`
+3. `npm install`
+4. Copy `.env.example` to `.env` in `backend/` and fill in values
+5. Migrate the databse `npx prisma migrate dev --name init`
+6. Generate client `npx prisma generate`
+7. Start the backend `npm run dev`
+8. Server runs on http://localhost:3000
 
 ### Testing Backend API
 1. Seed/create dev user(if needed) `npx prisma studio`
@@ -44,6 +46,7 @@ curl -X POST http://localhost:3000/api/issues \
 4. Get issue by id `curl http://localhost:3000/api/issues/<issue-id>`
 
 ## Mobile Setup
+Download Expo Go app on phone
 1. `cd mobile && npm install`
 2. `npx expo start` or `npx expo start --tunnel` if qr code isn't working
 
