@@ -9,7 +9,8 @@ In Development - Capstone II Project (Spring 2026)
 
 ## Team
 - Briana Huelsman - Project Lead
-- [Names as people join]
+- Erin Kelley
+- Leah Bragg
 
 ## Tech Stack
 - **Mobile**: React Native (Expo)
