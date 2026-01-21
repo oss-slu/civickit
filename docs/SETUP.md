@@ -6,7 +6,7 @@ Last updated 1/16/2026
 - PostgreSQL 15+ with PostGIS
 - Git
 
-## .env.example
+### Backend .env Example
 ```bash
 PG_USER=postgres
 DATABASE_URL="postgresql://postgres:password@localhost:5432/civickit"
@@ -23,7 +23,7 @@ PORT=3000
 3. Copy `.env.example` to `.env` in `backend/` and fill in values
 4. Migrate the databse `npx prisma migrate dev --name init`
 5. Start the backend `npm run dev`
-6. Server runs on http://localhost:3000
+6. Server runs on http://localhost:3000/health
 
 ### Testing Backend API
 1. Seed/create dev user(if needed) `npx prisma studio`
@@ -44,8 +44,24 @@ curl -X POST http://localhost:3000/api/issues \
 4. Get issue by id `curl http://localhost:3000/api/issues/<issue-id>`
 
 ## Mobile Setup
-1. `cd mobile && npm install`
-2. `npx expo start` or `npx expo start --tunnel` if qr code isn't working
+1. From the `mobile/` directory
+```bash
+cd mobile
+npm install
+```
+2. Start the Expo development server with `npx expo start` or  `npx expo start --tunnel if qr code is not working
+```bash
+npx expo start
+```
+* Press `i` to open iOS simulator (macOS only)
+* Press `a` to open Android emulator
+* Press `w` to run in the browser (web)
+To run on a physical iOS device from Windows, use tunnel mode:
+```bash
+npx expo start --tunnel
+```
+3. Then scan the QR code using the Camera app (iOS) or Expo Go(Android)
+* In both cases the app, Expo Go, must be installed on the device
 
 ## Web Setup (not created yet)
 1. `cd web && npm install`
