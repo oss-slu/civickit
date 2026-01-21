@@ -15,9 +15,10 @@ In Development - Capstone II Project (Spring 2026)
 ## Tech Stack
 - **Mobile**: React Native (Expo)
 - **Web**: React + Vite
-- **Backend**: Node.js + Express + TypeScript
+- **Backend**: Node.js + Express + TypeScript + Prisma
 - **Database**: PostgreSQL + PostGIS
 - **Image Storage**: Cloudinary
+- **Authentication**: BetterAuth
 
 ## Documentation
 - [Setup Guide](docs/SETUP.md)
@@ -36,10 +37,10 @@ check installation with ```npm -v```
 ## Running the Project Locally
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/your-org/civickit.git
+git clone https://github.com/oss-slu/civickit.git
 cd civickit
 ```
-### 2. Go to (docs/SETUP.md)
+### 2. Go to [Setup Guide](docs/SETUP.md)
 
 ## License
 MIT License
