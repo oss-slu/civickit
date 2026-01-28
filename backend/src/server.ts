@@ -4,6 +4,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import issueRoutes from './routes/issue.routes';
+import loginRoutes from './routes/login.routes';
 import "dotenv/config";
 
 
@@ -24,6 +25,7 @@ app.get('/health', (req, res) => {
 // Routes
 // TODO: Add routes
 app.use('/api/issues', issueRoutes);
+app.use('/api/auth/login', loginRoutes);
 
 // Error handling
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
