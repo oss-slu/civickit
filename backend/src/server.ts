@@ -1,13 +1,14 @@
 // backend/src/server.ts
 
+import "dotenv/config";
+// import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import issueRoutes from './routes/issue.routes';
-import "dotenv/config";
+import authRoutes from "./routes/auth.routes";
 
 
-dotenv.config();
+//dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -24,11 +25,17 @@ app.get('/health', (req, res) => {
 // Routes
 // TODO: Add routes
 app.use('/api/issues', issueRoutes);
+app.use('/api/auth', authRoutes);
 
 // Error handling
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Something went wrong!' });
+  console.error("ERROR:", err);
+
+  if (err.status && err.message) {
+    return res.status(err.status).json({ error: err.message });
+  }
+
+  return res.status(500).json({ error: "Something went wrong!" });
 });
 
 app.listen(PORT, () => {
