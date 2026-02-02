@@ -5,6 +5,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import issueRoutes from './routes/issue.routes';
 import loginRoutes from './routes/login.routes';
+import 'express-rate-limit';
 import "dotenv/config";
 
 dotenv.config();
@@ -20,6 +21,14 @@ app.use(express.json());
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
+
+// Rate Limiter
+var RateLimit = require('express-rate-limit')
+var limiter = RateLimit({
+  windowMs: 15 * 60 * 1000, //15 minutes
+  max: 100, //max 100 requests per window
+})
+app.use(limiter)
 
 // Routes
 // TODO: Add routes

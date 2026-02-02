@@ -8,7 +8,7 @@ const loginRepository = new LoginRepository();
 const loginService = new LoginService(loginRepository);
 
 export class LoginController {
-  async getUser(req: Request, res: Response, next: NextFunction) {
+  async login(req: Request, res: Response, next: NextFunction) {
     try {
         const loginDTO: LoginDTO = {
           email: req.body.email,
