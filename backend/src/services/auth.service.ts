@@ -3,6 +3,7 @@
 import bcrypt from "bcryptjs";
 import { AuthRepository } from "../repositories/auth.repository";
 import { CreateAuthDTO, SafeUser } from "../types/auth.types";
+import { z } from 'zod';
 
 export class AuthService {
   constructor(private authRepository: AuthRepository) {}
@@ -11,8 +12,8 @@ export class AuthService {
     const { email, password, name } = data;
 
     // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    const emailSchema = z.string().email();
+    if (!emailSchema.safeParse(email).success) {
       throw { status: 400, message: "Invalid email format" };
     }
 
