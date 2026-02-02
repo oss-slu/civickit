@@ -3,31 +3,35 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { LoginRepository } from '../repositories/login.repository';
-import { User } from "../types/login.types";
+import { LoginDTO, LoginResponse} from "../types/login.types";
 import "dotenv/config";
 
 export class LoginService {
   constructor(private loginRepository: LoginRepository) {}
 
-  async getUser(email: string, password: string) {
-    const user = await this.loginRepository.findByEmail(email);
+  async login(credentials: LoginDTO): Promise<LoginResponse> {
+    const user = await this.loginRepository.findByEmail(credentials.email);
     if (!user) {
-      throw new Error('User not found'); //TODO: add error code?
+      throw new Error('Email not found'); 
     }
     
     //compare user entered pw with pw hash from repo
-    const match = await bcrypt.compare(password, user.passwordHash)
+    const match = await bcrypt.compare(credentials.password, String(user.passwordHash))
     if(!match){
-       throw new Error('Password and Email do not match'); //TODO: add error code?
+       throw new Error('Password and Email do not match'); 
     }
     
     //generate token with user id
     const key = String(process.env.JWT_SECRET)
     const token = jwt.sign({userId: user.id}, key, {expiresIn: '7d'})
-    console.log(user, token)
+
+    const loginResponse: LoginResponse = {
+      id: String(user.id),
+      name: String(user.name),
+      email: String(user.email),
+    }
     
-    const userToSend = {id: user.id, email: user.email, name: user.name}
-    return {token, user: userToSend}; 
+    return {token: token, user: loginResponse}; 
   }
 }
 

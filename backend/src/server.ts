@@ -7,7 +7,6 @@ import issueRoutes from './routes/issue.routes';
 import loginRoutes from './routes/login.routes';
 import "dotenv/config";
 
-
 dotenv.config();
 
 const app = express();
@@ -30,6 +29,12 @@ app.use('/api/auth/login', loginRoutes);
 // Error handling
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error(err.stack);
+  if (err.message == "Email not found"){
+    res.status(401).json({ error: err.message });
+  }
+  if (err.message == "Password and Email do not match"){
+    res.status(401).json({ error: err.message });
+  }
   res.status(500).json({ error: 'Something went wrong!' });
 });
 

@@ -2,6 +2,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { LoginService } from '../services/login.service';
 import { LoginRepository } from '../repositories/login.repository';
+import { LoginDTO } from '../types/login.types';
 
 const loginRepository = new LoginRepository();
 const loginService = new LoginService(loginRepository);
@@ -9,7 +10,12 @@ const loginService = new LoginService(loginRepository);
 export class LoginController {
   async getUser(req: Request, res: Response, next: NextFunction) {
     try {
-        const user = await loginService.getUser(req.body.email, req.body.password);
+        const loginDTO: LoginDTO = {
+          email: req.body.email,
+          password: req.body.password
+        }
+        
+        const user = await loginService.login(loginDTO);
         res.json(user);
     } catch (error) {
         next(error);

@@ -1,9 +1,12 @@
 // backend/src/types/login.types.ts
 
-//TODO: replace with correct types
-
-export interface User {
-  id: string;
-  name: string;
+export interface LoginDTO {
   email: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  id: string;
+  email: string;
+  name: string;
 }
