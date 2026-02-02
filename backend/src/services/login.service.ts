@@ -26,12 +26,15 @@ export class LoginService {
     const token = jwt.sign({userId: user.id}, key, {expiresIn: '7d'})
 
     const loginResponse: LoginResponse = {
-      id: String(user.id),
-      name: String(user.name),
-      email: String(user.email),
-    }
+      token: token,
+      user: {
+        id: String(user.id),
+        name: String(user.name),
+        email: String(user.email)
+      }
+    };
     
-    return {token: token, user: loginResponse}; 
+    return loginResponse;
   }
 }
 
