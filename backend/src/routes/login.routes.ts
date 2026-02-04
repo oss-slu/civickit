@@ -1,6 +1,7 @@
 // backend/src/routes/login.routes.ts
 import { Router } from 'express';
 import { LoginController } from '../controllers/login.controller';
+import { authMiddleware } from '../middleware/auth.middleware';
 
 const router = Router();
 const loginController = new LoginController();
@@ -13,5 +14,6 @@ var limiter = RateLimit({
 })
 router.use(limiter)
 
-router.post('/', loginController.login);
+router.post('/', loginController.login)
+
 export default router;

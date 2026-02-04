@@ -7,6 +7,7 @@ import issueRoutes from './routes/issue.routes';
 import loginRoutes from './routes/login.routes';
 import 'express-rate-limit';
 import "dotenv/config";
+import { authMiddleware } from './middleware/auth.middleware';
 
 dotenv.config();
 
@@ -16,6 +17,7 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use('/api/issues', authMiddleware)
 
 // Health check
 app.get('/health', (req, res) => {
@@ -38,11 +40,11 @@ app.use('/api/auth/login', loginRoutes);
 // Error handling
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error(err.stack);
-  if (err.message == "Email not found"){
-    res.status(401).json({ error: err.message });
-  }
-  if (err.message == "Password and Email do not match"){
-    res.status(401).json({ error: err.message });
+  if (err.message == "email not found" || 
+    err.message == "password and email do not match" ||
+    err.message == "invalid token" ||
+    err.message == "jwt must be provided"){
+    res.status(401).json({ error: err.name + ": " + err.message });
   }
   res.status(500).json({ error: 'Something went wrong!' });
 });

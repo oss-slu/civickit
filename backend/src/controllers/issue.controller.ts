@@ -10,7 +10,8 @@ export class IssueController {
   async createIssue(req: Request, res: Response, next: NextFunction) {
     try {
       // TODO: Get userId from JWT token (auth middleware)
-      const userId = 'temp-user-id'; // Placeholder
+      // const userId = 'temp-user-id'; // Placeholder
+      const userId = String(req.userId)
       
       const issue = await issueService.createIssue(req.body, userId);
       res.status(201).json(issue);
