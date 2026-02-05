@@ -6,7 +6,7 @@ import { authMiddleware } from '../middleware/auth.middleware';
 const router = Router();
 const issueController = new IssueController();
 
-router.post('/', issueController.createIssue);
+router.post('/', authMiddleware, issueController.createIssue);
 router.get('/nearby', issueController.getNearbyIssues);
 router.get('/:id', issueController.getIssueById);
 
