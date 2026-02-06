@@ -1,14 +1,12 @@
 // backend/src/server.ts
 
 import "dotenv/config";
-// import dotenv from 'dotenv';
+import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
 import issueRoutes from './routes/issue.routes';
 import authRoutes from "./routes/auth.routes";
 
-
-//dotenv.config();
 import loginRoutes from './routes/login.routes';
 import 'express-rate-limit';
 import "dotenv/config";
