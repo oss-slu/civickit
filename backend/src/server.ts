@@ -43,9 +43,9 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
     err.message == "password and email do not match" ||
     err.message == "invalid token" ||
     err.message == "jwt must be provided"){
-    res.status(401).json({ error: err.name + ": " + err.message });
+    return res.status(401).json({ error: err.name + ": " + err.message });
   }
-  res.status(500).json({ error: 'Something went wrong!' });
+  return res.status(500).json({ error: 'Something went wrong!' });
 });
 
 app.listen(PORT, () => {
