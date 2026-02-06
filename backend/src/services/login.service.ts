@@ -12,13 +12,13 @@ export class LoginService {
   async login(credentials: LoginDTO): Promise<LoginResponse> {
     const user = await this.loginRepository.findByEmail(credentials.email);
     if (!user) {
-      throw new Error('Email not found'); 
+      throw new Error('email not found'); 
     }
     
     //compare user entered pw with pw hash from repo
     const match = await bcrypt.compare(credentials.password, String(user.passwordHash))
     if(!match){
-       throw new Error('Password and Email do not match'); 
+       throw new Error('password and email do not match'); 
     }
     
     //generate token with user id

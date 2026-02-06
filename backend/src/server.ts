@@ -12,6 +12,7 @@ import authRoutes from "./routes/auth.routes";
 import loginRoutes from './routes/login.routes';
 import 'express-rate-limit';
 import "dotenv/config";
+import { authMiddleware } from './middleware/auth.middleware';
 
 dotenv.config();
 
@@ -54,13 +55,13 @@ app.use('/api/auth/login', loginRoutes);
 // Error handling
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error(err.stack);
-  if (err.message == "Email not found"){
-    res.status(401).json({ error: err.message });
+  if (err.message == "email not found" || 
+    err.message == "password and email do not match" ||
+    err.message == "invalid token" ||
+    err.message == "jwt must be provided"){
+    return res.status(401).json({ error: err.name + ": " + err.message });
   }
-  if (err.message == "Password and Email do not match"){
-    res.status(401).json({ error: err.message });
-  }
-  res.status(500).json({ error: 'Something went wrong!' });
+  return res.status(500).json({ error: 'Something went wrong!' });
 });
 
 app.listen(PORT, () => {
