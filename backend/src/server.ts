@@ -42,6 +42,17 @@ app.use('/api/auth', authRoutes);
 
 // Error handling
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error("ERROR:", err);
+
+  if (err.status && err.message) {
+    return res.status(err.status).json({ error: err.message });
+  }
+
+  return res.status(500).json({ error: "Something went wrong!" });
+app.use('/api/auth/login', loginRoutes);
+
+// Error handling
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error(err.stack);
   if (err.message == "Email not found"){
     res.status(401).json({ error: err.message });
