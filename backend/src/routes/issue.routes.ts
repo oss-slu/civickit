@@ -14,13 +14,13 @@ router.get('/:id', issueController.getIssueById);
 
 // upvote functionality
 router.post(
-  '/issues/:issueId/upvote',
+  '/:issueId/upvote',
   authMiddleware,
   (req, res, next) => upvoteController.upvote(req, res, next)
 );
 
 router.delete(
-  '/issues/:issueId/upvote',
+  '/:issueId/upvote',
   authMiddleware,
   (req, res, next) => upvoteController.removeUpvote(req, res, next)
 );

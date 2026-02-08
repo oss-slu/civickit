@@ -38,7 +38,8 @@ app.use(limiter)
 // Routes
 // TODO: Add routes
 app.use('/api/issues', issueRoutes);
-app.use('/api/auth', authRoutes);
+app.use('/api/auth/login', loginRoutes);
+app.use('/api/issues/upvote', authMiddleware);
 
 // Error handling
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
