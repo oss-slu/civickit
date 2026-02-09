@@ -13,16 +13,7 @@ router.get('/nearby', issueController.getNearbyIssues);
 router.get('/:id', issueController.getIssueById);
 
 // upvote functionality
-router.post(
-  '/:issueId/upvote',
-  authMiddleware,
-  (req, res, next) => upvoteController.upvote(req, res, next)
-);
-
-router.delete(
-  '/:issueId/upvote',
-  authMiddleware,
-  (req, res, next) => upvoteController.removeUpvote(req, res, next)
-);
+router.post('/:issueId/upvote', authMiddleware, upvoteController.upvote);
+router.delete('/:issueId/upvote', authMiddleware, upvoteController.removeUpvote);
 
 export default router;
