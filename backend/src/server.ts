@@ -11,7 +11,6 @@ import loginRoutes from './routes/login.routes';
 import 'express-rate-limit';
 import "dotenv/config";
 import { authMiddleware } from './middleware/auth.middleware';
-import bcrypt from "bcryptjs";
 
 dotenv.config();
 
