@@ -39,6 +39,7 @@ app.use(limiter)
 // TODO: Add routes
 app.use('/api/issues', issueRoutes);
 app.use('/api/auth/login', loginRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/issues/upvote', authMiddleware);
 
 // Error handling
