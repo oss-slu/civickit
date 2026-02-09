@@ -1,18 +1,15 @@
 // backend/src/server.ts
 
 import "dotenv/config";
-// import dotenv from 'dotenv';
+import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
 import issueRoutes from './routes/issue.routes';
 import authRoutes from "./routes/auth.routes";
 
-
-//dotenv.config();
 import loginRoutes from './routes/login.routes';
 import 'express-rate-limit';
 import "dotenv/config";
-import { authMiddleware } from './middleware/auth.middleware';
 
 dotenv.config();
 
@@ -39,18 +36,8 @@ app.use(limiter)
 // Routes
 // TODO: Add routes
 app.use('/api/issues', issueRoutes);
-app.use('/api/auth', authRoutes);
-
-// Error handling
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error("ERROR:", err);
-
-  if (err.status && err.message) {
-    return res.status(err.status).json({ error: err.message });
-  }
-
-  return res.status(500).json({ error: "Something went wrong!" });
 app.use('/api/auth/login', loginRoutes);
+app.use('/api/auth', authRoutes);
 
 // Error handling
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
