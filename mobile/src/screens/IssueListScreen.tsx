@@ -62,11 +62,9 @@ export default function IssueListScreen() {
   const { data, isLoading, error, refetch } = useQuery({
       queryKey: ['issues', 'nearby'],
       queryFn: async () => {
-          //using ipv4 address to test on expo go
-          //will need to be adjusted per individual computer
           const response = await fetch(
-          'http://192.168.12.172:3000/api/issues/nearby?lat=' + 
-            userLatitude + '0&lng=' + userLongitude + '&radius=5000'
+          'http://localhost:3000/api/issues/nearby?lat=' + 
+            userLatitude + '&lng=' + userLongitude + '&radius=500'
           );
           console.log("fetch", response)
           if (!response.ok) throw new Error('Failed to fetch');
@@ -85,8 +83,8 @@ export default function IssueListScreen() {
     )
   }
 
-  //onPress behaviour
-  const onPress = (issue:any) => {
+  //onIssuePress behaviour
+  const onIssuePress = (issue:any) => {
     setSelectedIssue(issue)
     setIsIssueSelected(true)
   }
@@ -135,10 +133,10 @@ export default function IssueListScreen() {
                                             latitude={item.latitude}
                                             longitude={item.longitude}
                                             upvoteCount={item.upvoteCount}
-                                            onPress={() => onPress(item)}/>}
+                                            onPress={() => onIssuePress(item)}/>}
                 keyExtractor = {(item) => item.id}
                 refreshControl= {<RefreshControl refreshing={refreshing} 
-                                        onRefresh={refetch} />}
+                                                  onRefresh={refetch} />}
                 extraData={selectedIssue}
               />
             </View>
@@ -154,7 +152,6 @@ export default function IssueListScreen() {
           </MessageScreen>
         )
       }
-      
     }  else {
         return (
         <MessageScreen enableRefresh = {true}
@@ -164,13 +161,11 @@ export default function IssueListScreen() {
         </MessageScreen>
       )
     }   
-
   } else {
     return (
       <MessageScreen>Loading...</MessageScreen>
     )
   }
-  
 }
 
 
