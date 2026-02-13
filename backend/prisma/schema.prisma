@@ -8,6 +8,7 @@ generator client {
 datasource db {
   provider   = "postgresql"
   extensions = [postgis]
+  url = env("DATABASE_URL")
 }
 
 enum IssueStatus {
