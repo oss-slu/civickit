@@ -77,9 +77,11 @@ export default function IssueListScreen() {
   //return error message for location permission denied
   if(!locationServicesEnabled){
     return (
-      <ScrollView contentContainerStyle={styles.container} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refetch}/>}>
-        <Text style={styles.title}>Location Permission Denied</Text>
-      </ScrollView>
+      <MessageScreen enableRefresh = {true}
+        onRefresh = {refetch}
+        refreshing = {refreshing}>
+          Location permission denied
+      </MessageScreen>
     )
   }
 
@@ -119,8 +121,8 @@ export default function IssueListScreen() {
         if(isIssueSelected){
           return (
             <IssueDetailScreen issue = {selectedIssue}
-                                isIssueSelected = {isIssueSelected}
-                                setIsIssueSelected = {setIsIssueSelected}></IssueDetailScreen>
+                isIssueSelected = {isIssueSelected}
+                setIsIssueSelected = {setIsIssueSelected}></IssueDetailScreen>
           )
         } else {
           return (
@@ -145,25 +147,27 @@ export default function IssueListScreen() {
         
       } else {
         return (
-          <ScrollView contentContainerStyle={styles.container} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refetch}/>}>
-            <Text style={styles.title}>No issues nearby</Text>
-          </ScrollView>
+          <MessageScreen enableRefresh = {true}
+            onRefresh = {refetch}
+            refreshing = {refreshing}>
+              No issues nearby
+          </MessageScreen>
         )
       }
       
     }  else {
         return (
-        <ScrollView contentContainerStyle={styles.container} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={refetch}/>}>
-          <Text style={styles.title}>There was an error</Text>
-        </ScrollView>
+        <MessageScreen enableRefresh = {true}
+          onRefresh = {refetch}
+          refreshing = {refreshing}>
+            There was an error
+        </MessageScreen>
       )
     }   
 
   } else {
     return (
-      <View style={styles.container}>
-        <Text style={styles.title}>Loading...</Text>
-      </View>
+      <MessageScreen>Loading...</MessageScreen>
     )
   }
   
@@ -189,3 +193,20 @@ const styles = StyleSheet.create({
     fontSize: 15
   }
 });
+
+export function MessageScreen({enableRefresh, onRefresh, refreshing = false, children}:any) {
+  if (enableRefresh && onRefresh != null ){
+    return (
+      <ScrollView contentContainerStyle={styles.container} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh}/>}>
+          <Text style={styles.title}>No issues nearby</Text>
+      </ScrollView>
+    )
+  } else {
+    console.log("Refresh was disabled or proper function was not provided")
+    return (
+      <View style={styles.container}>
+        <Text style={styles.title}>{children}</Text>
+      </View>
+    )
+  }
+}
