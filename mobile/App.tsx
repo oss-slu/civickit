@@ -7,13 +7,11 @@ import IssueCardTestScreen from './src/screens/IssueCardTestScreen';
 const Stack = createNativeStackNavigator();
 
 export default function App() {
-  // return (
-  //   <NavigationContainer>
-  //     <Stack.Navigator>
-  //       <Stack.Screen name="Home" component={HomeScreen} />
-  //     </Stack.Navigator>
-  //   </NavigationContainer>
-  // );
-
-  return <IssueCardTestScreen />;
+  return (
+    <NavigationContainer>
+      <Stack.Navigator>
+        <Stack.Screen name="Home" component={HomeScreen} />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
 }
