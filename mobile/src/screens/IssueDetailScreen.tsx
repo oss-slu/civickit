@@ -8,6 +8,7 @@ export default function IssueDetailScreen({issue,
         setIsIssueSelected(false)
     }
 
+
     return (
         <View style={styles.container}>
             <Text style={styles.title}>{issue.title}</Text>
