@@ -144,7 +144,7 @@ export default function IssueListScreen() {
         <MessageScreen enableRefresh = {true}
           onRefresh = {refetch}
           refreshing = {refreshing}>
-            There was an error: {String(error)}
+            {String(error)}
         </MessageScreen>
       )
     }   
