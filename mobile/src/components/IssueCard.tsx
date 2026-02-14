@@ -88,7 +88,7 @@ const IssueCard: React.FC<IssueCardProps> = ({
 
   const icon = categoryIcons[issue.category] || categoryIcons.default;
   const statusColor =
-    statusColors[issue.status] || statusColors.default;
+    statusColors[issue.status.toLowerCase()] || statusColors.default;
 
   const isExpanded = variant === 'expanded';
 
@@ -172,7 +172,7 @@ export default IssueCard;
 const styles = StyleSheet.create({
   card: {
     borderRadius: 12,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#ececec',
     marginVertical: 8,
     marginHorizontal: 16,
     elevation: 2,
