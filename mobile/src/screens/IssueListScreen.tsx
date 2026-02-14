@@ -1,11 +1,11 @@
-import { View, Text, StyleSheet, RefreshControl, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, RefreshControl, TouchableOpacity, Alert, ScrollView, useWindowDimensions } from 'react-native';
 import { QueryClient, useQuery } from '@tanstack/react-query';
 import { useEffect, useState, useCallback } from 'react';
 import { FlatList } from 'react-native';
 import React from 'react';
 import IssueDetailScreen from './IssueDetailScreen';
 import * as Location from 'expo-location'
-// import { getDistance } from 'geolib';
+import IssueCard from '../components/IssueCard';
 
 export default function IssueListScreen() {
   const [refreshing, setRefreshing] = useState(false)
@@ -48,6 +48,7 @@ export default function IssueListScreen() {
 
     //get lat and long
     const {coords} = await Location.getCurrentPositionAsync()
+    console.log(coords)
 
     if(coords){
       const {latitude, longitude} = coords;
@@ -62,9 +63,10 @@ export default function IssueListScreen() {
   const { data, isLoading, error, refetch } = useQuery({
       queryKey: ['issues', 'nearby'],
       queryFn: async () => {
+          console.log("before fetch", userLatitude, userLongitude)
           const response = await fetch(
           'http://localhost:3000/api/issues/nearby?lat=' + 
-            userLatitude + '&lng=' + userLongitude + '&radius=500'
+            userLatitude + '&lng=' + userLongitude + '&radius=5000'
           );
           console.log("fetch", response)
           if (!response.ok) throw new Error('Failed to fetch');
@@ -72,6 +74,7 @@ export default function IssueListScreen() {
       } 
   }, queryClient);
 
+  console.log(data, isLoading, error)
   //return error message for location permission denied
   if(!locationServicesEnabled){
     return (
@@ -89,26 +92,6 @@ export default function IssueListScreen() {
     setIsIssueSelected(true)
   }
 
-  //Flatlist item setup
-  type IssueProps = {title: String,
-                      category: String,
-                      latitude: number,
-                      longitude: number,
-                      upvoteCount: number
-                    onPress: () => void};
-  const Issue = ({title, category,
-                  latitude, longitude,
-                   upvoteCount, onPress}: IssueProps) => (
-    <TouchableOpacity onPress={onPress}>
-      <View>
-        <Text style={styles.issueTitle}>{title}</Text>
-        <Text style={styles.issueInfo}>{category}</Text>
-        <Text style={styles.issueInfo}>{latitude}, {longitude}</Text>
-        <Text style={styles.issueInfo}>{upvoteCount}</Text>
-      </View>
-    </TouchableOpacity>
-  )
-  
   //check if still loading
   if(!isLoading){
     //check if an error had been thrown
@@ -127,13 +110,11 @@ export default function IssueListScreen() {
             <View style={styles.container}>
               <Text style={styles.title}>Nearby Issues</Text>
               <FlatList
+                style = {styles.list}
                 data = {data.issues}
-                renderItem = {({item}) => <Issue title = {item.title}
-                                            category={item.category} 
-                                            latitude={item.latitude}
-                                            longitude={item.longitude}
-                                            upvoteCount={item.upvoteCount}
-                                            onPress={() => onIssuePress(item)}/>}
+                renderItem = {({item}) => <IssueCard issue = {item}
+                                            onPress={() => onIssuePress(item)}
+                                            variant='expanded'/>}
                 keyExtractor = {(item) => item.id}
                 refreshControl= {<RefreshControl refreshing={refreshing} 
                                                   onRefresh={refetch} />}
@@ -168,7 +149,6 @@ export default function IssueListScreen() {
   }
 }
 
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -186,6 +166,10 @@ const styles = StyleSheet.create({
   },
   issueInfo: {
     fontSize: 15
+  },
+  list: {
+    width: '80%',
+    alignSelf: 'center'
   }
 });
 
@@ -193,7 +177,7 @@ export function MessageScreen({enableRefresh, onRefresh, refreshing = false, chi
   if (enableRefresh && onRefresh != null ){
     return (
       <ScrollView contentContainerStyle={styles.container} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh}/>}>
-          <Text style={styles.title}>No issues nearby</Text>
+          <Text style={styles.title}>{children}</Text>
       </ScrollView>
     )
   } else {
