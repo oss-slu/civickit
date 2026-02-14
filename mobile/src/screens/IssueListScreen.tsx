@@ -14,6 +14,12 @@ export default function IssueListScreen() {
   const [locationServicesEnabled, setLocationServicesEnabled] = useState(false)
   const [userLatitude, setUserLatitude] = useState<number>()
   const [userLongitude, setUserLogitude] = useState<number>()
+
+  if (navigator.onLine) {
+    console.log('Internet connection is available');
+  } else {
+    console.log('Internet connection is not available');
+  }
   
   //get user location
   useEffect(() => {
@@ -65,7 +71,7 @@ export default function IssueListScreen() {
       queryFn: async () => {
           console.log("before fetch", userLatitude, userLongitude)
           const response = await fetch(
-          'http://localhost:3000/api/issues/nearby?lat=' + 
+          'https://application-mock-server.loca.lt/api/issues/nearby?lat=' + 
             userLatitude + '&lng=' + userLongitude + '&radius=5000'
           );
           console.log("fetch", response)
@@ -138,7 +144,7 @@ export default function IssueListScreen() {
         <MessageScreen enableRefresh = {true}
           onRefresh = {refetch}
           refreshing = {refreshing}>
-            There was an error
+            There was an error: {String(error)}
         </MessageScreen>
       )
     }   
