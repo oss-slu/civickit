@@ -33,12 +33,14 @@
     "jq": "^1.7.2",
     "json-server": "^1.0.0-beta.5",
     "jsonwebtoken": "^9.0.3",
+    "localtunnel": "^2.0.2",
     "ngrok": "^5.0.0-beta.2",
     "pg": "^8.18.0",
     "typescript": "^5.9.3",
     "zod": "^4.3.5"
   },
   "devDependencies": {
+    "@types/localtunnel": "^2.0.4",
     "@types/node": "^25.0.9",
     "@types/pg": "^8.16.0",
     "dotenv": "^17.3.1",
