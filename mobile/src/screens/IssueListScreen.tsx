@@ -71,7 +71,7 @@ export default function IssueListScreen() {
       queryFn: async () => {
           console.log("before fetch", userLatitude, userLongitude)
           const response = await fetch(
-          'https://application-mock-server.loca.lt/api/issues/nearby?lat=' + 
+          'https://civickit.loca.lt/api/issues/nearby?lat=' + 
             userLatitude + '&lng=' + userLongitude + '&radius=5000'
           );
           console.log("fetch", response)
