@@ -78,7 +78,7 @@ export default function IssueListWrapper() {
             return (
                 <MessageScreen enableRefresh={true}
                     onRefresh={onRefresh}>
-                    Location permission denied
+                    Error: query client not found
                 </MessageScreen>
             )
         }

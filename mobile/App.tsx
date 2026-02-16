@@ -25,7 +25,7 @@ export default function App() {
   } else {
     return (
       <MessageScreen enableRefresh={false}>
-        Error: query client is null
+        Error: query client not found
       </MessageScreen>
     )
   }
