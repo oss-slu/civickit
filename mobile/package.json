@@ -19,6 +19,7 @@
     "expo-status-bar": "~3.0.9",
     "json-server": "^1.0.0-beta.5",
     "local": "^0.3.3",
+    "ngrok": "^5.0.0-beta.2",
     "node": "^25.6.1",
     "react": "19.1.0",
     "react-dom": "19.1.0",

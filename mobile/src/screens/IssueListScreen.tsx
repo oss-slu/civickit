@@ -7,90 +7,27 @@ import IssueDetailScreen from './IssueDetailScreen';
 import * as Location from 'expo-location'
 import IssueCard from '../components/IssueCard';
 
-export default function IssueListScreen() {
+export default function IssueListScreen(queryClient: QueryClient, latitude: number | undefined, longitude: number | undefined) {
   const [refreshing, setRefreshing] = useState(false)
   const [selectedIssue, setSelectedIssue] = useState()
   const [isIssueSelected, setIsIssueSelected] = useState(false)
-  const [locationServicesEnabled, setLocationServicesEnabled] = useState(false)
-  const [userLatitude, setUserLatitude] = useState<number>()
-  const [userLongitude, setUserLogitude] = useState<number>()
 
-  if (navigator.onLine) {
-    console.log('Internet connection is available');
-  } else {
-    console.log('Internet connection is not available');
-  }
-  
-  //get user location
-  useEffect(() => {
-    checkIfLocationEnabled();
-    getCurrentLocation();
-  }, [])
-  
-  const checkIfLocationEnabled = async () => {
-    let enabled = await Location.hasServicesEnabledAsync();
-    if(!enabled) {
-      Alert.alert('Location not enabled', 
-        'Please enabled your Location', [
-        {text: 'Cancel'},
-        {text: 'OK'}
-      ])
-    } else {
-      setLocationServicesEnabled(enabled)
-    }
-  }
-
-  const getCurrentLocation = async () => {
-    //check permission
-    let {status} = await Location.requestForegroundPermissionsAsync()
-    if(status !== 'granted'){
-      Alert.alert('Permission denied', 
-        'Grant permission to use location services',[
-          {text: 'Cancel'},
-          {text: 'OK'}
-        ])
-      setLocationServicesEnabled(false)
-    } 
-
-    //get lat and long
-    const {coords} = await Location.getCurrentPositionAsync()
-    console.log(coords)
-
-    if(coords){
-      const {latitude, longitude} = coords;
-      setUserLatitude(latitude)
-      setUserLogitude(longitude)
-    }
-  }
-  
   //fetch issues from database 
-    //runs even when location is denied to prevent hook errors
-  const queryClient = new QueryClient()
   const { data, isLoading, error, refetch } = useQuery({
       queryKey: ['issues', 'nearby'],
       queryFn: async () => {
-          console.log("before fetch", userLatitude, userLongitude)
-          const response = await fetch(
-          'https://civickit.loca.lt/api/issues/nearby?lat=' + 
-            userLatitude + '&lng=' + userLongitude + '&radius=5000'
-          );
-          console.log("fetch", response)
-          if (!response.ok) throw new Error('Failed to fetch');
-          return response.json();
+        const url = "https://civickit.loca.lt"
+        const response = await fetch(
+        url + '/api/issues/nearby?lat=' + 
+          latitude + '&lng=' + longitude + '&radius=5000'
+        );
+        console.log("fetch", response)
+        if (!response.ok) throw new Error('Failed to fetch');
+        return response.json();
       } 
   }, queryClient);
 
   console.log(data, isLoading, error)
-  //return error message for location permission denied
-  if(!locationServicesEnabled){
-    return (
-      <MessageScreen enableRefresh = {true}
-        onRefresh = {refetch}
-        refreshing = {refreshing}>
-          Location permission denied
-      </MessageScreen>
-    )
-  }
 
   //onIssuePress behaviour
   const onIssuePress = (issue:any) => {
