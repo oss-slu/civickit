@@ -5,7 +5,7 @@ import { FlatList } from 'react-native';
 import React from 'react';
 import IssueDetailScreen from './IssueDetailScreen';
 import IssueCard from '../components/IssueCard';
-import { QueryClientContext} from '../../App';
+import { QueryClientContext } from '../../App';
 import { LocationContext, userLocation } from './IssueListWrapper';
 
 export default function IssueListScreen() {
@@ -13,27 +13,32 @@ export default function IssueListScreen() {
   const [selectedIssue, setSelectedIssue] = useState()
   const [isIssueSelected, setIsIssueSelected] = useState(false)
 
+  const [url, seturl] = useState("https://civickit.loca.lt")
+
   //get contexts from above layer(s)
   const queryClient = useContext(QueryClientContext) as unknown as QueryClient
   const location = useContext(LocationContext) as unknown as userLocation
 
-  
-  
+
   //fetch issues from database 
-  const { data, isLoading, error, refetch } = useQuery({
+  var { data, isLoading, error, refetch } = useQuery({
     queryKey: ['issues', 'nearby'],
     queryFn: async () => {
-      // const url = "https://civickit.loca.lt"
-      const url = "http://localhost:3000"
       const response = await fetch(
         url + '/api/issues/nearby?lat=' +
-        location?.latitude + '&lng=' + location.longitude + '&radius=5000'
+        location.latitude + '&lng=' + location.longitude + '&radius=5000'
       );
       console.log("fetch", response)
       if (!response.ok) throw new Error('Failed to fetch');
       return response.json();
     }
   }, queryClient);
+
+  //try again if tunnel url is unavailable 
+  if (url == "https://civickit.loca.lt" && error?.message == "Failed to fetch") {
+    seturl("http://localhost:3000")
+    refetch()
+  }
 
   console.log(data, isLoading, error)
 
