@@ -11,6 +11,7 @@ import loginRoutes from './routes/login.routes';
 import 'express-rate-limit';
 import "dotenv/config";
 import { authMiddleware } from './middleware/auth.middleware';
+import localtunnel from 'localtunnel';
 
 dotenv.config();
 
@@ -44,10 +45,10 @@ app.use('/api/issues/upvote', authMiddleware);
 // Error handling
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error(err.stack);
-  if (err.message == "email not found" || 
+  if (err.message == "email not found" ||
     err.message == "password and email do not match" ||
     err.message == "invalid token" ||
-    err.message == "jwt must be provided"){
+    err.message == "jwt must be provided") {
     return res.status(401).json({ error: err.name + ": " + err.message });
   }
   return res.status(500).json({ error: 'Something went wrong!' });
@@ -56,3 +57,10 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
+
+// create tunnel
+(async () => {
+  const tunnel = await localtunnel({ port: 3000, subdomain: "civickit" });
+  console.log(tunnel.url)
+  tunnel.on("close", () => { });
+})();
