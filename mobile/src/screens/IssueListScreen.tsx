@@ -5,8 +5,10 @@ import { FlatList } from 'react-native';
 import React from 'react';
 import IssueDetailScreen from './IssueDetailScreen';
 import IssueCard from '../components/IssueCard';
-import { QueryClientContext } from '../../App';
-import { LocationContext, userLocation } from './IssueListWrapper';
+import { MessageScreen } from '../components/MessageScreen';
+import { userLocation } from '../types/userLocation';
+import { UseQueryClientContext } from '../types/UseQueryClientContext';
+import { LocationContext } from '../types/LocationContext';
 
 export default function IssueListScreen() {
   const [refreshing, setRefreshing] = useState(false)
@@ -16,14 +18,14 @@ export default function IssueListScreen() {
   const [url, seturl] = useState("https://civickit.loca.lt")
 
   //get contexts from above layer(s)
-  const queryClient = useContext(QueryClientContext) as unknown as QueryClient
+  const queryClient = useContext(UseQueryClientContext) as unknown as QueryClient
   const location = useContext(LocationContext) as unknown as userLocation
-
 
   //fetch issues from database 
   var { data, isLoading, error, refetch } = useQuery({
     queryKey: ['issues', 'nearby'],
     queryFn: async () => {
+      console.log("url: ", url)
       const response = await fetch(
         url + '/api/issues/nearby?lat=' +
         location.latitude + '&lng=' + location.longitude + '&radius=5000'
@@ -129,19 +131,3 @@ const styles = StyleSheet.create({
   }
 });
 
-export function MessageScreen({ enableRefresh, onRefresh, refreshing = false, children }: any) {
-  if (enableRefresh && onRefresh != null) {
-    return (
-      <ScrollView contentContainerStyle={styles.container} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
-        <Text style={styles.title}>{children}</Text>
-      </ScrollView>
-    )
-  } else {
-    console.log("Refresh was disabled or proper function was not provided")
-    return (
-      <View style={styles.container}>
-        <Text style={styles.title}>{children}</Text>
-      </View>
-    )
-  }
-}
