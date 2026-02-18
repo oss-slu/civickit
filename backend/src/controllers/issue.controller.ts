@@ -10,7 +10,7 @@ export class IssueController {
   async createIssue(req: Request, res: Response, next: NextFunction) {
     try {
       const userId = req.userId!
-      
+
       const issue = await issueService.createIssue(req.body, userId);
       res.status(201).json(issue);
     } catch (error) {
@@ -37,10 +37,10 @@ export class IssueController {
 
   async getIssueById(req: Request, res: Response, next: NextFunction) {
     try {
-        const issue = await issueService.getIssueById(req.params.id);
-        res.json(issue);
+      const issue = await issueService.getIssueById(String(req.params.id));
+      res.json(issue);
     } catch (error) {
-        next(error);
+      next(error);
     }
   }
 }
