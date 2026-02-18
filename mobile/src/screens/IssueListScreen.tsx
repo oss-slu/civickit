@@ -80,31 +80,33 @@ export default function IssueListScreen() {
     )
   }
 
-  //successful display
+  //check if issue selected
   if (isIssueSelected) {
     return (
       <IssueDetailScreen issue={selectedIssue}
         isIssueSelected={isIssueSelected}
         setIsIssueSelected={setIsIssueSelected}></IssueDetailScreen>
     )
-  } else {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.title}>Nearby Issues</Text>
-        <FlatList
-          style={styles.list}
-          data={data.issues}
-          renderItem={({ item }) => <IssueCard issue={item}
-            onPress={() => onIssuePress(item)}
-            variant='expanded' />}
-          keyExtractor={(item) => item.id}
-          refreshControl={<RefreshControl refreshing={refreshing}
-            onRefresh={refetch} />}
-          extraData={selectedIssue}
-        />
-      </View>
-    );
   }
+
+  //display list
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Nearby Issues</Text>
+      <FlatList
+        style={styles.list}
+        data={data.issues}
+        renderItem={({ item }) => <IssueCard issue={item}
+          onPress={() => onIssuePress(item)}
+          variant='expanded' />}
+        keyExtractor={(item) => item.id}
+        refreshControl={<RefreshControl refreshing={refreshing}
+          onRefresh={refetch} />}
+        extraData={selectedIssue}
+      />
+    </View>
+  );
+
 
 
 }
