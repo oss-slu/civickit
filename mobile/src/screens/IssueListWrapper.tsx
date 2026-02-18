@@ -90,12 +90,11 @@ export default function IssueListWrapper() {
 
 }
 
-function IssueListContextWrapper({ queryClient, location, children }: any) {
+//Check for future use
+function IssueListContextWrapper({ location, children }: any) {
     return (
-        <QueryClientProvider client={queryClient}>
-            <LocationContext value={location}>
-                {children}
-            </LocationContext>
-        </QueryClientProvider>
+        <LocationContext.Provider value={location}>
+            {children}
+        </LocationContext.Provider>
     )
 }
