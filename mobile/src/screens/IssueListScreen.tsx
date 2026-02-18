@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, RefreshControl, ScrollView } from 'react-native';
-import { QueryClient, useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, useContext } from 'react';
 import { FlatList } from 'react-native';
 import React from 'react';
@@ -7,7 +7,6 @@ import IssueDetailScreen from './IssueDetailScreen';
 import IssueCard from '../components/IssueCard';
 import { MessageScreen } from '../components/MessageScreen';
 import { userLocation } from '../types/userLocation';
-import { UseQueryClientContext } from '../types/UseQueryClientContext';
 import { LocationContext } from '../types/LocationContext';
 
 export default function IssueListScreen() {
@@ -18,7 +17,7 @@ export default function IssueListScreen() {
   const [url, seturl] = useState("https://civickit.loca.lt")
 
   //get contexts from above layer(s)
-  const queryClient = useContext(UseQueryClientContext) as unknown as QueryClient
+  const queryClient = useQueryClient()
   const location = useContext(LocationContext) as unknown as userLocation
 
   //fetch issues from database 

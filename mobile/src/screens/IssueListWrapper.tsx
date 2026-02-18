@@ -1,13 +1,12 @@
 // mobile/App.tsx
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import IssueListScreen from './IssueListScreen';
-import { useEffect, useState, useContext } from 'react';
+import { useEffect, useState } from 'react';
 import * as Location from 'expo-location'
 import { Alert } from 'react-native';
-import { QueryClient } from '@tanstack/react-query';
+import { QueryClientProvider, useQueryClient } from '@tanstack/react-query';
 import { MessageScreen } from '../components/MessageScreen';
 import { userLocation } from '../types/userLocation';
-import { UseQueryClientContext } from '../types/UseQueryClientContext';
 import { LocationContext } from '../types/LocationContext';
 
 const Stack = createNativeStackNavigator();
@@ -15,7 +14,8 @@ const Stack = createNativeStackNavigator();
 export default function IssueListWrapper() {
     const [location, setLocation] = useState<userLocation>()
     const [locationServicesEnabled, setLocationServicesEnabled] = useState(false)
-    const queryClient = useContext(UseQueryClientContext) as unknown as QueryClient
+    // const queryClient = useContext(UseQueryClientContext) as unknown as QueryClient
+    const queryClient = useQueryClient();
 
     //get user location
     useEffect(() => {
@@ -92,10 +92,10 @@ export default function IssueListWrapper() {
 
 function IssueListContextWrapper({ queryClient, location, children }: any) {
     return (
-        <UseQueryClientContext value={queryClient}>
+        <QueryClientProvider client={queryClient}>
             <LocationContext value={location}>
                 {children}
             </LocationContext>
-        </UseQueryClientContext>
+        </QueryClientProvider>
     )
 }
