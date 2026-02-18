@@ -1,7 +1,7 @@
 // mobile/App.tsx
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import IssueListScreen from './IssueListScreen';
-import { useEffect, useState, useContext, createContext } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import * as Location from 'expo-location'
 import { Alert } from 'react-native';
 import { QueryClient } from '@tanstack/react-query';
@@ -11,7 +11,6 @@ import { UseQueryClientContext } from '../types/UseQueryClientContext';
 import { LocationContext } from '../types/LocationContext';
 
 const Stack = createNativeStackNavigator();
-
 
 export default function IssueListWrapper() {
     const [location, setLocation] = useState<userLocation>()

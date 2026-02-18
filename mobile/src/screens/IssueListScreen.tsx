@@ -50,61 +50,63 @@ export default function IssueListScreen() {
     setIsIssueSelected(true)
   }
 
+  //TODO: reformat
   //check if still loading
-  if (!isLoading) {
-    //check if an error had been thrown
-    if (error == undefined) {
-      //check if any data was returned
-      if (data.issues.length != 0) {
-
-        if (isIssueSelected) {
-          return (
-            <IssueDetailScreen issue={selectedIssue}
-              isIssueSelected={isIssueSelected}
-              setIsIssueSelected={setIsIssueSelected}></IssueDetailScreen>
-          )
-        } else {
-          return (
-            <View style={styles.container}>
-              <Text style={styles.title}>Nearby Issues</Text>
-              <FlatList
-                style={styles.list}
-                data={data.issues}
-                renderItem={({ item }) => <IssueCard issue={item}
-                  onPress={() => onIssuePress(item)}
-                  variant='expanded' />}
-                keyExtractor={(item) => item.id}
-                refreshControl={<RefreshControl refreshing={refreshing}
-                  onRefresh={refetch} />}
-                extraData={selectedIssue}
-              />
-            </View>
-          );
-        }
-
-      } else {
-        return (
-          <MessageScreen enableRefresh={true}
-            onRefresh={refetch}
-            refreshing={refreshing}>
-            No issues nearby
-          </MessageScreen>
-        )
-      }
-    } else {
-      return (
-        <MessageScreen enableRefresh={true}
-          onRefresh={refetch}
-          refreshing={refreshing}>
-          {String(error)}
-        </MessageScreen>
-      )
-    }
-  } else {
+  if (isLoading) {
     return (
       <MessageScreen>Loading...</MessageScreen>
     )
   }
+
+  //check if error has been thrown
+  if (error != undefined) {
+    return (
+      <MessageScreen enableRefresh={true}
+        onRefresh={refetch}
+        refreshing={refreshing}>
+        {String(error)}
+      </MessageScreen>
+    )
+  }
+
+  //check if any data was returned
+  if (data.issues.length == 0) {
+    return (
+      <MessageScreen enableRefresh={true}
+        onRefresh={refetch}
+        refreshing={refreshing}>
+        No issues nearby
+      </MessageScreen>
+    )
+  }
+
+  //successful display
+  if (isIssueSelected) {
+    return (
+      <IssueDetailScreen issue={selectedIssue}
+        isIssueSelected={isIssueSelected}
+        setIsIssueSelected={setIsIssueSelected}></IssueDetailScreen>
+    )
+  } else {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.title}>Nearby Issues</Text>
+        <FlatList
+          style={styles.list}
+          data={data.issues}
+          renderItem={({ item }) => <IssueCard issue={item}
+            onPress={() => onIssuePress(item)}
+            variant='expanded' />}
+          keyExtractor={(item) => item.id}
+          refreshControl={<RefreshControl refreshing={refreshing}
+            onRefresh={refetch} />}
+          extraData={selectedIssue}
+        />
+      </View>
+    );
+  }
+
+
 }
 
 const styles = StyleSheet.create({
