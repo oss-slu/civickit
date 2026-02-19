@@ -1,4 +1,4 @@
-// mobile/App.tsx
+// mobile/src/screens/IssueListWrapper.tsx
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import IssueListScreen from './IssueListScreen';
 import { useEffect, useState } from 'react';
