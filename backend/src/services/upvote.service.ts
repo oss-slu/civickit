@@ -3,7 +3,7 @@ import { UpvoteRepository } from '../repositories/upvote.repository';
 import { Prisma } from '@prisma/client';
 
 export class UpvoteService {
-  constructor(private readonly upvoteRepository: UpvoteRepository) {}
+  constructor(private readonly upvoteRepository: UpvoteRepository) { }
 
   async upvoteIssue(issueId: string, userId: string) {
     try {
@@ -46,4 +46,11 @@ export class UpvoteService {
       upvoteCount,
     };
   }
+
+  async getUpvoteCount(issueId: string) {
+    const upvoteCount = await this.upvoteRepository.countUpvotes(issueId);
+
+    return { upvoteCount };
+  }
+
 }
