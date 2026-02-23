@@ -16,6 +16,7 @@ export default function IssueListScreen() {
   const [selectedIssue, setSelectedIssue] = useState()
   const [isIssueSelected, setIsIssueSelected] = useState(false)
 
+
   //get contexts from above layer(s)
   const queryClient = useQueryClient()
   const location = useContext(LocationContext) as unknown as userLocation

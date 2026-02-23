@@ -7,8 +7,9 @@ const ENV = {
     },
 };
 
+
 const getEnvVars = () => {
-    console.log(__DEV__)
+
     if (__DEV__) {
         return ENV.dev;
     }

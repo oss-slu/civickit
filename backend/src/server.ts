@@ -57,10 +57,3 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
-
-// create tunnel
-(async () => {
-  const tunnel = await localtunnel({ port: 3000, subdomain: "civickit" });
-  console.log(tunnel.url)
-  tunnel.on("close", () => { });
-})();
