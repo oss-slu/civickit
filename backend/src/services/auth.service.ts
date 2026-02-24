@@ -6,13 +6,13 @@ import { CreateAuthDTO, SafeUser } from "../types/auth.types";
 import { z } from 'zod';
 
 export class AuthService {
-  constructor(private authRepository: AuthRepository) {}
+  constructor(private authRepository: AuthRepository) { }
 
   async registerUser(data: CreateAuthDTO): Promise<SafeUser> {
     const { email, password, name } = data;
 
     // Validate email format
-    const emailSchema = z.string().email();
+    const emailSchema = z.email();
     if (!emailSchema.safeParse(email).success) {
       throw { status: 400, message: "Invalid email format" };
     }

@@ -2,7 +2,6 @@
 
 import { Request, Response, NextFunction } from 'express';
 import jwt, { JwtPayload } from 'jsonwebtoken';
-import { LoginController } from '../controllers/login.controller';
 
 // Extend Express Request type
 declare global {
