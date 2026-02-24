@@ -59,6 +59,7 @@ app.listen(PORT, () => {
 });
 
 //Open localtunnel on https://civickit.loca.lt - should be removed later
+//this code blocks, anything past this will not be reachable
 (async () => {
   const tunnel = await localtunnel({ port: 3000, subdomain: "civickit" });
   if (tunnel.url == "https://civickit.loca.lt") {
