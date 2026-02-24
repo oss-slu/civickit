@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import IssueListWrapper from './src/screens/IssueListWrapper';
 import { MessageScreen } from './src/components/MessageScreen';
+import IPInfo from 'ip-info-react';
 
 const Stack = createNativeStackNavigator();
 

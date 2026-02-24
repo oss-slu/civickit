@@ -58,9 +58,9 @@ npx expo start
 * Press `i` to open iOS simulator (macOS only)
 * Press `a` to open Android emulator
 * Press `w` to run in the browser (web)
-To run on a physical iOS device from Windows, use tunnel mode:
+To run on a physical device from Windows, use production mode:
 ```bash
-npx expo start --tunnel
+npx expo start --no-dev --minify
 ```
 3. Then scan the QR code using the Camera app (iOS) or Expo Go(Android)
 * In both cases the app, Expo Go, must be installed on the device
