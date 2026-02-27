@@ -3,12 +3,13 @@ import { Router } from 'express';
 import { IssueController } from '../controllers/issue.controller';
 import { UpvoteController } from '../controllers/upvote.controller';
 import { authMiddleware } from '../middleware/auth.middleware';
+import { uploadMiddleware } from '../middleware/upload.middleware';
 
 const router = Router();
 const issueController = new IssueController();
 const upvoteController = new UpvoteController();
 
-router.post('/', authMiddleware, issueController.createIssue);
+router.post('/', authMiddleware, uploadMiddleware.array('images', 5), issueController.createIssue);
 router.get('/nearby', issueController.getNearbyIssues);
 router.get('/:id', issueController.getIssueById);
 
