@@ -10,7 +10,7 @@ export class IssueController {
   async createIssue(req: Request, res: Response, next: NextFunction) {
     try {
       const userId = req.userId!
-
+      console.log("in contoller", req)
       const issue = await issueService.createIssue(req.body, userId);
       res.status(201).json(issue);
     } catch (error) {

@@ -12,7 +12,7 @@ const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL!,
 });
 
-const prisma = new PrismaClient({adapter});
+const prisma = new PrismaClient({ adapter });
 
 export class IssueRepository {
   async create(data: CreateIssueDTO & { userId: string }) {

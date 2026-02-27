@@ -4,12 +4,12 @@ import { IssueRepository } from '../repositories/issue.repository';
 import { CreateIssueDTO } from '../types/issue.types';
 
 export class IssueService {
-  constructor(private issueRepository: IssueRepository) {}
+  constructor(private issueRepository: IssueRepository) { }
 
   async createIssue(data: CreateIssueDTO, userId: string) {
     // TODO: Upload images to Cloudinary here
     // For now, just pass through
-    if (!data.title || data.title.length <3){
+    if (!data.title || data.title.length < 3) {
       throw new Error('Title must be at least 3 characters');
     }
     if (!data.category) {
