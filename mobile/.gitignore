@@ -40,5 +40,5 @@ yarn-error.*
 /ios
 /android
 
-#terminal output file
-.output.txt
+#local mobile env
+env.local.json

@@ -1,5 +1,5 @@
 // mobile/src/screens/IssueListScreen.tsx
-import { View, Text, StyleSheet, RefreshControl, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, RefreshControl } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, useContext } from 'react';
 import { FlatList } from 'react-native';
@@ -9,13 +9,16 @@ import IssueCard from '../components/IssueCard';
 import { MessageScreen } from '../components/MessageScreen';
 import { userLocation } from '../types/userLocation';
 import { LocationContext } from '../types/LocationContext';
+import { Button } from '@react-navigation/elements';
 import ENV from '../config/env';
+import { useNavigation } from '@react-navigation/native';
+
 
 export default function IssueListScreen() {
   const [refreshing, setRefreshing] = useState(false)
   const [selectedIssue, setSelectedIssue] = useState()
   const [isIssueSelected, setIsIssueSelected] = useState(false)
-
+  const navigation = useNavigation();
 
   //get contexts from above layer(s)
   const queryClient = useQueryClient()
@@ -40,11 +43,11 @@ export default function IssueListScreen() {
 
   //onIssuePress behaviour
   const onIssuePress = (issue: any) => {
-    setSelectedIssue(issue)
-    setIsIssueSelected(true)
+    // setSelectedIssue(issue)
+    // setIsIssueSelected(true)
+    navigation.navigate('Issue Details', { issue: issue })
   }
 
-  //TODO: reformat
   //check if still loading
   if (isLoading) {
     return (
@@ -86,6 +89,10 @@ export default function IssueListScreen() {
   //display list
   return (
     <View style={styles.container}>
+      <Button style={styles.button} onPress={() => navigation.navigate("Create Issue")}>
+        Report New Issue
+      </Button>
+
       <Text style={styles.title}>Nearby Issues</Text>
       <FlatList
         style={styles.list}
@@ -126,6 +133,9 @@ const styles = StyleSheet.create({
   list: {
     width: '80%',
     alignSelf: 'center'
+  },
+  button: {
+    margin: 12,
+    alignSelf: 'flex-end'
   }
 });
-

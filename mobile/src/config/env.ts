@@ -1,6 +1,9 @@
+import local from './env.local.json'
+
 const ENV = {
     dev: {
-        apiUrl: 'http://localhost:3000/api',
+        // apiUrl: 'http://localhost:3000/api',
+        apiUrl: 'http://' + local.ip + ':3000/api'
     },
     prod: {
         apiUrl: 'https://civickit.loca.lt/api', //localtunnel URL, should be replaced later
@@ -9,7 +12,7 @@ const ENV = {
 
 
 const getEnvVars = () => {
-
+    console.log(__DEV__)
     if (__DEV__) {
         return ENV.dev;
     }
