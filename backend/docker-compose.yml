@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgis/postgis:15-3.3
+    container_name: civickit-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: civickit
+    ports:
+      - "5432:5432"
+    volumes:
+      - civickit-data:/var/lib/postgresql/data
+
+volumes:
+  civickit-data:

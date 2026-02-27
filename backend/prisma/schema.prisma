@@ -7,7 +7,7 @@ generator client {
 
 datasource db {
   provider   = "postgresql"
-  extensions = [postgis]
+  extensions = [postgis, fuzzystrmatch, postgis_tiger_geocoder, postgis_topology]
 }
 
 enum IssueStatus {

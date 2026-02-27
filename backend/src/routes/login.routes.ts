@@ -7,8 +7,8 @@ const router = Router();
 const loginController = new LoginController();
 
 // Rate Limiter
-var RateLimit = require('express-rate-limit')
-var limiter = RateLimit({
+import RateLimit from 'express-rate-limit';
+const limiter = RateLimit({
   windowMs: 15 * 60 * 1000, //15 minutes
   max: 100, //max 100 requests per window
 })

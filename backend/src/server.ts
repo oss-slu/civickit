@@ -8,8 +8,7 @@ import issueRoutes from './routes/issue.routes';
 import authRoutes from "./routes/auth.routes";
 
 import loginRoutes from './routes/login.routes';
-import 'express-rate-limit';
-import "dotenv/config";
+import RateLimit from 'express-rate-limit';
 import { authMiddleware } from './middleware/auth.middleware';
 import localtunnel from 'localtunnel';
 
@@ -28,8 +27,7 @@ app.get('/health', (req, res) => {
 });
 
 // Rate Limiter
-var RateLimit = require('express-rate-limit')
-var limiter = RateLimit({
+const limiter = RateLimit({
   windowMs: 15 * 60 * 1000, //15 minutes
   max: 100, //max 100 requests per window
 })
