@@ -101,13 +101,14 @@ export default function IssueCreationScreen() {
         formData.append('latitude', location!.latitude.toString());
         formData.append('longitude', location!.longitude.toString());
         images.forEach(uri => {
-            formData.append('images', { uri, type: 'image/jpeg', name: 'photo.jpg' } as any);
+            formData.append('images', { uri, type: 'image/jpeg', name: 'photo.jpg' } as file);
         });
 
         const request = new Request(ENV.apiUrl + '/issues/', {
-            mode: 'cors',
-            headers: { Authorization: `Bearer ${token}` },
             method: 'POST',
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
             body: formData
         })
 
