@@ -1,4 +1,4 @@
-Last updated 1/16/2026
+Last updated 2/26/2026
 # Development Setup
 
 ## Prerequisites
@@ -18,14 +18,14 @@ PORT=3000
 ```
 
 ## Backend Setup
+Install docker
 1. Clone repo
 2. `cd backend`
-3. `npm install`
-4. Copy `.env.example` to `.env` in `backend/` and fill in values
-5. Migrate the databse `npx prisma migrate dev --name init`
-6. Generate client `npx prisma generate`
-7. Start the backend `npm run dev`
-8. Server runs on http://localhost:3000
+3. `cp .env.example .env` (copy `.env.example` to `.env`) then fill in values
+4. `npm install`
+5. `npm run db:setup` (starts docker container, pushes schema and generates client)
+6. `npm run dev` (start the backend)
+7. Server runs on http://localhost:3000
 
 ### Testing Backend API
 1. Seed/create dev user(if needed) `npx prisma studio`
