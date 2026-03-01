@@ -1,5 +1,6 @@
 // mobile/src/screens/IssueDetailScreen.tsx
 import { View, Text, StyleSheet } from 'react-native';
+import FlashMessage, { showMessage, hideMessage } from "react-native-flash-message";
 
 //pass issue selected state in so it can be disabled
 export default function IssueDetailScreen({ route }: any) {

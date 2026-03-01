@@ -1,37 +1,35 @@
 //mobile/src/screens/IssueCreationScreen.tsx
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
-import { useEffect, useState } from 'react';
-import { MessageScreen } from '../components/MessageScreen';
+import React, { useEffect, useState } from 'react';
+import { MessageView } from '../components/MessageView';
 import { userLocation } from '../types/userLocation';
-import { Button, View, StyleSheet, ScrollView, TextInput, Modal, Text, TouchableOpacity, FlatList } from 'react-native';
+import { Button, View, StyleSheet, ScrollView, TextInput, Text, FlatList, KeyboardAvoidingView, Alert } from 'react-native';
 import SelectedImage from '../components/SelectedImage';
 import ModalDropdown from '../components/ModalDropdown';
 import ENV from '../config/env';
-
-enum IssueCategory {
-    POTHOLE,
-    STREETLIGHT,
-    GRAFFITI,
-    ILLEGAL_DUMPING,
-    BROKEN_SIDEWALK,
-    TRAFFIC_SIGNAL,
-    OTHER,
-}
+import { useNavigation } from '@react-navigation/native';
+import { IssueCategory } from '../types/IssueCategory';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { showMessage } from "react-native-flash-message";
+import AntDesign from '@expo/vector-icons/AntDesign';
 
 export default function IssueCreationScreen() {
     const [images, setImages] = useState<string[]>([]);
     const [location, setLocation] = useState<userLocation | null>(null);
     const [address, setAddress] = useState<string>('Detecting location...');
     const [title, setTitle] = useState<string>("");
-    const [category, setCategory] = useState<IssueCategory>();
+    const [category, setCategory] = useState<"POTHOLE" | "STREETLIGHT" | "GRAFFITI" | "ILLEGAL_DUMPING" | "BROKEN_SIDEWALK" | "TRAFFIC_SIGNAL" | "OTHER">();
     const [description, setDescription] = useState<string>("");
     const [submitAllowed, setSubmitAllowed] = useState<boolean>(false)
+    const [isLoading, setIsLoading] = useState(false)
+    const navigation = useNavigation();
     //TODO: implement tags
 
     //DO NOT LEAVE THIS HERE, TESTING PURPOSES ONLY
     const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJteS11c2VyIiwiaWF0IjoxNzcyMjE2MTM5LCJleHAiOjE3NzI4MjA5Mzl9.knjn8hY8sTmenxRuQ_hjgpO1q108zNwY0JVqJGhjH7I"
 
+    //get location
     useEffect(() => {
         (async () => {
             const { status } = await Location.requestForegroundPermissionsAsync();
@@ -90,30 +88,63 @@ export default function IssueCreationScreen() {
     }
 
     const categories = [
-        "POTHOLE", "Streetlight", "Trash", "Graffiti", "Other"
+        "Pothole", "Streetlight", "Trash", "Graffiti", "Broken Sidewalk", "Traffic Signal", "Other"
     ]
 
+    const handleSetCategory = (issueCategory: any) => {
+        if (issueCategory.replace(/ /g, "_").toUpperCase() in IssueCategory) {
+            setCategory(issueCategory.replace(/ /g, "_").toUpperCase())
+        } else if (issueCategory == "Trash") {
+            setCategory("ILLEGAL_DUMPING")
+        }
+
+
+    }
+
     const handleSubmit = async () => {
-        const formData = new FormData();
-        formData.append('title', title);
-        formData.append('description', description);
-        formData.append('category', category!);
-        formData.append('latitude', location!.latitude.toString());
-        formData.append('longitude', location!.longitude.toString());
-        images.forEach(uri => {
-            formData.append('images', { uri, type: 'image/jpeg', name: 'photo.jpg' } as file);
-        });
+        try {
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('description', description);
+            formData.append('category', category);
+            formData.append('latitude', location!.latitude.toString());
+            formData.append('longitude', location!.longitude.toString());
+            images.forEach(uri => {
+                formData.append('images', { uri: uri, type: 'image/jpeg', name: 'photo.jpg' });
+            });
 
-        const request = new Request(ENV.apiUrl + '/issues/', {
-            method: 'POST',
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-            body: formData
-        })
+            const request = new Request(ENV.apiUrl + '/issues/', {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+                body: formData
+            })
 
-        const response = await fetch(request)
-        console.log(response)
+            setIsLoading(true)
+
+            const response = await fetch(request)
+            setIsLoading(false)
+            if (!response.ok) {
+                navigation.navigate('Error', { errorMessage: 'Upload Failed' })
+                throw new Error("Issue could not be reported at this time");
+            }
+
+            showMessage({
+                message: "Issue reported! Thank you for making your community better",
+                type: "success",
+            });
+            const issue = await response.json()
+            navigation.replace('Issue Details', { issue: issue })
+
+        } catch (error) {
+            if (error.message.includes("latitude") || error.message.includes("longtitude")) {
+                navigation.navigate('Error', { errorMessage: 'Location permission denied' })
+                throw new Error("Location permission denied")
+            }
+
+        }
+
     };
 
     //determine if ready to submit
@@ -121,8 +152,8 @@ export default function IssueCreationScreen() {
         title.length >= 3 &&
         description.length > 0 &&
         category != null &&
-        address != null &&
-        images.length > 0
+        images.length > 0 &&
+        address != "Detecting location..."
     ) {
         setSubmitAllowed(true)
 
@@ -130,21 +161,30 @@ export default function IssueCreationScreen() {
         title.length < 3 ||
         description.length == 0 ||
         category == null ||
-        address == null ||
-        images.length == 0)) {
+        images.length == 0 ||
+        address == "Detecting location...")) {
         setSubmitAllowed(false)
     }
 
+    if (isLoading) {
+        <MessageView>
+            Loading...
+        </MessageView>
+    }
+
+
     return (
-        <View>
+        <KeyboardAwareScrollView enableOnAndroid enableAutomaticScroll extraScrollHeight={100} >
             <TextInput onChangeText={setTitle}
                 value={title}
                 placeholder='title'
                 style={styles.textBox}
                 maxLength={100} />
 
-            <Button title="Pick an image from camera roll" onPress={pickImage} />
-            <Button title="Take photo" onPress={openCamera} />
+            <View style={styles.container}>
+                <AntDesign.Button name="camera" onPress={openCamera} iconStyle={styles.button} borderRadius={16} size={24} />
+                <AntDesign.Button name="picture" onPress={pickImage} iconStyle={styles.button} borderRadius={16} size={24} />
+            </View>
 
             <ScrollView style={styles.images}>
                 <FlatList
@@ -159,14 +199,13 @@ export default function IssueCreationScreen() {
                         />
                     )}
                 />
-
             </ScrollView>
 
             <Text>{address}</Text>
 
             <ModalDropdown
                 data={categories}
-                onDataSelect={setCategory}
+                onDataSelect={handleSetCategory}
                 defaultText="Choose a category" />
 
             <TextInput onChangeText={setDescription}
@@ -174,9 +213,14 @@ export default function IssueCreationScreen() {
                 placeholder='description'
                 style={styles.textBox}
                 multiline
-                maxLength={500} />
-            <Button title="Submit" onPress={handleSubmit} disabled={!submitAllowed} />
-        </View>
+                maxLength={500}
+                numberOfLines={5}
+                focusable
+            />
+
+            <Button title="Submit" onPress={handleSubmit}
+                color="#3e884a" disabled={!submitAllowed} />
+        </KeyboardAwareScrollView>
     )
 };
 
@@ -184,12 +228,24 @@ export default function IssueCreationScreen() {
 const styles = StyleSheet.create({
     images: {
         padding: 12,
-        gap: 12
+        gap: 12,
+        height: 200
     },
     textBox: {
         borderWidth: 1,
         margin: 4,
         padding: 4
+    },
+    container: {
+        padding: 4,
+        flex: 1,
+        gap: 8,
+        flexDirection: "row",
+        justifyContent: "flex-end",
+    },
+    button: {
+        margin: 4,
+        marginLeft: 8
     }
 });
 

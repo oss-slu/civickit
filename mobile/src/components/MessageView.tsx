@@ -1,6 +1,6 @@
 import { ScrollView, View, Text, StyleSheet, RefreshControl } from "react-native"
 
-export function MessageScreen({ enableRefresh, onRefresh, refreshing = false, children }: any) {
+export function MessageView({ enableRefresh, onRefresh, refreshing = false, children }: any) {
     if (enableRefresh && onRefresh != null) {
         return (
             <ScrollView contentContainerStyle={styles.container} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
