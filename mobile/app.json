@@ -21,7 +21,9 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.anonymous.mobile",
+      "softwareKeyboardLayoutMode": "adjustPan"
     },
     "web": {
       "favicon": "./assets/favicon.png"

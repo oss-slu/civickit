@@ -1,0 +1,9 @@
+export enum IssueCategory {
+    POTHOLE,
+    STREETLIGHT,
+    GRAFFITI,
+    ILLEGAL_DUMPING,
+    BROKEN_SIDEWALK,
+    TRAFFIC_SIGNAL,
+    OTHER,
+}

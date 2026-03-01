@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import * as Location from 'expo-location'
 import { Alert } from 'react-native';
 import { QueryClientProvider, useQueryClient } from '@tanstack/react-query';
-import { MessageScreen } from '../components/MessageScreen';
+import { MessageView } from '../components/MessageView';
 import { userLocation } from '../types/userLocation';
 import { LocationContext } from '../types/LocationContext';
 
@@ -73,18 +73,18 @@ export default function IssueListWrapper() {
             );
         } else {
             return (
-                <MessageScreen enableRefresh={true}
+                <MessageView enableRefresh={true}
                     onRefresh={onRefresh}>
                     Error: query client not found
-                </MessageScreen>
+                </MessageView>
             )
         }
     } else {
         return (
-            <MessageScreen enableRefresh={true}
+            <MessageView enableRefresh={true}
                 onRefresh={onRefresh}>
                 Location permission denied
-            </MessageScreen>
+            </MessageView>
         )
     }
 

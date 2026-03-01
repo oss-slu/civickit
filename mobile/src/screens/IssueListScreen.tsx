@@ -6,7 +6,7 @@ import { FlatList } from 'react-native';
 import React from 'react';
 import IssueDetailScreen from './IssueDetailScreen';
 import IssueCard from '../components/IssueCard';
-import { MessageScreen } from '../components/MessageScreen';
+import { MessageView } from '../components/MessageView';
 import { userLocation } from '../types/userLocation';
 import { LocationContext } from '../types/LocationContext';
 import { Button } from '@react-navigation/elements';
@@ -43,48 +43,52 @@ export default function IssueListScreen() {
 
   //onIssuePress behaviour
   const onIssuePress = (issue: any) => {
-    // setSelectedIssue(issue)
-    // setIsIssueSelected(true)
     navigation.navigate('Issue Details', { issue: issue })
   }
 
   //check if still loading
   if (isLoading) {
     return (
-      <MessageScreen>Loading...</MessageScreen>
+      <MessageView>Loading...</MessageView>
     )
   }
 
   if (location.latitude == undefined ||
     location.longitude == undefined) {
     return (
-      <MessageScreen enableRefresh={true}
+      <MessageView enableRefresh={true}
         onRefresh={refetch}
         refreshing={refreshing}>
         Error: Please Reload
-      </MessageScreen>
+      </MessageView>
     )
   }
 
   //check if error has been thrown
   if (error != undefined) {
     return (
-      <MessageScreen enableRefresh={true}
+      <MessageView enableRefresh={true}
         onRefresh={refetch}
         refreshing={refreshing}>
         {String(error)}
-      </MessageScreen>
+      </MessageView>
     )
   }
 
   //check if any data was returned
   if (data.issues.length == 0) {
     return (
-      <MessageScreen enableRefresh={true}
-        onRefresh={refetch}
-        refreshing={refreshing}>
-        No issues nearby
-      </MessageScreen>
+      <View>
+        <Button style={styles.button} onPress={() => navigation.navigate("Create Issue")}>
+          Report New Issue
+        </Button>
+        <MessageView enableRefresh={true}
+          onRefresh={refetch}
+          refreshing={refreshing}>
+          No issues nearby
+        </MessageView>
+      </View>
+
     )
   }
 
