@@ -10,8 +10,6 @@ import authRoutes from "./routes/auth.routes";
 import loginRoutes from './routes/login.routes';
 import RateLimit from 'express-rate-limit';
 import { authMiddleware } from './middleware/auth.middleware';
-import localtunnel from 'localtunnel';
-
 dotenv.config();
 
 const app = express();
