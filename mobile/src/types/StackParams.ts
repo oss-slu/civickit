@@ -1,3 +1,4 @@
+//mobile/src/types/StackParams.ts
 import { Issue } from "../components/IssueCard"
 
 export type StackParams = {
