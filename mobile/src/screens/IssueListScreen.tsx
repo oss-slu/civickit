@@ -12,7 +12,7 @@ import { LocationContext } from '../types/LocationContext';
 import { Button } from '@react-navigation/elements';
 import ENV from '../config/env';
 import { useNavigation } from '@react-navigation/native';
-import { StackParams } from '../../App';
+import { StackParams } from '../types/StackParams';
 import { StackNavigationProp } from '@react-navigation/stack';
 
 
