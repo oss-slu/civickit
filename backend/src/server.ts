@@ -10,20 +10,16 @@ import authRoutes from "./routes/auth.routes";
 import loginRoutes from './routes/login.routes';
 import RateLimit from 'express-rate-limit';
 import { authMiddleware } from './middleware/auth.middleware';
-import formidableMiddleware from 'express-formidable'
-import bodyParser from 'body-parser'
+import localtunnel from 'localtunnel';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(bodyParser.urlencoded({ extended: true }));
-
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(formidableMiddleware());
 
 // Health check
 app.get('/health', (req, res) => {
@@ -60,16 +56,3 @@ app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
 
-
-//Open localtunnel on https://civickit.loca.lt - should be removed later
-// //this code blocks, anything past this will not be reachable
-// (async () => {
-//   const tunnel = await localtunnel({ port: 3000, subdomain: "civickit" });
-//   if (tunnel.url == "https://civickit.loca.lt") {
-//     console.log("Tunnel opened on", tunnel.url)
-//   } else {
-//     console.log("Domain taken, tunnel opened on", tunnel.url)
-//   }
-
-//   tunnel.on("close", () => { });
-// })();
