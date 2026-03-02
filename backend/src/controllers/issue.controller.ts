@@ -2,6 +2,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { IssueService } from '../services/issue.service';
 import { IssueRepository } from '../repositories/issue.repository';
+import multer from 'multer';
 
 const issueRepository = new IssueRepository();
 const issueService = new IssueService(issueRepository);
@@ -12,8 +13,8 @@ export class IssueController {
       const userId = req.userId!
       console.log("!!!", req)
       const files = req.files as Express.Multer.File[] || []
-      const latitude = parseFloat(req.fields.latitude);
-      const longitude = parseFloat(req.fields.longitude);
+      const latitude = parseFloat(req.body.latitude);
+      const longitude = parseFloat(req.body.longitude);
 
       if (isNaN(latitude) || isNaN(longitude)) {
         return res.status(400).json({ error: 'Invalid coordinates' });
@@ -22,9 +23,9 @@ export class IssueController {
 
       const issue = await issueService.createIssue(
         {
-          ...req.fields,
-          latitude: parseFloat(req.fields.latitude),
-          longitude: parseFloat(req.fields.longitude),
+          ...req.body,
+          latitude: parseFloat(req.body.latitude),
+          longitude: parseFloat(req.body.longitude),
         }, userId, files);
 
 

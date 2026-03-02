@@ -10,7 +10,7 @@ import authRoutes from "./routes/auth.routes";
 import loginRoutes from './routes/login.routes';
 import RateLimit from 'express-rate-limit';
 import { authMiddleware } from './middleware/auth.middleware';
-import formidableMiddleware from 'express-formidable'
+
 dotenv.config();
 
 const app = express();
@@ -19,7 +19,6 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(formidableMiddleware());
 
 // Health check
 app.get('/health', (req, res) => {
