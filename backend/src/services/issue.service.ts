@@ -10,13 +10,13 @@ export class IssueService {
     // TODO: Upload images to Cloudinary here
     // For now, just pass through
     if (!data.title || data.title.length <3){
-      throw new Error('Title must be at least 3 characters');
+      throw {status:  400, message: 'Title must be at least 3 characters'};
     }
     if (!data.category) {
-      throw new Error('Category is required');
+      throw {status: 400, message: 'Category is required'};
     }
     if (data.latitude === undefined || data.longitude === undefined) {
-      throw new Error('Latitude and longitude are required');
+      throw {status: 400, message: 'Latitude and longitude are required'};
     }
 
     return this.issueRepository.create({ ...data, userId });
@@ -29,7 +29,7 @@ export class IssueService {
   async getIssueById(id: string) {
     const issue = await this.issueRepository.findById(id);
     if (!issue) {
-      throw new Error('Issue not found');
+      throw {status: 404, message: 'Issue not found'};
     }
     return issue;
   }

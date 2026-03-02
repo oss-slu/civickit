@@ -1,19 +1,6 @@
 // backend/src/repositories/issue.repository.ts
-import { PrismaClient } from '@prisma/client';
+import prisma from "../prisma";
 import { CreateIssueDTO } from '../types/issue.types';
-import { PrismaPg } from '@prisma/adapter-pg';
-import "dotenv/config";
-
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL is not set");
-}
-
-const adapter = new PrismaPg({
-  connectionString: process.env.DATABASE_URL!,
-});
-
-const prisma = new PrismaClient({adapter});
-
 export class IssueRepository {
   async create(data: CreateIssueDTO & { userId: string }) {
     return prisma.issue.create({

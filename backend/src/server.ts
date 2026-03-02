@@ -42,14 +42,11 @@ app.use('/api/issues/upvote', authMiddleware);
 
 // Error handling
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error(err.stack);
-  if (err.message == "email not found" ||
-    err.message == "password and email do not match" ||
-    err.message == "invalid token" ||
-    err.message == "jwt must be provided") {
-    return res.status(401).json({ error: err.name + ": " + err.message });
-  }
-  return res.status(500).json({ error: 'Something went wrong!' });
+  console.error("FULL ERROR:", err);
+
+  return res.status(err.status || 500).json({
+    error: err.message || 'Something went wrong!'
+  });
 });
 
 app.listen(PORT, () => {
