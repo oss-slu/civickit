@@ -42,3 +42,6 @@ yarn-error.*
 
 #terminal output file
 .output.txt
+
+#local moble env
+env.local.json
