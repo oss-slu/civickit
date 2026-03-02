@@ -14,7 +14,7 @@ import { IssueCategory } from '../types/IssueCategory';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { showMessage } from "react-native-flash-message";
 import AntDesign from '@expo/vector-icons/AntDesign';
-import { StackParams } from '../../App';
+import { StackParams } from '../types/StackParams';
 
 export default function IssueCreationScreen() {
     const [images, setImages] = useState<string[]>([]);
@@ -55,6 +55,7 @@ export default function IssueCreationScreen() {
         })();
     }, []);
 
+    //handle images
     const pickImage = async () => {
         if (images.length < 5) {
             const results = await ImagePicker.launchImageLibraryAsync({
@@ -91,6 +92,7 @@ export default function IssueCreationScreen() {
         )
     }
 
+    //handle categories
     const categories = [
         "Pothole", "Streetlight", "Trash", "Graffiti", "Broken Sidewalk", "Traffic Signal", "Other"
     ]
@@ -102,6 +104,31 @@ export default function IssueCreationScreen() {
         }
 
 
+    }
+
+    //determine if ready to submit
+    if (!submitAllowed &&
+        title.length >= 3 &&
+        description.length > 0 &&
+        category != null &&
+        images.length > 0 &&
+        address != "Detecting location..."
+    ) {
+        setSubmitAllowed(true)
+    } else if (submitAllowed && (
+        title.length < 3 ||
+        description.length == 0 ||
+        category == null ||
+        images.length == 0 ||
+        address == "Detecting location...")) {
+        setSubmitAllowed(false)
+    }
+
+    //display loading if needed after  submit
+    if (isLoading) {
+        <MessageView>
+            Loading...
+        </MessageView>
     }
 
     const handleSubmit = async () => {
@@ -155,31 +182,6 @@ export default function IssueCreationScreen() {
         }
 
     };
-
-    //determine if ready to submit
-    if (!submitAllowed &&
-        title.length >= 3 &&
-        description.length > 0 &&
-        category != null &&
-        images.length > 0 &&
-        address != "Detecting location..."
-    ) {
-        setSubmitAllowed(true)
-    } else if (submitAllowed && (
-        title.length < 3 ||
-        description.length == 0 ||
-        category == null ||
-        images.length == 0 ||
-        address == "Detecting location...")) {
-        setSubmitAllowed(false)
-    }
-
-    //display loading after submit
-    if (isLoading) {
-        <MessageView>
-            Loading...
-        </MessageView>
-    }
 
 
     return (
@@ -257,6 +259,3 @@ const styles = StyleSheet.create({
         marginLeft: 8
     }
 });
-
-//make an image componet with a delete button for removing from image list
-//save formdata for submission process

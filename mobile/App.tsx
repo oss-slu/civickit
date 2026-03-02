@@ -5,22 +5,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import IssueListWrapper from './src/screens/IssueListWrapper';
 import IssueCreationScreen from './src/screens/IssueCreationScreen';
 import { MessageView } from './src/components/MessageView';
-import { View } from 'react-native';
 import IssueDetailScreen from './src/screens/IssueDetailScreen';
 import ErrorScreen from './src/screens/ErrorScreen';
 import FlashMessage from 'react-native-flash-message';
-import { Issue } from './src/components/IssueCard';
-
-export type StackParams = {
-  Issues: {},
-  CreateIssue: {},
-  IssueDetails: {
-    issue: Issue
-  },
-  Error: {
-    errorMessage: string
-  },
-}
+import { StackParams } from './src/types/StackParams';
 
 const Stack = createNativeStackNavigator<StackParams>();
 
