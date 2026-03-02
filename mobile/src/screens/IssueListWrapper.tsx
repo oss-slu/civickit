@@ -14,7 +14,6 @@ const Stack = createNativeStackNavigator();
 export default function IssueListWrapper() {
     const [location, setLocation] = useState<userLocation>()
     const [locationServicesEnabled, setLocationServicesEnabled] = useState(false)
-    // const queryClient = useContext(UseQueryClientContext) as unknown as QueryClient
     const queryClient = useQueryClient();
 
     //get user location
@@ -64,7 +63,9 @@ export default function IssueListWrapper() {
         }
     }
 
-    if (locationServicesEnabled) {
+    if (locationServicesEnabled
+        && location?.latitude != undefined
+        && location?.longitude != undefined) {
         if (queryClient != null) {
             return (
                 <IssueListContextWrapper queryClient={queryClient} location={location}>
