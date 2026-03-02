@@ -25,7 +25,7 @@ export default function App() {
             <Stack.Screen name="IssueDetails" component={IssueDetailScreen} />
             <Stack.Screen name="Error" component={ErrorScreen} />
           </Stack.Navigator>
-          <FlashMessage position="top" style={{ paddingTop: 32 }} />
+          <FlashMessage position="bottom" style={{ paddingTop: 32 }} />
         </NavigationContainer>
       </QueryClientProvider>
     );

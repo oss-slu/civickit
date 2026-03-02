@@ -4,7 +4,7 @@ import * as Location from 'expo-location';
 import React, { useEffect, useState } from 'react';
 import { MessageView } from '../components/MessageView';
 import { userLocation } from '../types/userLocation';
-import { Button, View, StyleSheet, ScrollView, TextInput, Text, FlatList, KeyboardAvoidingView, Alert } from 'react-native';
+import { View, StyleSheet, ScrollView, TextInput, Text, FlatList, TouchableOpacity } from 'react-native';
 import SelectedImage from '../components/SelectedImage';
 import ModalDropdown from '../components/ModalDropdown';
 import ENV from '../config/env';
@@ -14,6 +14,7 @@ import { IssueCategory } from '../types/IssueCategory';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { showMessage } from "react-native-flash-message";
 import AntDesign from '@expo/vector-icons/AntDesign';
+import Entypo from '@expo/vector-icons/Entypo';
 import { StackParams } from '../types/StackParams';
 
 export default function IssueCreationScreen() {
@@ -24,6 +25,8 @@ export default function IssueCreationScreen() {
     const [category, setCategory] = useState<"POTHOLE" | "STREETLIGHT" | "GRAFFITI" | "ILLEGAL_DUMPING" | "BROKEN_SIDEWALK" | "TRAFFIC_SIGNAL" | "OTHER">();
     const [description, setDescription] = useState<string>("");
     const [submitAllowed, setSubmitAllowed] = useState<boolean>(false)
+    const [submitButtonColor, setSubmitButtonColor] = useState<"#d1d1d1" | "#197a15">("#d1d1d1")
+
     const [isLoading, setIsLoading] = useState(false)
     const navigation = useNavigation<StackNavigationProp<StackParams>>()
     //TODO: implement tags
@@ -49,7 +52,11 @@ export default function IssueCreationScreen() {
 
             //reverseGeocodeAsync does not work on web, will return []
             if (geocode.length > 0) {
-                setAddress(`${geocode[0].street}, ${geocode[0].city}`);
+                if (geocode[0].street != null) {
+                    setAddress(`${geocode[0].street}, ${geocode[0].city}`);
+                } else {
+                    setAddress(`${geocode[0].city}`);
+                }
                 console.log(`${geocode[0].street}, ${geocode[0].city}`)
             }
         })();
@@ -115,6 +122,7 @@ export default function IssueCreationScreen() {
         address != "Detecting location..."
     ) {
         setSubmitAllowed(true)
+        setSubmitButtonColor("#197a15")
     } else if (submitAllowed && (
         title.length < 3 ||
         description.length == 0 ||
@@ -122,9 +130,10 @@ export default function IssueCreationScreen() {
         images.length == 0 ||
         address == "Detecting location...")) {
         setSubmitAllowed(false)
+        setSubmitButtonColor("#d1d1d1")
     }
 
-    //display loading if needed after  submit
+    //display loading if needed after submit
     if (isLoading) {
         <MessageView>
             Loading...
@@ -183,6 +192,59 @@ export default function IssueCreationScreen() {
 
     };
 
+    const styles = StyleSheet.create({
+        container: {
+            padding: 8,
+            backgroundColor: "white"
+        },
+        imageContainer: {
+            padding: 12,
+            gap: 12,
+            height: 200,
+            backgroundColor: "#e7e7e7",
+            borderRadius: 16,
+            marginVertical: 4
+        },
+        textBox: {
+            paddingVertical: 8,
+            paddingHorizontal: 12,
+            backgroundColor: "#e7e7e7",
+            borderRadius: 16,
+            marginVertical: 4
+        },
+        buttonRow: {
+            padding: 4,
+            flex: 1,
+            gap: 8,
+            flexDirection: "row",
+            justifyContent: "flex-end",
+            minHeight: 48,
+            marginVertical: 4
+        },
+        imageButton: {
+            marginLeft: 8
+        },
+        submitButton: {
+            backgroundColor: submitButtonColor,
+            borderRadius: 16,
+        },
+        submitButtonText: {
+            color: "white",
+            textAlign: "center",
+            padding: 12
+        },
+        addressText: {
+            marginVertical: 4,
+        },
+        addressContainer: {
+            paddingHorizontal: 12,
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 4
+        }
+    });
+
+
 
     return (
         <KeyboardAwareScrollView enableOnAndroid enableAutomaticScroll extraScrollHeight={100}
@@ -213,7 +275,10 @@ export default function IssueCreationScreen() {
                 />
             </ScrollView>
 
-            <Text style={styles.addressText}>{address}</Text>
+            <View style={styles.addressContainer}>
+                <Entypo name="location-pin" size={20} color="black" />
+                <Text style={styles.addressText}>{address}</Text>
+            </View>
 
             <ModalDropdown
                 data={categories}
@@ -230,47 +295,15 @@ export default function IssueCreationScreen() {
                 focusable
             />
 
-            <Button title="Submit" onPress={handleSubmit}
-                color="#3e884a" disabled={!submitAllowed} />
+            <TouchableOpacity onPress={handleSubmit}
+                style={styles.submitButton}
+                disabled={!submitAllowed}>
+                <Text style={styles.submitButtonText}>Submit</Text>
+            </TouchableOpacity>
         </KeyboardAwareScrollView>
     )
+
+
 };
 
 
-const styles = StyleSheet.create({
-    container: {
-        padding: 8,
-        backgroundColor: "white"
-    },
-    imageContainer: {
-        padding: 12,
-        gap: 12,
-        height: 200,
-        backgroundColor: "#e7e7e7",
-        borderRadius: 16,
-        marginVertical: 4
-    },
-    textBox: {
-        paddingVertical: 8,
-        paddingHorizontal: 12,
-        backgroundColor: "#e7e7e7",
-        borderRadius: 16,
-        marginVertical: 4
-    },
-    buttonRow: {
-        padding: 4,
-        flex: 1,
-        gap: 8,
-        flexDirection: "row",
-        justifyContent: "flex-end",
-        minHeight: 48,
-        marginVertical: 4
-    },
-    imageButton: {
-        marginLeft: 8
-    },
-    addressText: {
-        paddingHorizontal: 12,
-        marginVertical: 4
-    }
-});
