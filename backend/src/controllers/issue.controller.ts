@@ -10,6 +10,7 @@ export class IssueController {
   async createIssue(req: Request, res: Response, next: NextFunction) {
     try {
       const userId = req.userId!
+      console.log("!!!", req)
       const files = req.files as Express.Multer.File[] || []
       const latitude = parseFloat(req.fields.latitude);
       const longitude = parseFloat(req.fields.longitude);
