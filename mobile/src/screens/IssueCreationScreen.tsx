@@ -32,7 +32,7 @@ export default function IssueCreationScreen() {
     //TODO: implement tags
 
     //DO NOT LEAVE THIS HERE, TESTING PURPOSES ONLY
-    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJteS11c2VyIiwiaWF0IjoxNzcyMjE2MTM5LCJleHAiOjE3NzI4MjA5Mzl9.knjn8hY8sTmenxRuQ_hjgpO1q108zNwY0JVqJGhjH7I"
+    const token = "REPLACE_WITH_VALID_TOKEN"
 
     //get location
     useEffect(() => {
@@ -81,6 +81,14 @@ export default function IssueCreationScreen() {
     };
 
     const openCamera = async () => {
+        console.log("Opening camera")
+        const { status } = await ImagePicker.requestCameraPermissionsAsync();
+
+        if (status !== 'granted') {
+            alert("Camera permission denied");
+            return;
+        }
+
         if (images.length < 5) {
             const result = await ImagePicker.launchCameraAsync({
                 mediaTypes: ['images'],
