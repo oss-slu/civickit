@@ -51,13 +51,15 @@ curl -X POST http://localhost:3000/api/issues \
 cd mobile
 npm install
 ```
-2. Start the Expo development server with `npx expo start` or  `npx expo start --tunnel if qr code is not working
-```bash
-npx expo start
-```
+2. In the `mobile/` directory, choose `startWin.sh` for Windows os or `startMac.sh` for Mac os
+   1. In a bash terminal, set permissions with `chmod +x startWin.sh` or `chmod +x startMac.sh` (You only need to do this once)
+   2. To start using your ipv4 address as the domain (necessary for mobile development), run `./startWin.sh ip` or `./startMac.sh ip`
+   3. To start on localhost (only for local development), run `./startWin.sh localhost` or `./startWin.sh localhost`
+      
 * Press `i` to open iOS simulator (macOS only)
 * Press `a` to open Android emulator
 * Press `w` to run in the browser (web)
+  
 To run on a physical device from Windows, use production mode:
 ```bash
 npx expo start --no-dev --minify
