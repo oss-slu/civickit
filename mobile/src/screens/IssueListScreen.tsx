@@ -4,7 +4,6 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, useContext } from 'react';
 import { FlatList } from 'react-native';
 import React from 'react';
-import IssueDetailScreen from './IssueDetailScreen';
 import IssueCard from '../components/IssueCard';
 import { MessageView } from '../components/MessageView';
 import { userLocation } from '../types/userLocation';
@@ -19,7 +18,6 @@ import { StackNavigationProp } from '@react-navigation/stack';
 export default function IssueListScreen() {
   const [refreshing, setRefreshing] = useState(false)
   const [selectedIssue, setSelectedIssue] = useState()
-  const [isIssueSelected, setIsIssueSelected] = useState(false)
   const navigation = useNavigation<StackNavigationProp<StackParams>>();
 
   //get contexts from above layer(s)
