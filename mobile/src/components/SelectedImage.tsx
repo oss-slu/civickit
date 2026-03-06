@@ -1,28 +1,46 @@
 //mobile/src/components/SelectedImage.tsx
-import { Image, Button, StyleSheet, View } from 'react-native'
+import { Image, StyleSheet, View } from 'react-native'
+import { borderRadius, colors, palette, size } from '../styles/theme';
+import { globalStyles } from '../styles';
+import AntDesign from '@expo/vector-icons/AntDesign';
+import IconButton from './IconButton';
 
-export default function SelectedImage({ source, onDeletePressed, width, height }: any) {
-    const position = "absolute"
+export default function SelectedImage({ source, onDeletePressed, width, height, style }: any) {
     const styles = StyleSheet.create({
         image: {
             width: width,
             height: height,
-
+            borderRadius: borderRadius.md
         },
-        container: {
+        buttonContainer: {
+            position: 'absolute',
+            justifyContent: "center"
         },
         button: {
-            width: 50,
-            position: 'absolute'
+            backgroundColor: palette.ckRed,
+            width: size.xxl,
+            height: size.xxl,
+            justifyContent: "center",
+            alignContent: "center",
+            textAlign: "center",
+            borderRadius: borderRadius.lg,
+            margin: size.xs,
+            flex: 1,
+            paddingLeft: size.xxl / 2 - size.lg / 2,
+
         }
     });
 
-
     return (
-        <View style={styles.container}>
+        <View style={style}>
             <Image source={{ uri: source }} style={styles.image} />
-            <View style={styles.button}>
-                <Button title='X' onPress={() => onDeletePressed(source)} />
+            <View style={styles.buttonContainer}>
+                <IconButton onPress={() => onDeletePressed(source)}
+                    style={styles.button}>
+                    <AntDesign name="close" size={size.lg}
+                        color={colors.textContrast}
+                        style={{ width: size.lg, height: size.lg }} />
+                </IconButton>
             </View>
         </View>
     )

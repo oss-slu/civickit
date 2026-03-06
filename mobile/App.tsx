@@ -1,5 +1,5 @@
 // mobile/App.tsx
-import { NavigationContainer, useNavigation } from '@react-navigation/native';
+import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import IssueListWrapper from './src/screens/IssueListWrapper';
@@ -12,11 +12,13 @@ import { StackParams } from './src/types/StackParams';
 import { Button } from '@react-navigation/elements';
 import NewIssueButton from './src/components/NewIssueButton';
 import { colors, palette, typography } from './src/styles/theme';
+import { useState } from 'react';
 
 const Stack = createNativeStackNavigator<StackParams>();
 
 export default function App() {
   const queryClient = new QueryClient();
+  const [canCreateIssue, setCanCreateIssue] = useState(false)
 
   if (queryClient != null) {
     return (
@@ -34,7 +36,7 @@ export default function App() {
           >
             <Stack.Screen name="Nearby Issues" component={IssueListWrapper}
               options={{
-                headerRight: () => (<NewIssueButton />),
+                headerRight: () => (<NewIssueButton isDisabled={false} />),
               }} />
             <Stack.Screen name="Create Issue" component={IssueCreationScreen} />
             <Stack.Screen name="Issue Details" component={IssueDetailScreen} />

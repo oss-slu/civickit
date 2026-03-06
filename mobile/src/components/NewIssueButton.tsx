@@ -1,23 +1,19 @@
 //mobile/src/components/NewIssueButton.tsx
-import { Button } from '@react-navigation/elements';
-import { globalStyles } from '../styles';
-import IssueCreationScreen from '../screens/IssueCreationScreen';
-import { TouchableOpacity, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { StackParams } from '../types/StackParams';
+import Button from './Button';
 
-export default function NewIssueButton() {
+export default function NewIssueButton({ isDisabled = false }) {
     const navigation = useNavigation<StackNavigationProp<StackParams>>();
 
     return (
-        <TouchableOpacity
+        <Button
+            text="Report New Issue"
             onPress={() => navigation.navigate("Create Issue", {})}
+            disabled={isDisabled}
         >
-            <Text style={globalStyles.button}>
-                Report New Issue
-            </Text>
-        </TouchableOpacity>
+        </Button>
     )
 
 }

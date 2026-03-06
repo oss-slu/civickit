@@ -68,7 +68,6 @@ export default function IssueListScreen() {
       </MessageView>
     )
   }
-
   //check if any data was returned
   if (data.issues.length == 0) {
     return (

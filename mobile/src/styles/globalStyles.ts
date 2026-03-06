@@ -15,8 +15,7 @@ export const globalStyles = StyleSheet.create({
         borderRadius: borderRadius.lg,
         borderWidth: 0,
 
-        padding: spacing.md,
-        marginBottom: spacing.sm,
+        padding: spacing.sm,
 
         // elevation: 2,
         // shadowColor: palette.ckDark,
@@ -55,6 +54,15 @@ export const globalStyles = StyleSheet.create({
         paddingVertical: spacing.sm,
         paddingHorizontal: spacing.md
     },
+    disabledbutton: {
+        fontSize: typography.sizeMd,
+        color: colors.textMuted,
+        fontWeight: typography.weightMedium,
+        backgroundColor: colors.backgroundSecondary,
+        borderRadius: borderRadius.full,
+        paddingVertical: spacing.sm,
+        paddingHorizontal: spacing.md
+    },
 
     navigator: {
 
@@ -63,11 +71,19 @@ export const globalStyles = StyleSheet.create({
     thumbnail: {
         width: size.xxxl,
         height: size.xxxl,
-        borderRadius: borderRadius.md
+        borderRadius: borderRadius.md,
     },
+
     icon: {
         fontSize: typography.sizeLg
     },
+
+    textBox: {
+        borderRadius: borderRadius.lg,
+        backgroundColor: colors.backgroundSecondary,
+        paddingHorizontal: spacing.md,
+        color: colors.textPrimary
+    }
 
 });
 

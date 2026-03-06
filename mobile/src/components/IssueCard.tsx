@@ -17,7 +17,7 @@ import {
   GestureResponderEvent,
 } from 'react-native';
 import { globalStyles } from '../styles';
-import { borderRadius, colors, size, spacing, typography } from '../styles/theme';
+import { borderRadius, colors, palette, size, spacing, typography } from '../styles/theme';
 
 export interface Issue {
   id: string;
@@ -46,9 +46,9 @@ const categoryIcons: Record<string, string> = {
 };
 
 const statusColors: Record<string, string> = {
-  reported: '#FACC15', // yellow
-  resolved: '#22C55E', // green
-  default: '#CBD5E1',
+  reported: colors.statusReported,
+  resolved: colors.statusResolved,
+  default: colors.background,
 };
 
 const IssueCard: React.FC<IssueCardProps> = ({
@@ -83,8 +83,8 @@ const IssueCard: React.FC<IssueCardProps> = ({
   return (
     <Animated.View
       style={[
-        globalStyles.container,
-        isExpanded ? { height: size.expanded } : { height: size.compact },
+        globalStyles.card,
+        isExpanded ? { height: size.cardExpanded } : { height: size.cardCompact },
         { transform: [{ scale }] },
       ]}
     >
@@ -92,7 +92,7 @@ const IssueCard: React.FC<IssueCardProps> = ({
         onPress={onPress}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
-        style={globalStyles.card}
+        style={styles.pressable}
       >
         {/* Thumbnail */}
         {issue.images?.length > 0 && (
@@ -158,6 +158,12 @@ const IssueCard: React.FC<IssueCardProps> = ({
 export default IssueCard;
 
 const styles = StyleSheet.create({
+  pressable: {
+    flexDirection: 'row',
+    flex: 1,
+    padding: spacing.sm,
+    alignItems: "center"
+  },
   thumbnail: {
     ...globalStyles.thumbnail,
     marginRight: spacing.md,
@@ -176,6 +182,7 @@ const styles = StyleSheet.create({
   },
   distance: {
     ...globalStyles.bodyText,
+    paddingLeft: spacing.sm,
     marginTop: spacing.xs
   },
   footer: {
@@ -183,7 +190,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-
   statusBadge: {
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,

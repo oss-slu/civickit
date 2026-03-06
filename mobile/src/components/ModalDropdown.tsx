@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { View, Text, Modal, TouchableOpacity, FlatList, StyleSheet } from "react-native";
+import { View, Modal, FlatList, StyleSheet } from "react-native";
+import Button from "./Button";
 
 export default function ModalDropdown({ data, onDataSelect, defaultText }: any) {
     const [isVisible, setIsVisible] = useState(false)
@@ -15,11 +16,10 @@ export default function ModalDropdown({ data, onDataSelect, defaultText }: any) 
 
     return (
         <View style={styles.container}>
-            <TouchableOpacity style={styles.button} onPress={toggleModal}>
-                <Text style={styles.buttonText}>
-                    {selectedValue || defaultText || "Select an option"}
-                </Text>
-            </TouchableOpacity>
+            <Button style={styles.button}
+                onPress={toggleModal}
+                text={selectedValue || defaultText || "Select an option"}>
+            </Button>
 
             <Modal visible={isVisible} transparent animationType="fade">
                 <View style={styles.modalBackground}>
@@ -28,16 +28,16 @@ export default function ModalDropdown({ data, onDataSelect, defaultText }: any) 
                             data={data}
                             keyExtractor={(item, index) => index.toString()}
                             renderItem={({ item }) => (
-                                <TouchableOpacity
+                                <Button
                                     style={styles.option}
-                                    onPress={() => handleSelect(item)}>
-                                    <Text style={styles.optionText}>{item}</Text>
-                                </TouchableOpacity>
+                                    onPress={() => handleSelect(item)}
+                                    text={item}>
+                                </Button>
                             )}
                         />
-                        <TouchableOpacity style={styles.closeButton} onPress={toggleModal}>
-                            <Text style={styles.buttonText}>Close</Text>
-                        </TouchableOpacity>
+                        <Button style={styles.closeButton} onPress={toggleModal}
+                            text="Close">
+                        </Button>
                     </View>
                 </View>
             </Modal>

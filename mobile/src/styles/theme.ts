@@ -15,6 +15,7 @@ export const palette = {
     ckLightGray: "#E5E7EB",
 
     successGreen: "#10B981",
+
 }
 
 export const colors = {
@@ -37,8 +38,8 @@ export const colors = {
 
     border: palette.ckLightGray,
 
-    //TODO: add category status colors
-    //define civickitRed and then reference it with status value
+    statusReported: palette.ckYellow,
+    statusResolved: palette.ckLightGreen,
 };
 
 export const spacing = {
@@ -75,7 +76,8 @@ export const size = {
     lg: 24,
     xl: 32,
     xxl: 48,
-    xxxl: 64,
-    compact: 80,
-    expanded: 120
+    xxxl: 80,
+    cardCompact: 80,
+    cardExpanded: 120,
+    imageLg: 340
 };

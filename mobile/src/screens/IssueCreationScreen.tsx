@@ -16,6 +16,9 @@ import { showMessage } from "react-native-flash-message";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Entypo from '@expo/vector-icons/Entypo';
 import { StackParams } from '../types/StackParams';
+import { borderRadius, colors, globalStyles, spacing } from '../styles';
+import Button from '../components/Button';
+import { size } from '../styles/theme';
 
 export default function IssueCreationScreen() {
     const [images, setImages] = useState<string[]>([]);
@@ -202,59 +205,6 @@ export default function IssueCreationScreen() {
 
     };
 
-    const styles = StyleSheet.create({
-        container: {
-            padding: 8,
-            backgroundColor: "white"
-        },
-        imageContainer: {
-            padding: 12,
-            gap: 12,
-            height: 224,
-            backgroundColor: "#e7e7e7",
-            borderRadius: 16,
-            marginVertical: 4
-        },
-        textBox: {
-            paddingVertical: 8,
-            paddingHorizontal: 12,
-            backgroundColor: "#e7e7e7",
-            borderRadius: 16,
-            marginVertical: 4
-        },
-        buttonRow: {
-            padding: 4,
-            flex: 1,
-            gap: 8,
-            flexDirection: "row",
-            justifyContent: "flex-end",
-            minHeight: 48,
-            marginVertical: 4
-        },
-        imageButton: {
-            marginLeft: 8
-        },
-        submitButton: {
-            backgroundColor: submitButtonColor,
-            borderRadius: 16,
-        },
-        submitButtonText: {
-            color: "white",
-            textAlign: "center",
-            padding: 12
-        },
-        addressText: {
-            marginVertical: 4,
-        },
-        addressContainer: {
-            paddingHorizontal: 12,
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 4
-        }
-    });
-
-
 
     return (
         <KeyboardAwareScrollView enableOnAndroid enableAutomaticScroll extraScrollHeight={100}
@@ -262,7 +212,7 @@ export default function IssueCreationScreen() {
             <TextInput onChangeText={setTitle}
                 value={title}
                 placeholder='Issue Title'
-                style={styles.textBox}
+                style={globalStyles.textBox}
                 maxLength={100} />
 
             <View style={styles.buttonRow}>
@@ -270,16 +220,17 @@ export default function IssueCreationScreen() {
                 <AntDesign.Button name="picture" onPress={pickImage} iconStyle={styles.imageButton} borderRadius={16} size={24} />
             </View>
 
-            <ScrollView style={styles.imageContainer}>
+            <ScrollView contentContainerStyle={styles.imageContainer}>
                 <FlatList
                     data={images}
                     horizontal
                     keyExtractor={(item, index) => index.toString()}
                     renderItem={({ item }) => (
                         <SelectedImage source={item}
-                            width={200}
-                            height={200}
+                            width={size.imageLg}
+                            height={size.imageLg}
                             onDeletePressed={onImageDeletePressed}
+                            style={{ marginHorizontal: spacing.sm }}
                         />
                     )}
                 />
@@ -298,22 +249,65 @@ export default function IssueCreationScreen() {
             <TextInput onChangeText={setDescription}
                 value={description}
                 placeholder='Issue Description...'
-                style={{ ...styles.textBox, marginBottom: 8 }}
+                style={globalStyles.textBox}
                 multiline
                 maxLength={500}
                 numberOfLines={5}
                 focusable
             />
 
-            <TouchableOpacity onPress={handleSubmit}
+            <Button onPress={handleSubmit}
                 style={styles.submitButton}
-                disabled={!submitAllowed}>
-                <Text style={styles.submitButtonText}>Submit</Text>
-            </TouchableOpacity>
+                disabled={!submitAllowed}
+                text="Submit">
+            </Button>
         </KeyboardAwareScrollView>
     )
 
 
 };
 
+const styles = StyleSheet.create({
+    container: {
+        ...globalStyles.container,
+        padding: spacing.md
+    },
+    imageContainer: {
+        backgroundColor: colors.backgroundSecondary,
+        borderRadius: borderRadius.lg,
+        justifyContent: "center",
+        alignContent: "center",
+        paddingVertical: spacing.md
+    },
+    buttonRow: {
+        padding: 4,
+        flex: 1,
+        gap: 8,
+        flexDirection: "row",
+        justifyContent: "flex-end",
+        minHeight: 48,
+        marginVertical: 4
+    },
+    imageButton: {
+        marginLeft: 8
+    },
+    submitButton: {
+        backgroundColor: "#000000",
+        borderRadius: 16,
+    },
+    submitButtonText: {
+        color: "white",
+        textAlign: "center",
+        padding: 12
+    },
+    addressText: {
+        marginVertical: 4,
+    },
+    addressContainer: {
+        paddingHorizontal: 12,
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 4
+    }
+});
 
