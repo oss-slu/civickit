@@ -8,12 +8,11 @@ import IssueCard from '../components/IssueCard';
 import { MessageView } from '../components/MessageView';
 import { userLocation } from '../types/userLocation';
 import { LocationContext } from '../types/LocationContext';
-import { Button } from '@react-navigation/elements';
 import ENV from '../config/env';
 import { useNavigation } from '@react-navigation/native';
 import { StackParams } from '../types/StackParams';
 import { StackNavigationProp } from '@react-navigation/stack';
-
+import { globalStyles } from '../styles';
 
 export default function IssueListScreen() {
   const [refreshing, setRefreshing] = useState(false)
@@ -40,11 +39,6 @@ export default function IssueListScreen() {
   }, queryClient);
 
   console.log(data, isLoading, error)
-
-  //onIssuePress behaviour
-  const onIssuePress = (issue: any) => {
-    navigation.navigate('IssueDetails', { issue: issue })
-  }
 
   //check if still loading
   if (isLoading) {
@@ -79,9 +73,6 @@ export default function IssueListScreen() {
   if (data.issues.length == 0) {
     return (
       <View>
-        <Button style={styles.button} onPress={() => navigation.navigate("CreateIssue", {})}>
-          Report New Issue
-        </Button>
         <MessageView enableRefresh={true}
           onRefresh={refetch}
           refreshing={refreshing}>
@@ -94,17 +85,12 @@ export default function IssueListScreen() {
 
   //display list
   return (
-    <View style={styles.container}>
-      <Button style={styles.button} onPress={() => navigation.navigate("CreateIssue", {})}>
-        Report New Issue
-      </Button>
-
-      <Text style={styles.title}>Nearby Issues</Text>
+    <View style={globalStyles.container}>
       <FlatList
-        style={styles.list}
+        style={globalStyles.container}
         data={data.issues}
         renderItem={({ item }) => <IssueCard issue={item}
-          onPress={() => navigation.navigate("IssueDetails", { issue: item })}
+          onPress={() => navigation.navigate("Issue Details", { issue: item })}
           variant='expanded' />}
         keyExtractor={(item) => item.id}
         refreshControl={<RefreshControl refreshing={refreshing}

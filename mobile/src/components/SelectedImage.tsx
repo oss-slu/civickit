@@ -1,5 +1,4 @@
 //mobile/src/components/SelectedImage.tsx
-import { relative } from 'node:path';
 import { Image, Button, StyleSheet, View } from 'react-native'
 
 export default function SelectedImage({ source, onDeletePressed, width, height }: any) {

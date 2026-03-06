@@ -32,7 +32,7 @@ export default function IssueCreationScreen() {
     //TODO: implement tags
 
     //DO NOT LEAVE THIS HERE, TESTING PURPOSES ONLY
-    const token = "REPLACE_WITH_VALID_TOKEN"
+    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJteS11c2VyIiwiaWF0IjoxNzcyODA5MzY4LCJleHAiOjE3NzM0MTQxNjh9.YlH0cHOZIfIRrq39g2U4M1OH1k6VaSRoDDxwOXaXQJM"
 
     //get location
     useEffect(() => {
@@ -184,7 +184,7 @@ export default function IssueCreationScreen() {
                 type: "success",
             });
             const issue = await response.json()
-            navigation.replace('IssueDetails', { issue: issue })
+            navigation.replace('Issue Details', { issue: issue })
 
         } catch (error: any) {
             if (error.message.includes("latitude") || error.message.includes("longtitude")) {

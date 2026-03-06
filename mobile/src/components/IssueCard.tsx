@@ -6,20 +6,6 @@
  * Category icons: Use emoji for MVP (we'll add icon library later)
  */
 
-// interface IssueCardProps {
-//   issue: {
-//     id: string;
-//     title: string;
-//     category: string;
-//     status: string;
-//     distance?: number;
-//     upvoteCount: number;
-//     images: string[];
-//   };
-//   variant?: 'compact' | 'expanded';
-//   onPress?: () => void;
-// }
-
 import React, { useRef } from 'react';
 import {
   View,
@@ -30,6 +16,8 @@ import {
   Animated,
   GestureResponderEvent,
 } from 'react-native';
+import { globalStyles } from '../styles';
+import { borderRadius, colors, size, spacing, typography } from '../styles/theme';
 
 export interface Issue {
   id: string;
@@ -95,8 +83,8 @@ const IssueCard: React.FC<IssueCardProps> = ({
   return (
     <Animated.View
       style={[
-        styles.card,
-        isExpanded ? styles.expanded : styles.compact,
+        globalStyles.container,
+        isExpanded ? { height: size.expanded } : { height: size.compact },
         { transform: [{ scale }] },
       ]}
     >
@@ -104,7 +92,7 @@ const IssueCard: React.FC<IssueCardProps> = ({
         onPress={onPress}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
-        style={styles.pressable}
+        style={globalStyles.card}
       >
         {/* Thumbnail */}
         {issue.images?.length > 0 && (
@@ -121,7 +109,7 @@ const IssueCard: React.FC<IssueCardProps> = ({
           <View style={styles.row}>
             <Text style={styles.icon}>{icon}</Text>
             <Text
-              style={styles.title}
+              style={globalStyles.heading2}
               numberOfLines={1}
               ellipsizeMode="tail"
             >
@@ -144,10 +132,10 @@ const IssueCard: React.FC<IssueCardProps> = ({
           <View style={styles.footer}>
             {/* Status badge */}
             <View
-              style={[
-                styles.statusBadge,
-                { backgroundColor: statusColor },
-              ]}
+              style={{
+                ...styles.statusBadge,
+                backgroundColor: statusColor,
+              }}
             >
               <Text style={styles.statusText}>
                 {issue.status}
@@ -170,33 +158,9 @@ const IssueCard: React.FC<IssueCardProps> = ({
 export default IssueCard;
 
 const styles = StyleSheet.create({
-  card: {
-    borderRadius: 12,
-    backgroundColor: '#ececec',
-    marginVertical: 8,
-    marginHorizontal: 16,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-  },
-  compact: {
-    height: 80,
-  },
-  expanded: {
-    height: 120,
-  },
-  pressable: {
-    flexDirection: 'row',
-    flex: 1,
-    padding: 12,
-  },
   thumbnail: {
-    width: 64,
-    height: 64,
-    borderRadius: 8,
-    marginRight: 12,
+    ...globalStyles.thumbnail,
+    marginRight: spacing.md,
   },
   content: {
     flex: 1,
@@ -207,40 +171,36 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   icon: {
-    fontSize: 18,
+    ...globalStyles.icon,
     marginRight: 6,
   },
-  title: {
-    fontSize: 16,
-    fontWeight: '600',
-    flexShrink: 1,
-  },
   distance: {
-    fontSize: 12,
-    color: '#64748B',
-    marginTop: 4,
+    ...globalStyles.bodyText,
+    marginTop: spacing.xs
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+
   statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.lg,
   },
   statusText: {
-    fontSize: 12,
-    fontWeight: '600',
-    textTransform: 'capitalize',
+    fontSize: typography.sizeMd,
+    fontWeight: typography.weightBold,
+    color: colors.textPrimary,
   },
   upvotes: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   upvoteText: {
-    fontSize: 14,
-    fontWeight: '500',
+    color: colors.textPrimary,
+    fontSize: typography.sizeMd,
+    fontWeight: typography.weightMedium,
   },
 });
