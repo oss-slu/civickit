@@ -1,5 +1,6 @@
 // mobile/src/styles/theme.ts
 
+//brand colors
 export const palette = {
     ckBlue: "#2563EB",
     ckRed: "#D1495B",
@@ -18,6 +19,7 @@ export const palette = {
 
 }
 
+//element colors
 export const colors = {
     primary: palette.ckGreen,
     primaryDark: palette.ckDarkGreen,
