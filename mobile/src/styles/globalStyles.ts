@@ -75,10 +75,6 @@ export const globalStyles = StyleSheet.create({
         textAlign: "center"
     },
 
-    navigator: {
-
-    },
-
     thumbnail: {
         width: size.xxxl,
         height: size.xxxl,
