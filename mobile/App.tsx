@@ -18,7 +18,6 @@ const Stack = createNativeStackNavigator<StackParams>();
 
 export default function App() {
   const queryClient = new QueryClient();
-  const [canCreateIssue, setCanCreateIssue] = useState(false)
 
   if (queryClient != null) {
     return (
