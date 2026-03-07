@@ -49,6 +49,7 @@ export const spacing = {
     lg: 24,
     xl: 32,
     xxl: 48,
+    xxxl: 64
 };
 
 export const typography = {
@@ -79,5 +80,6 @@ export const size = {
     xxxl: 80,
     cardCompact: 80,
     cardExpanded: 120,
+    longButton: 200,
     imageLg: 340
 };

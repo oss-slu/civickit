@@ -1,6 +1,6 @@
 //mobile/src/components/SelectedImage.tsx
 import { Image, StyleSheet, View } from 'react-native'
-import { borderRadius, colors, palette, size } from '../styles/theme';
+import { borderRadius, colors, palette, size, typography } from '../styles/theme';
 import { globalStyles } from '../styles';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import IconButton from './IconButton';
@@ -18,16 +18,11 @@ export default function SelectedImage({ source, onDeletePressed, width, height, 
         },
         button: {
             backgroundColor: palette.ckRed,
-            width: size.xxl,
+            margin: size.sm,
+            fontWeight: typography.weightBold,
             height: size.xxl,
-            justifyContent: "center",
-            alignContent: "center",
-            textAlign: "center",
-            borderRadius: borderRadius.lg,
-            margin: size.xs,
-            flex: 1,
-            paddingLeft: size.xxl / 2 - size.lg / 2,
-
+            borderWidth: 0,
+            ...globalStyles.shadow
         }
     });
 
@@ -38,8 +33,7 @@ export default function SelectedImage({ source, onDeletePressed, width, height, 
                 <IconButton onPress={() => onDeletePressed(source)}
                     style={styles.button}>
                     <AntDesign name="close" size={size.lg}
-                        color={colors.textContrast}
-                        style={{ width: size.lg, height: size.lg }} />
+                        color={colors.textContrast} />
                 </IconButton>
             </View>
         </View>

@@ -3,6 +3,7 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { StackParams } from '../types/StackParams';
 import Button from './Button';
+import { palette } from '../styles/theme';
 
 export default function NewIssueButton({ isDisabled = false }) {
     const navigation = useNavigation<StackNavigationProp<StackParams>>();
@@ -12,6 +13,7 @@ export default function NewIssueButton({ isDisabled = false }) {
             text="Report New Issue"
             onPress={() => navigation.navigate("Create Issue", {})}
             disabled={isDisabled}
+            style={{ backgroundColor: palette.ckRed }}
         >
         </Button>
     )

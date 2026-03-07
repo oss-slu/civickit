@@ -1,6 +1,8 @@
 import React, { useState } from "react";
-import { View, Modal, FlatList, StyleSheet } from "react-native";
+import { View, Modal, Text, FlatList, StyleSheet, TouchableOpacity } from "react-native";
 import Button from "./Button";
+import { globalStyles } from "../styles";
+import { borderRadius, colors, palette, spacing, typography } from "../styles/theme";
 
 export default function ModalDropdown({ data, onDataSelect, defaultText }: any) {
     const [isVisible, setIsVisible] = useState(false)
@@ -15,7 +17,7 @@ export default function ModalDropdown({ data, onDataSelect, defaultText }: any) 
     }
 
     return (
-        <View style={styles.container}>
+        <View>
             <Button style={styles.button}
                 onPress={toggleModal}
                 text={selectedValue || defaultText || "Select an option"}>
@@ -28,11 +30,11 @@ export default function ModalDropdown({ data, onDataSelect, defaultText }: any) 
                             data={data}
                             keyExtractor={(item, index) => index.toString()}
                             renderItem={({ item }) => (
-                                <Button
+                                <TouchableOpacity
                                     style={styles.option}
-                                    onPress={() => handleSelect(item)}
-                                    text={item}>
-                                </Button>
+                                    onPress={() => handleSelect(item)}>
+                                    <Text style={styles.optionText}>{item}</Text>
+                                </TouchableOpacity>
                             )}
                         />
                         <Button style={styles.closeButton} onPress={toggleModal}
@@ -46,17 +48,9 @@ export default function ModalDropdown({ data, onDataSelect, defaultText }: any) 
 }
 
 const styles = StyleSheet.create({
-    container: {
-        marginVertical: 4
-    },
     button: {
-        padding: 12,
-        backgroundColor: "#ad0a0a",
-        borderRadius: 16
-    },
-    buttonText: {
-        color: "white",
-        textAlign: "center"
+        backgroundColor: palette.ckDarkGreen,
+        fontSize: typography.sizeLg
     },
     modalBackground: {
         flex: 1,
@@ -66,22 +60,23 @@ const styles = StyleSheet.create({
     },
     modalContent: {
         width: "80%",
-        backgroundColor: "white",
-        borderRadius: 10,
-        padding: 20,
+        backgroundColor: colors.background,
+        borderRadius: borderRadius.lg,
+        padding: spacing.lg,
     },
+
     option: {
-        padding: 15,
+        padding: spacing.md,
         borderBottomWidth: 1,
-        borderBottomColor: "#ddd",
+        borderBottomColor: palette.ckLightGray,
+        color: colors.textPrimary
     },
     optionText: {
-        fontSize: 16
+        color: colors.textPrimary,
+        fontSize: typography.sizeLg
     },
     closeButton: {
-        marginTop: 10,
-        padding: 10,
-        backgroundColor: "#6200a3",
-        borderRadius: 5
+        backgroundColor: palette.ckRed,
+        fontSize: typography.sizeLg
     }
 })

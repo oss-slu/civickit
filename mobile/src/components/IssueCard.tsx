@@ -18,6 +18,7 @@ import {
 } from 'react-native';
 import { globalStyles } from '../styles';
 import { borderRadius, colors, palette, size, spacing, typography } from '../styles/theme';
+import Entypo from '@expo/vector-icons/Entypo';
 
 export interface Issue {
   id: string;
@@ -107,7 +108,7 @@ const IssueCard: React.FC<IssueCardProps> = ({
         <View style={styles.content}>
           {/* Title + Category */}
           <View style={styles.row}>
-            <Text style={styles.icon}>{icon}</Text>
+            <Entypo name="location-pin" size={typography.sizeLg} color={colors.textPrimary} />
             <Text
               style={globalStyles.heading2}
               numberOfLines={1}
@@ -175,10 +176,6 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  icon: {
-    ...globalStyles.icon,
-    marginRight: 6,
   },
   distance: {
     ...globalStyles.bodyText,

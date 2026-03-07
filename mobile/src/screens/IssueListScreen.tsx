@@ -12,7 +12,7 @@ import ENV from '../config/env';
 import { useNavigation } from '@react-navigation/native';
 import { StackParams } from '../types/StackParams';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { globalStyles } from '../styles';
+import { globalStyles, spacing } from '../styles';
 
 export default function IssueListScreen() {
   const [refreshing, setRefreshing] = useState(false)
@@ -87,6 +87,7 @@ export default function IssueListScreen() {
     <View style={globalStyles.container}>
       <FlatList
         style={globalStyles.container}
+        contentContainerStyle={{ gap: spacing.sm }}
         data={data.issues}
         renderItem={({ item }) => <IssueCard issue={item}
           onPress={() => navigation.navigate("Issue Details", { issue: item })}
@@ -99,34 +100,4 @@ export default function IssueListScreen() {
     </View>
   );
 
-
-
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    marginBottom: 16,
-  },
-  issueTitle: {
-    fontSize: 20
-  },
-  issueInfo: {
-    fontSize: 15
-  },
-  list: {
-    width: '80%',
-    alignSelf: 'center'
-  },
-  button: {
-    margin: 12,
-    alignSelf: 'flex-end'
-  }
-});
