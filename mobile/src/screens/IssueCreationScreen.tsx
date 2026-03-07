@@ -16,6 +16,9 @@ import { showMessage } from "react-native-flash-message";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Entypo from '@expo/vector-icons/Entypo';
 import { StackParams } from '../types/StackParams';
+import { borderRadius, colors, globalStyles, spacing, palette, size, typography } from '../styles';
+import Button from '../components/Button';
+import IconButton from '../components/IconButton';
 
 export default function IssueCreationScreen() {
     const [images, setImages] = useState<string[]>([]);
@@ -25,14 +28,13 @@ export default function IssueCreationScreen() {
     const [category, setCategory] = useState<"POTHOLE" | "STREETLIGHT" | "GRAFFITI" | "ILLEGAL_DUMPING" | "BROKEN_SIDEWALK" | "TRAFFIC_SIGNAL" | "OTHER">();
     const [description, setDescription] = useState<string>("");
     const [submitAllowed, setSubmitAllowed] = useState<boolean>(false)
-    const [submitButtonColor, setSubmitButtonColor] = useState<"#d1d1d1" | "#197a15">("#d1d1d1")
 
     const [isLoading, setIsLoading] = useState(false)
     const navigation = useNavigation<StackNavigationProp<StackParams>>()
     //TODO: implement tags
 
     //DO NOT LEAVE THIS HERE, TESTING PURPOSES ONLY
-    const token = "REPLACE_WITH_VALID_TOKEN"
+    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJteS11c2VyIiwiaWF0IjoxNzcyODA5MzY4LCJleHAiOjE3NzM0MTQxNjh9.YlH0cHOZIfIRrq39g2U4M1OH1k6VaSRoDDxwOXaXQJM"
 
     //get location
     useEffect(() => {
@@ -130,7 +132,6 @@ export default function IssueCreationScreen() {
         address != "Detecting location..."
     ) {
         setSubmitAllowed(true)
-        setSubmitButtonColor("#197a15")
     } else if (submitAllowed && (
         title.length < 3 ||
         description.length == 0 ||
@@ -138,7 +139,6 @@ export default function IssueCreationScreen() {
         images.length == 0 ||
         address == "Detecting location...")) {
         setSubmitAllowed(false)
-        setSubmitButtonColor("#d1d1d1")
     }
 
     //display loading if needed after submit
@@ -181,10 +181,11 @@ export default function IssueCreationScreen() {
 
             showMessage({
                 message: "Issue reported! Thank you for making your community better",
-                type: "success",
+                backgroundColor: palette.ckGreen,
+                color: colors.textContrast
             });
             const issue = await response.json()
-            navigation.replace('IssueDetails', { issue: issue })
+            navigation.replace('Issue Details', { issue: issue })
 
         } catch (error: any) {
             if (error.message.includes("latitude") || error.message.includes("longtitude")) {
@@ -202,118 +203,145 @@ export default function IssueCreationScreen() {
 
     };
 
-    const styles = StyleSheet.create({
-        container: {
-            padding: 8,
-            backgroundColor: "white"
-        },
-        imageContainer: {
-            padding: 12,
-            gap: 12,
-            height: 224,
-            backgroundColor: "#e7e7e7",
-            borderRadius: 16,
-            marginVertical: 4
-        },
-        textBox: {
-            paddingVertical: 8,
-            paddingHorizontal: 12,
-            backgroundColor: "#e7e7e7",
-            borderRadius: 16,
-            marginVertical: 4
-        },
-        buttonRow: {
-            padding: 4,
-            flex: 1,
-            gap: 8,
-            flexDirection: "row",
-            justifyContent: "flex-end",
-            minHeight: 48,
-            marginVertical: 4
-        },
-        imageButton: {
-            marginLeft: 8
-        },
-        submitButton: {
-            backgroundColor: submitButtonColor,
-            borderRadius: 16,
-        },
-        submitButtonText: {
-            color: "white",
-            textAlign: "center",
-            padding: 12
-        },
-        addressText: {
-            marginVertical: 4,
-        },
-        addressContainer: {
-            paddingHorizontal: 12,
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 4
-        }
-    });
-
-
 
     return (
-        <KeyboardAwareScrollView enableOnAndroid enableAutomaticScroll extraScrollHeight={100}
-            style={styles.container}>
-            <TextInput onChangeText={setTitle}
-                value={title}
-                placeholder='Issue Title'
-                style={styles.textBox}
-                maxLength={100} />
+        <>
+            <KeyboardAwareScrollView enableOnAndroid enableAutomaticScroll extraScrollHeight={300}
+                style={styles.container}
+                contentContainerStyle={{ gap: spacing.sm }}>
+
+                <TextInput onChangeText={setTitle}
+                    value={title}
+                    placeholder='Issue Title'
+                    style={styles.titleTextBox}
+                    maxLength={100} />
+
+                <ScrollView contentContainerStyle={styles.imageContainer}>
+                    <AntDesign name="picture" color={colors.textMuted}
+                        size={size.imageLg} style={[styles.defaultImage,
+                        images.length > 0 ? { display: "none" } : { display: "flex" }]} />
+
+                    <FlatList
+                        data={images}
+                        horizontal
+                        keyExtractor={(item, index) => index.toString()}
+                        renderItem={({ item }) => (
+                            <SelectedImage source={item}
+                                width={size.imageLg}
+                                height={size.imageLg}
+                                onDeletePressed={onImageDeletePressed}
+                                style={{ marginHorizontal: spacing.sm }}
+                            />
+                        )}
+                    />
+                </ScrollView>
+
+                <View style={styles.addressContainer}>
+                    <Entypo name="location-pin" size={typography.sizeXl} color={colors.textPrimary} />
+                    <Text style={styles.addressText}>{address}</Text>
+                </View>
+
+                <ModalDropdown
+                    data={categories}
+                    onDataSelect={handleSetCategory}
+                    defaultText="Choose a category..." />
+
+                <TextInput onChangeText={setDescription}
+                    value={description}
+                    placeholder='Issue Description...'
+                    style={styles.descTextBox}
+                    multiline
+                    numberOfLines={7}
+                    maxLength={500}
+                    focusable
+                />
+            </KeyboardAwareScrollView>
 
             <View style={styles.buttonRow}>
-                <AntDesign.Button name="camera" onPress={openCamera} iconStyle={styles.imageButton} borderRadius={16} size={24} />
-                <AntDesign.Button name="picture" onPress={pickImage} iconStyle={styles.imageButton} borderRadius={16} size={24} />
+                <IconButton onPress={openCamera} style={styles.photoButton}>
+                    <AntDesign name="camera" color={colors.textContrast}
+                        size={size.lg} />
+                </IconButton>
+
+                <Button onPress={handleSubmit}
+                    style={styles.submitButton}
+                    isDisabled={!submitAllowed}
+                    text="Submit">
+                </Button>
+
+                <IconButton onPress={pickImage} style={styles.photoButton}>
+                    <AntDesign name="picture" color={colors.textContrast}
+                        size={size.lg} />
+                </IconButton>
             </View>
+        </>
 
-            <ScrollView style={styles.imageContainer}>
-                <FlatList
-                    data={images}
-                    horizontal
-                    keyExtractor={(item, index) => index.toString()}
-                    renderItem={({ item }) => (
-                        <SelectedImage source={item}
-                            width={200}
-                            height={200}
-                            onDeletePressed={onImageDeletePressed}
-                        />
-                    )}
-                />
-            </ScrollView>
-
-            <View style={styles.addressContainer}>
-                <Entypo name="location-pin" size={20} color="black" />
-                <Text style={styles.addressText}>{address}</Text>
-            </View>
-
-            <ModalDropdown
-                data={categories}
-                onDataSelect={handleSetCategory}
-                defaultText="Choose a category" />
-
-            <TextInput onChangeText={setDescription}
-                value={description}
-                placeholder='Issue Description...'
-                style={{ ...styles.textBox, marginBottom: 8 }}
-                multiline
-                maxLength={500}
-                numberOfLines={5}
-                focusable
-            />
-
-            <TouchableOpacity onPress={handleSubmit}
-                style={styles.submitButton}
-                disabled={!submitAllowed}>
-                <Text style={styles.submitButtonText}>Submit</Text>
-            </TouchableOpacity>
-        </KeyboardAwareScrollView>
     )
 
 
 };
 
+const styles = StyleSheet.create({
+    container: {
+        ...globalStyles.container,
+        flex: 1,
+        gap: spacing.md,
+        padding: spacing.md
+    },
+    imageContainer: {
+        backgroundColor: colors.backgroundSecondary,
+        borderRadius: borderRadius.lg,
+        justifyContent: "space-between",
+        alignContent: "center",
+        paddingVertical: spacing.sm,
+        gap: spacing.sm,
+        height: "auto"
+    },
+    defaultImage: {
+        alignSelf: "center",
+    },
+    buttonRow: {
+        paddingHorizontal: spacing.md,
+        gap: spacing.md,
+        flex: 1,
+        flexDirection: "row",
+        justifyContent: "center",
+        width: "100%",
+        position: "absolute",
+        bottom: spacing.xxxl,
+    },
+    photoButton: {
+        backgroundColor: palette.ckBlue,
+        ...globalStyles.shadow
+    },
+    submitButton: {
+        fontSize: typography.sizeXxl,
+        fontWeight: typography.weightBold,
+        width: size.longButton,
+
+        ...globalStyles.shadow
+    },
+    titleTextBox: {
+        ...globalStyles.textBox,
+        ...globalStyles.heading1,
+        textAlign: "center"
+    },
+    descTextBox: {
+        ...globalStyles.textBox,
+        ...globalStyles.bodyText,
+        height: "auto",
+        color: colors.textPrimary
+    },
+
+    addressText: {
+        color: colors.textPrimary,
+        fontSize: typography.sizeLg
+    },
+    addressContainer: {
+        paddingHorizontal: spacing.xs,
+        flexDirection: "row",
+        alignItems: "center",
+        gap: spacing.xs
+    }
+});
 
