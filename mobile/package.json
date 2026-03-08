@@ -9,6 +9,7 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@civickit/shared": "file:../shared",
     "@expo/vector-icons": "^15.1.1",
     "@react-native-masked-view/masked-view": "0.3.2",
     "@react-native-vector-icons/evil-icons": "^12.4.1",

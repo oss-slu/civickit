@@ -1,7 +1,7 @@
 // backend/src/services/issue.service.ts
 
 import { IssueRepository } from '../repositories/issue.repository';
-import { CreateIssueDTO } from '../types/issue.types';
+import { CreateIssueDTO } from '@civickit/shared';
 import { uploadImage } from '../utils/cloudinary';
 
 export class IssueService {

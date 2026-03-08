@@ -2,7 +2,8 @@
 
 import bcrypt from "bcryptjs";
 import { AuthRepository } from "../repositories/auth.repository";
-import { CreateAuthDTO, SafeUser } from "../types/auth.types";
+import { CreateAuthDTO } from "@civickit/shared";
+import { SafeUser } from '../types/auth.types'
 import { z } from 'zod';
 
 export class AuthService {

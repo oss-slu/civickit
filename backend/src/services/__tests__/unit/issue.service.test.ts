@@ -7,7 +7,7 @@
 import { IssueService } from '../../issue.service';
 import { IssueRepository } from '../../../repositories/issue.repository';
 import { describe, beforeEach, vi, it, expect, Mocked } from 'vitest';
-import { CreateIssueDTO } from '../../../types/issue.types';
+import { CreateIssueDTO } from '@civickit/shared';
 
 // Mock the repository, not integration test
 vi.mock('../../../src/repositories/issue.repository');
@@ -35,6 +35,7 @@ describe('IssueService', () => {
     category: 'POTHOLE',
     latitude: 38.627,
     longitude: -90.1994,
+    address: "",
     images: [],
     ...overrides,
   });

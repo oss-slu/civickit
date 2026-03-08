@@ -1,5 +1,5 @@
 //mobile/src/types/StackParams.ts
-import { Issue } from "../components/IssueCard"
+import { Issue } from "@civickit/shared"
 
 export type StackParams = {
     Issues: {},

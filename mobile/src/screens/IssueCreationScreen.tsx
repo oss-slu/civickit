@@ -10,7 +10,7 @@ import ModalDropdown from '../components/ModalDropdown';
 import ENV from '../config/env';
 import { useNavigation, } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack'
-import { IssueCategory } from '../types/IssueCategory';
+import { IssueCategory } from '@civickit/shared';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { showMessage } from "react-native-flash-message";
 import AntDesign from '@expo/vector-icons/AntDesign';
@@ -32,7 +32,7 @@ export default function IssueCreationScreen() {
     //TODO: implement tags
 
     //DO NOT LEAVE THIS HERE, TESTING PURPOSES ONLY
-    const token = "REPLACE_WITH_VALID_TOKEN"
+    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJteS11c2VyIiwiaWF0IjoxNzcyOTI1MTY4LCJleHAiOjE3NzM1Mjk5Njh9.yM_KrFU2JdmkQIjHufGYW0sqpVJz-TKpBSwWjSsJAzQ"
 
     //get location
     useEffect(() => {
@@ -109,16 +109,14 @@ export default function IssueCreationScreen() {
 
     //handle categories
     const categories = [
-        "Pothole", "Streetlight", "Trash", "Graffiti", "Broken Sidewalk", "Traffic Signal", "Other"
+        "Pothole", "Streetlight", "Trash", "Graffiti", "Other"
     ]
     const handleSetCategory = (issueCategory: any) => {
-        if (issueCategory.replace(/ /g, "_").toUpperCase() in IssueCategory) {
-            setCategory(issueCategory.replace(/ /g, "_").toUpperCase())
-        } else if (issueCategory == "Trash") {
+        if (issueCategory == "Trash") {
             setCategory("ILLEGAL_DUMPING")
+        } else {
+            setCategory(issueCategory.replace(/ /g, "_").toUpperCase())
         }
-
-
     }
 
     //determine if ready to submit

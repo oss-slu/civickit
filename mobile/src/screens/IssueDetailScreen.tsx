@@ -1,7 +1,7 @@
 // mobile/src/screens/IssueDetailScreen.tsx
 import { StaticScreenProps } from '@react-navigation/native';
 import { View, Text, StyleSheet } from 'react-native';
-import { Issue } from '../components/IssueCard';
+import { Issue } from '@civickit/shared';
 
 type Props = StaticScreenProps<{
   issue: Issue;

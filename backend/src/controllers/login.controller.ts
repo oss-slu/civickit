@@ -2,8 +2,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { LoginService } from '../services/login.service';
 import { LoginRepository } from '../repositories/login.repository';
-import { LoginDTO } from '../types/login.types';
-import { authMiddleware } from '../middleware/auth.middleware';
+import { LoginDTO } from '@civickit/shared';
 
 const loginRepository = new LoginRepository();
 const loginService = new LoginService(loginRepository);

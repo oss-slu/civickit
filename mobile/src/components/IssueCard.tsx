@@ -2,25 +2,12 @@
 /*
  * Compact: 80px height, show only title + icon + upvotes
  * Expanded: 120px height, add description preview + distance
- * Use consistent spacing (8px, 16px multiples)
  * Category icons: Use emoji for MVP (we'll add icon library later)
  */
 
-// interface IssueCardProps {
-//   issue: {
-//     id: string;
-//     title: string;
-//     category: string;
-//     status: string;
-//     distance?: number;
-//     upvoteCount: number;
-//     images: string[];
-//   };
-//   variant?: 'compact' | 'expanded';
-//   onPress?: () => void;
-// }
-
 import React, { useRef } from 'react';
+import { GetNearbyIssueResponse } from '@civickit/shared'
+
 import {
   View,
   Text,
@@ -31,18 +18,8 @@ import {
   GestureResponderEvent,
 } from 'react-native';
 
-export interface Issue {
-  id: string;
-  title: string;
-  category: string;
-  status: string;
-  distance?: number;
-  upvoteCount: number;
-  images: string[];
-}
-
 interface IssueCardProps {
-  issue: Issue;
+  issue: GetNearbyIssueResponse;
   variant?: 'compact' | 'expanded';
   onPress?: () => void;
 }
@@ -69,6 +46,8 @@ const IssueCard: React.FC<IssueCardProps> = ({
   onPress,
 }) => {
   const scale = useRef(new Animated.Value(1)).current;
+
+  console.log("ISSUE", issue)
 
   const handlePressIn = (event: GestureResponderEvent) => {
     Animated.spring(scale, {
@@ -134,7 +113,7 @@ const IssueCard: React.FC<IssueCardProps> = ({
             <>
               {issue.distance !== undefined && (
                 <Text style={styles.distance}>
-                  {issue.distance.toFixed(1)} km away
+                  {parseFloat(issue.distance).toFixed(1)} km away
                 </Text>
               )}
             </>

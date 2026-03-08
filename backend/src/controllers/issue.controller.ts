@@ -17,9 +17,6 @@ export class IssueController {
       if (isNaN(latitude) || isNaN(longitude)) {
         return res.status(400).json({ error: 'Invalid coordinates' });
       }
-      //const files = req.body.images as Express.Multer.File[] || [];
-      console.log("req files:", files);
-
       const issue = await issueService.createIssue(
         {
           ...req.body,

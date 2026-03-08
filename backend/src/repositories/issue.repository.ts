@@ -1,10 +1,11 @@
 // backend/src/repositories/issue.repository.ts
 import prisma from "../prisma";
-import { CreateIssueDTO } from '../types/issue.types';
+import { CreateIssueDTO } from '@civickit/shared';
+
 export class IssueRepository {
   async create(data: CreateIssueDTO & { userId: string }) {
     return prisma.issue.create({
-      data: { // from CreateIssueDTO in /types folder
+      data: {
         title: data.title,
         description: data.description,
         category: data.category,

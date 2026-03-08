@@ -4,7 +4,7 @@ import IssueListScreen from './IssueListScreen';
 import { useEffect, useState } from 'react';
 import * as Location from 'expo-location'
 import { Alert } from 'react-native';
-import { QueryClientProvider, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { MessageView } from '../components/MessageView';
 import { userLocation } from '../types/userLocation';
 import { LocationContext } from '../types/LocationContext';

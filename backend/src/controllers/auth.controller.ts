@@ -3,7 +3,7 @@
 import { Request, Response, NextFunction } from "express";
 import { AuthService } from "../services/auth.service";
 import { AuthRepository } from "../repositories/auth.repository";
-import { CreateAuthDTO } from "../types/auth.types";
+import { CreateAuthDTO } from "@civickit/shared";
 
 const authRepository = new AuthRepository();
 const authService = new AuthService(authRepository);
