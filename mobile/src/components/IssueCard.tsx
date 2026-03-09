@@ -32,6 +32,10 @@ import {
 } from 'react-native';
 
 export interface Issue {
+  description: ReactNode;
+  createdAt: string | number | Date;
+  longitude: number;
+  latitude: number;
   id: string;
   title: string;
   category: string;
