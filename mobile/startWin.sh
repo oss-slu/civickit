@@ -4,7 +4,9 @@
 
 if [ $1 == "ip" ]; then
     IP_LINE=$(ipconfig | findstr IPv4 )
-    IP=${IP_LINE:39:14}
+    IP=${IP_LINE:39:40}
+
+    # echo ${IP_LINE:39:(${#IP_LINE}-39)}
 
     cd src/config
     jq -n --arg IP $IP '{"domain":$IP}' > env.local.json

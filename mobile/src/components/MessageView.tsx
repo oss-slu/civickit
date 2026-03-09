@@ -12,7 +12,7 @@ export function MessageView({ enableRefresh, onRefresh, refreshing = false, chil
             </ScrollView>
         )
     } else {
-        console.log("Refresh was disabled or proper function was not provided")
+        // console.log("Refresh was disabled or proper function was not provided")
         return (
             <View style={styles.container}>
                 <Text style={styles.text}>{children}</Text>
