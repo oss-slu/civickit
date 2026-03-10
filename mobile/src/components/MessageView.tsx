@@ -1,17 +1,21 @@
-import { ScrollView, View, Text, StyleSheet, RefreshControl } from "react-native"
+import { ScrollView, View, Text, RefreshControl, StyleSheet } from "react-native"
+import { globalStyles, spacing } from "../styles"
 
 export function MessageView({ enableRefresh, onRefresh, refreshing = false, children }: any) {
     if (enableRefresh && onRefresh != null) {
         return (
-            <ScrollView contentContainerStyle={styles.container} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
-                <Text style={styles.title}>{children}</Text>
+            <ScrollView contentContainerStyle={styles.container}
+                refreshControl={<RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={onRefresh} />}>
+                <Text style={styles.text}>{children}</Text>
             </ScrollView>
         )
     } else {
-        console.log("Refresh was disabled or proper function was not provided")
+        // console.log("Refresh was disabled or proper function was not provided")
         return (
             <View style={styles.container}>
-                <Text style={styles.title}>{children}</Text>
+                <Text style={styles.text}>{children}</Text>
             </View>
         )
     }
@@ -19,14 +23,12 @@ export function MessageView({ enableRefresh, onRefresh, refreshing = false, chil
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
+        ...globalStyles.container,
         justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#fff',
+        alignItems: 'center'
     },
-    title: {
-        fontSize: 32,
-        fontWeight: 'bold',
-        marginBottom: 16,
-    }
+    text: {
+        ...globalStyles.heading1,
+        marginBottom: spacing.md
+    },
 });

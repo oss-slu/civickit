@@ -2,12 +2,12 @@
 import { Issue } from "../components/IssueCard"
 
 export type StackParams = {
-    Issues: {},
-    CreateIssue: {},
-    IssueDetails: {
+    "Nearby Issues": {},
+    "Create Issue": {},
+    "Issue Details": {
         issue: Issue
     },
-    Error: {
+    "Error": {
         errorMessage: string
     },
 }
