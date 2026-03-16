@@ -20,6 +20,7 @@
     "@tanstack/react-query": "^5.90.17",
     "axios": "^1.13.5",
     "cors": "^2.8.6",
+    "date-fns": "^4.1.0",
     "dotenv": "^17.3.1",
     "expo": "~54.0.31",
     "expo-image-picker": "~17.0.10",
@@ -27,10 +28,12 @@
     "expo-status-bar": "~3.0.9",
     "ip-info-react": "^1.0.0",
     "json-server": "^1.0.0-beta.5",
+    "leaflet": "^1.9.4",
     "local": "^0.3.3",
     "node": "^25.6.1",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "react-leaflet": "^5.0.0",
     "react-native": "0.81.5",
     "react-native-element-dropdown": "^2.12.4",
     "react-native-flash-message": "^0.4.2",
@@ -43,6 +46,7 @@
     "tunnel": "^0.0.6"
   },
   "devDependencies": {
+    "@types/leaflet": "^1.9.21",
     "@types/localtunnel": "^2.0.4",
     "@types/react": "~19.1.0",
     "@types/react-native-keyboard-spacer": "^0.4.6",
