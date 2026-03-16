@@ -55,6 +55,10 @@ const IssueDetailScreen = () => {
 
           {/* Tags */}
           <Text style={styles.infoRow}>🏷️ Tags</Text>
+          <View style={styles.divider} />
+
+          {/* Category */}
+          <Text style={styles.infoRow}>🏷️ Category</Text>
 
         </View>
 
