@@ -17,6 +17,9 @@ import {
   Animated,
   GestureResponderEvent,
 } from 'react-native';
+import { globalStyles } from '../styles';
+import { borderRadius, colors, size, spacing, typography } from '../styles';
+import Entypo from '@expo/vector-icons/Entypo';
 
 interface IssueCardProps {
   issue: GetNearbyIssueResponse;
@@ -35,9 +38,9 @@ const categoryIcons: Record<string, string> = {
 };
 
 const statusColors: Record<string, string> = {
-  reported: '#FACC15', // yellow
-  resolved: '#22C55E', // green
-  default: '#CBD5E1',
+  reported: colors.statusReported,
+  resolved: colors.statusResolved,
+  default: colors.background,
 };
 
 const IssueCard: React.FC<IssueCardProps> = ({
@@ -74,8 +77,8 @@ const IssueCard: React.FC<IssueCardProps> = ({
   return (
     <Animated.View
       style={[
-        styles.card,
-        isExpanded ? styles.expanded : styles.compact,
+        globalStyles.card,
+        isExpanded ? { height: size.cardExpanded } : { height: size.cardCompact },
         { transform: [{ scale }] },
       ]}
     >
@@ -98,9 +101,9 @@ const IssueCard: React.FC<IssueCardProps> = ({
         <View style={styles.content}>
           {/* Title + Category */}
           <View style={styles.row}>
-            <Text style={styles.icon}>{icon}</Text>
+            <Entypo name="location-pin" size={typography.sizeLg} color={colors.textPrimary} />
             <Text
-              style={styles.title}
+              style={globalStyles.heading2}
               numberOfLines={1}
               ellipsizeMode="tail"
             >
@@ -123,10 +126,10 @@ const IssueCard: React.FC<IssueCardProps> = ({
           <View style={styles.footer}>
             {/* Status badge */}
             <View
-              style={[
-                styles.statusBadge,
-                { backgroundColor: statusColor },
-              ]}
+              style={{
+                ...styles.statusBadge,
+                backgroundColor: statusColor,
+              }}
             >
               <Text style={styles.statusText}>
                 {issue.status}
@@ -149,33 +152,15 @@ const IssueCard: React.FC<IssueCardProps> = ({
 export default IssueCard;
 
 const styles = StyleSheet.create({
-  card: {
-    borderRadius: 12,
-    backgroundColor: '#ececec',
-    marginVertical: 8,
-    marginHorizontal: 16,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-  },
-  compact: {
-    height: 80,
-  },
-  expanded: {
-    height: 120,
-  },
   pressable: {
     flexDirection: 'row',
     flex: 1,
-    padding: 12,
+    padding: spacing.sm,
+    alignItems: "center"
   },
   thumbnail: {
-    width: 64,
-    height: 64,
-    borderRadius: 8,
-    marginRight: 12,
+    ...globalStyles.thumbnail,
+    marginRight: spacing.md,
   },
   content: {
     flex: 1,
@@ -185,19 +170,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  icon: {
-    fontSize: 18,
-    marginRight: 6,
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: '600',
-    flexShrink: 1,
-  },
   distance: {
-    fontSize: 12,
-    color: '#64748B',
-    marginTop: 4,
+    ...globalStyles.bodyText,
+    paddingLeft: spacing.sm,
+    marginTop: spacing.xs
   },
   footer: {
     flexDirection: 'row',
@@ -205,21 +181,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.lg,
   },
   statusText: {
-    fontSize: 12,
-    fontWeight: '600',
-    textTransform: 'capitalize',
+    fontSize: typography.sizeMd,
+    fontWeight: typography.weightBold,
+    color: colors.textPrimary,
   },
   upvotes: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   upvoteText: {
-    fontSize: 14,
-    fontWeight: '500',
+    color: colors.textPrimary,
+    fontSize: typography.sizeMd,
+    fontWeight: typography.weightMedium,
   },
 });

@@ -8,12 +8,11 @@ import IssueCard from '../components/IssueCard';
 import { MessageView } from '../components/MessageView';
 import { userLocation } from '../types/userLocation';
 import { LocationContext } from '../types/LocationContext';
-import { Button } from '@react-navigation/elements';
 import ENV from '../config/env';
 import { useNavigation } from '@react-navigation/native';
 import { StackParams } from '../types/StackParams';
 import { StackNavigationProp } from '@react-navigation/stack';
-
+import { globalStyles, spacing } from '../styles';
 
 export default function IssueListScreen() {
   const [refreshing, setRefreshing] = useState(false)
@@ -40,11 +39,6 @@ export default function IssueListScreen() {
   }, queryClient);
 
   console.log(data, isLoading, error)
-
-  //onIssuePress behaviour
-  const onIssuePress = (issue: any) => {
-    navigation.navigate('IssueDetails', { issue: issue })
-  }
 
   //check if still loading
   if (isLoading) {
@@ -74,14 +68,10 @@ export default function IssueListScreen() {
       </MessageView>
     )
   }
-
   //check if any data was returned
   if (data.issues.length == 0) {
     return (
       <View>
-        <Button style={styles.button} onPress={() => navigation.navigate("CreateIssue", {})}>
-          Report New Issue
-        </Button>
         <MessageView enableRefresh={true}
           onRefresh={refetch}
           refreshing={refreshing}>
@@ -94,17 +84,13 @@ export default function IssueListScreen() {
 
   //display list
   return (
-    <View style={styles.container}>
-      <Button style={styles.button} onPress={() => navigation.navigate("CreateIssue", {})}>
-        Report New Issue
-      </Button>
-
-      <Text style={styles.title}>Nearby Issues</Text>
+    <View style={globalStyles.container}>
       <FlatList
-        style={styles.list}
+        style={globalStyles.container}
+        contentContainerStyle={{ gap: spacing.sm }}
         data={data.issues}
         renderItem={({ item }) => <IssueCard issue={item}
-          onPress={() => navigation.navigate("IssueDetails", { issue: item })}
+          onPress={() => navigation.navigate("Issue Details", { issue: item })}
           variant='expanded' />}
         keyExtractor={(item) => item.id}
         refreshControl={<RefreshControl refreshing={refreshing}
@@ -114,34 +100,4 @@ export default function IssueListScreen() {
     </View>
   );
 
-
-
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    marginBottom: 16,
-  },
-  issueTitle: {
-    fontSize: 20
-  },
-  issueInfo: {
-    fontSize: 15
-  },
-  list: {
-    width: '80%',
-    alignSelf: 'center'
-  },
-  button: {
-    margin: 12,
-    alignSelf: 'flex-end'
-  }
-});

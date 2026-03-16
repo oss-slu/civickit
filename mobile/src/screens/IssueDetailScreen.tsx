@@ -11,22 +11,8 @@ export default function IssueDetailScreen({ route }: Props) {
   const issue = route.params.issue
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>{issue.title}</Text>
-    </View>
+    <MessageView>
+      {issue.title}
+    </MessageView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    marginBottom: 16,
-  },
-});
