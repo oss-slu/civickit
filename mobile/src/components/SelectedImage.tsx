@@ -1,8 +1,8 @@
 //mobile/src/components/SelectedImage.tsx
 import { Image, StyleSheet, View } from 'react-native'
 import { globalStyles, borderRadius, colors, palette, size, typography } from '../styles';
-import AntDesign from '@expo/vector-icons/AntDesign';
 import IconButton from './IconButton';
+import { CloseXIcon } from './Icons';
 
 export default function SelectedImage({ source, onDeletePressed, width, height, style }: any) {
     const styles = StyleSheet.create({
@@ -31,7 +31,7 @@ export default function SelectedImage({ source, onDeletePressed, width, height, 
             <View style={styles.buttonContainer}>
                 <IconButton onPress={() => onDeletePressed(source)}
                     style={styles.button}>
-                    <AntDesign name="close" size={size.lg}
+                    <CloseXIcon size={size.lg}
                         color={colors.textContrast} />
                 </IconButton>
             </View>

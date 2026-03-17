@@ -2,12 +2,10 @@
 /*
  * Compact: 80px height, show only title + icon + upvotes
  * Expanded: 120px height, add description preview + distance
- * Category icons: Use emoji for MVP (we'll add icon library later)
  */
 
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { GetNearbyIssueResponse } from '@civickit/shared'
-
 import {
   View,
   Text,
@@ -19,7 +17,7 @@ import {
 } from 'react-native';
 import { globalStyles } from '../styles';
 import { borderRadius, colors, size, spacing, typography } from '../styles';
-import Entypo from '@expo/vector-icons/Entypo';
+import { BrokenIcon, LightBulbIcon, LocationPinIcon, RoadIcon, SprayPaintIcon, TrafficConeIcon, TrafficLightIcon, TrashIcon } from './Icons';
 
 interface IssueCardProps {
   issue: GetNearbyIssueResponse;
@@ -27,30 +25,35 @@ interface IssueCardProps {
   onPress?: () => void;
 }
 
-// categories-emoji (MVP)
-const categoryIcons: Record<string, string> = {
-  pothole: '🕳️',
-  streetlight: '💡',
-  graffiti: '🎨',
-  trash: '🗑️',
-  water: '💧',
-  default: '📍',
-};
-
 const statusColors: Record<string, string> = {
   reported: colors.statusReported,
   resolved: colors.statusResolved,
   default: colors.background,
 };
 
-const IssueCard: React.FC<IssueCardProps> = ({
-  issue,
-  variant = 'compact',
-  onPress,
-}) => {
+export default function IssueCard({ issue, variant = 'compact', onPress }: any) {
   const scale = useRef(new Animated.Value(1)).current;
+  const [icon, setIcon] = useState(<LocationPinIcon size={typography.sizeLg} color={colors.textPrimary} />)
 
-  console.log("ISSUE", issue)
+  useEffect(() => {
+    if (issue.category == "POTHOLE") {
+      setIcon(<TrafficConeIcon size={typography.sizeLg} color={colors.textPrimary} />)
+    } else if (issue.category == "STREETLIGHT") {
+      setIcon(<LightBulbIcon size={typography.sizeLg} color={colors.textPrimary}
+        style={{ marginRight: spacing.xs }} />)
+    } else if (issue.category == "GRAFFITI") {
+      setIcon(<SprayPaintIcon size={typography.sizeXl} color={colors.textPrimary} />)
+    } else if (issue.category == "ILLEGAL_DUMPING") {
+      setIcon(<TrashIcon size={typography.sizeLg} color={colors.textPrimary}
+        style={{ marginRight: spacing.xs }} />)
+    } else if (issue.category == "BROKEN_SIDEWALK") {
+      setIcon(<BrokenIcon size={typography.sizeLg} color={colors.textPrimary}
+        style={{ marginRight: spacing.xs }} />)
+    } else if (issue.category == "TRAFFIC_SIGNAL") {
+      setIcon(<TrafficLightIcon size={typography.sizeLg} color={colors.textPrimary}
+        style={{ marginRight: spacing.xs }} />)
+    }
+  }, [])
 
   const handlePressIn = (event: GestureResponderEvent) => {
     Animated.spring(scale, {
@@ -68,7 +71,6 @@ const IssueCard: React.FC<IssueCardProps> = ({
     }).start();
   };
 
-  const icon = categoryIcons[issue.category] || categoryIcons.default;
   const statusColor =
     statusColors[issue.status.toLowerCase()] || statusColors.default;
 
@@ -101,7 +103,7 @@ const IssueCard: React.FC<IssueCardProps> = ({
         <View style={styles.content}>
           {/* Title + Category */}
           <View style={styles.row}>
-            <Entypo name="location-pin" size={typography.sizeLg} color={colors.textPrimary} />
+            {icon}
             <Text
               style={globalStyles.heading2}
               numberOfLines={1}
@@ -149,7 +151,6 @@ const IssueCard: React.FC<IssueCardProps> = ({
   );
 };
 
-export default IssueCard;
 
 const styles = StyleSheet.create({
   pressable: {

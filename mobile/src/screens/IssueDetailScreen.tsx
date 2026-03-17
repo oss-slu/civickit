@@ -6,6 +6,8 @@ import { Platform, Text, ScrollView, FlatList, Image, StyleSheet, View, Touchabl
 import { useRoute, RouteProp } from '@react-navigation/native';
 import { Issue } from '@civickit/shared';
 import { format, formatDistanceToNow } from 'date-fns';
+import { ClockIcon, LocationPinIcon, TagIcon, WrenchIcon } from '../components/Icons';
+import { colors, size, spacing, typography } from '../styles';
 
 let MapView: any = null;
 let Marker: any = null;
@@ -31,7 +33,8 @@ const IssueDetailScreen = () => {
 
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.headerIcon}>🔧</Text>
+          <WrenchIcon color={colors.textPrimary} size={size.xl}
+            style={{ marginRight: spacing.xs }} />
           <Text style={styles.headerTitle}>{issue.title}</Text>
 
           <View style={styles.countBadge}>
@@ -44,17 +47,37 @@ const IssueDetailScreen = () => {
         <View style={styles.infoCard}>
 
           {/* Date/Time */}
-          <Text style={styles.infoRow}>
-            🕒 {format(new Date(issue.createdAt), 'PPP p')}
-          </Text>
+          <View style={styles.infoRow}>
+            <ClockIcon color={colors.textPrimary}
+              size={typography.sizeLg}
+              style={styles.icon} />
+            <Text style={styles.infoRowText}>
+              {format(new Date(issue.createdAt), 'PPP p')}
+            </Text>
+          </View>
           <View style={styles.divider} />
 
           {/* Location */}
-          <Text style={styles.infoRow}>📍 Neighborhood / Location</Text>
+          <View style={styles.infoRow}>
+            <LocationPinIcon color={colors.textPrimary}
+              size={typography.sizeLg}
+              style={styles.icon} />
+            <Text style={styles.infoRowText}>
+              Neighborhood / Location
+            </Text>
+          </View>
+
           <View style={styles.divider} />
 
           {/* Tags */}
-          <Text style={styles.infoRow}>🏷️ Tags</Text>
+          <View style={styles.infoRow}>
+            <TagIcon color={colors.textPrimary}
+              size={typography.sizeLg}
+              style={styles.icon} />
+            <Text style={styles.infoRowText}>
+              Tags
+            </Text>
+          </View>
 
         </View>
 
@@ -163,10 +186,20 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
 
-  infoRow: {
+  infoRowText: {
     fontSize: 16,
     color: '#444',
-    paddingVertical: 6,
+  },
+
+  infoRow: {
+    flex: 1,
+    flexDirection: "row",
+    columnGap: spacing.sm,
+    paddingVertical: spacing.sm,
+  },
+
+  icon: {
+    alignSelf: "center"
   },
 
   divider: {
@@ -237,5 +270,5 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: 'bold',
     color: '#000',
-  },
+  }
 },);

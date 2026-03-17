@@ -10,7 +10,7 @@ export default function NewIssueButton({ isDisabled = false }) {
 
     return (
         <Button
-            text="Report New Issue"
+            text="Report New Issue +"
             onPress={() => navigation.navigate("Create Issue", {})}
             disabled={isDisabled}
             style={{ backgroundColor: palette.ckRed }}
