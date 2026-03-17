@@ -10,15 +10,13 @@ import ModalDropdown from '../components/ModalDropdown';
 import ENV from '../config/env';
 import { useNavigation, } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack'
-import { IssueCategory } from '@civickit/shared';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { showMessage } from "react-native-flash-message";
-import AntDesign from '@expo/vector-icons/AntDesign';
-import Entypo from '@expo/vector-icons/Entypo';
 import { StackParams } from '../types/StackParams';
 import { borderRadius, colors, globalStyles, spacing, palette, size, typography } from '../styles';
 import Button from '../components/Button';
 import IconButton from '../components/IconButton';
+import { CameraIcon, LocationPinIcon, PictureIcon } from '../components/Icons';
 
 export default function IssueCreationScreen() {
     const [images, setImages] = useState<string[]>([]);
@@ -34,7 +32,7 @@ export default function IssueCreationScreen() {
     //TODO: implement tags
 
     //DO NOT LEAVE THIS HERE, TESTING PURPOSES ONLY
-    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbWw1ZW03N3YwMDAwbDQwYmFnbWk2em01IiwiaWF0IjoxNzczNjc3Mzk3LCJleHAiOjE3NzQyODIxOTd9.fBdeKuLGPLGm4xExV3ucAVdHn-fuqtskPIlUtlHWLaI"
+    const token = "eyJhbGciOiJUzI1NiIsInR5cCI6IkpXJ9.eyJ1c2VySWQiOiJteS11c2VyIiwiaWF0IjoxNzczNzA5ODcxLCJleHAiOjE3NzQzMTQ2NzF9.7qHwrz7KL4FRs2rpFQ1uiBmn8No1ZDuHjm4rChoSQBU"
 
     //get location
     useEffect(() => {
@@ -111,7 +109,7 @@ export default function IssueCreationScreen() {
 
     //handle categories
     const categories = [
-        "Pothole", "Streetlight", "Trash", "Graffiti", "Other"
+        "Pothole", "Streetlight", "Trash", "Graffiti", "Broken Sidewalk", "Traffic Signal", "Other"
     ]
     const handleSetCategory = (issueCategory: any) => {
         if (issueCategory == "Trash") {
@@ -215,7 +213,7 @@ export default function IssueCreationScreen() {
                     maxLength={100} />
 
                 <ScrollView contentContainerStyle={styles.imageContainer}>
-                    <AntDesign name="picture" color={colors.textMuted}
+                    <PictureIcon color={colors.textMuted}
                         size={size.imageLg} style={[styles.defaultImage,
                         images.length > 0 ? { display: "none" } : { display: "flex" }]} />
 
@@ -235,7 +233,6 @@ export default function IssueCreationScreen() {
                 </ScrollView>
 
                 <View style={styles.addressContainer}>
-                    <Entypo name="location-pin" size={typography.sizeXl} color={colors.textPrimary} />
                     <Text style={styles.addressText}>{address}</Text>
                 </View>
 
@@ -257,7 +254,7 @@ export default function IssueCreationScreen() {
 
             <View style={styles.buttonRow}>
                 <IconButton onPress={openCamera} style={styles.photoButton}>
-                    <AntDesign name="camera" color={colors.textContrast}
+                    <CameraIcon color={colors.textContrast}
                         size={size.lg} />
                 </IconButton>
 
@@ -268,7 +265,7 @@ export default function IssueCreationScreen() {
                 </Button>
 
                 <IconButton onPress={pickImage} style={styles.photoButton}>
-                    <AntDesign name="picture" color={colors.textContrast}
+                    <PictureIcon color={colors.textContrast}
                         size={size.lg} />
                 </IconButton>
             </View>
