@@ -1,5 +1,5 @@
 // mobile/src/screens/IssueListScreen.tsx
-import { View, Text, StyleSheet, RefreshControl } from 'react-native';
+import { View, RefreshControl } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState, useContext } from 'react';
 import { FlatList } from 'react-native';

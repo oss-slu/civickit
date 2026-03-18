@@ -1,3 +1,4 @@
+//mobile/src/screens/ErrorScreen.tsx
 import { StaticScreenProps } from "@react-navigation/native";
 import { MessageView } from "../components/MessageView";
 

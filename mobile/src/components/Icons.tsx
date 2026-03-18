@@ -1,3 +1,4 @@
+// mobile/src/components/Icons.tsx
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Entypo from "@expo/vector-icons/Entypo";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';

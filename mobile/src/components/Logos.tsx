@@ -1,3 +1,4 @@
+// mobile/src/components/Logos.tsx
 import { Image } from 'expo-image';
 import { View } from 'react-native';
 

@@ -1,4 +1,4 @@
-import { StaticScreenProps, useNavigation } from "@react-navigation/native";
+//mobile/src/screens/LoadingScreen.tsx
 import { View, StyleSheet, Text } from "react-native";
 import { colors, globalStyles, spacing, typography } from "../styles";
 import { LoopingLogoGif } from "../components/Logos";
