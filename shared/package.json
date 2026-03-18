@@ -13,5 +13,8 @@
     "devDependencies": {
         "@types/node": "^25.3.5",
         "typescript": "^5.9.3"
+    },
+    "dependencies": {
+        "react-native-svg": "^15.15.3"
     }
 }

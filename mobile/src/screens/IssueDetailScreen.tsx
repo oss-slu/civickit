@@ -1,6 +1,4 @@
 // mobile/src/screens/IssueDetailScreen.tsx
-import { StaticScreenProps } from '@react-navigation/native';
-
 import React from 'react';
 import { Platform, Text, ScrollView, FlatList, Image, StyleSheet, View, TouchableOpacity } from 'react-native';
 import { useRoute, RouteProp } from '@react-navigation/native';

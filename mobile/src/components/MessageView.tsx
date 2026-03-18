@@ -1,3 +1,4 @@
+// mobile/src/components/MessageView.tsx
 import { ScrollView, View, Text, RefreshControl, StyleSheet } from "react-native"
 import { globalStyles, spacing } from "../styles"
 

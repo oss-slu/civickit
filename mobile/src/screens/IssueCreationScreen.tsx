@@ -1,7 +1,7 @@
 //mobile/src/screens/IssueCreationScreen.tsx
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { MessageView } from '../components/MessageView';
 import { userLocation } from '../types/userLocation';
 import { View, StyleSheet, ScrollView, TextInput, Text, FlatList, TouchableOpacity } from 'react-native';
@@ -16,7 +16,8 @@ import { StackParams } from '../types/StackParams';
 import { borderRadius, colors, globalStyles, spacing, palette, size, typography } from '../styles';
 import Button from '../components/Button';
 import IconButton from '../components/IconButton';
-import { CameraIcon, LocationPinIcon, PictureIcon } from '../components/Icons';
+import { CameraIcon, PictureIcon } from '../components/Icons';
+import LoadingScreen from './LoadingScreen';
 
 export default function IssueCreationScreen() {
     const [images, setImages] = useState<string[]>([]);
@@ -140,9 +141,7 @@ export default function IssueCreationScreen() {
     //display loading if needed after submit
     if (isLoading) {
         return (
-            <MessageView>
-                Loading...
-            </MessageView>
+            <LoadingScreen />
         )
     }
 
