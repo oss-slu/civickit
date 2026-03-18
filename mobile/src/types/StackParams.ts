@@ -10,5 +10,4 @@ export type StackParams = {
     "Error": {
         errorMessage: string
     },
-    "Loading": {}
 }
