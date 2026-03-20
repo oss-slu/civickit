@@ -31,7 +31,8 @@
     "plugins": [
       [
         "expo-asset"
-      ]
+      ],
+      "expo-secure-store"
     ]
   }
 }

@@ -18,6 +18,7 @@ import Button from '../components/Button';
 import IconButton from '../components/IconButton';
 import { CameraIcon, LocationPinIcon, PictureIcon } from '../components/Icons';
 
+
 export default function IssueCreationScreen() {
     const [images, setImages] = useState<string[]>([]);
     const [location, setLocation] = useState<userLocation | null>(null);
@@ -32,7 +33,7 @@ export default function IssueCreationScreen() {
     //TODO: implement tags
 
     //DO NOT LEAVE THIS HERE, TESTING PURPOSES ONLY
-    const token = "eyJhbGciOiJUzI1NiIsInR5cCI6IkpXJ9.eyJ1c2VySWQiOiJteS11c2VyIiwiaWF0IjoxNzczNzA5ODcxLCJleHAiOjE3NzQzMTQ2NzF9.7qHwrz7KL4FRs2rpFQ1uiBmn8No1ZDuHjm4rChoSQBU"
+    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbWw1ZW03N3YwMDAwbDQwYmFnbWk2em01IiwiaWF0IjoxNzczOTY3NzgxLCJleHAiOjE3NzQ1NzI1ODF9.GvgAPbHilpbaUlbmW1kjXj2JyjBGEu9klnTY0J2jwgQ"
 
     //get location
     useEffect(() => {
