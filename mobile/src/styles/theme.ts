@@ -45,7 +45,9 @@ export const colors = {
 export const spacing = {
     xs: 4,
     sm: 8,
+    sd: 14,
     md: 16,
+    ml: 20,
     lg: 24,
     xl: 32,
     xxl: 48,
@@ -53,6 +55,7 @@ export const spacing = {
 };
 
 export const typography = {
+    sizeXs: 10,
     sizeSm: 12,
     sizeMd: 14,
     sizeLg: 16,
@@ -66,6 +69,7 @@ export const typography = {
 export const borderRadius = {
     sm: 4,
     md: 8,
+    ml: 14,
     lg: 16,
     full: 9999,
 };

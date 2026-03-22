@@ -7,7 +7,7 @@ import { useRoute, RouteProp } from '@react-navigation/native';
 import { Issue } from '@civickit/shared';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ClockIcon, LocationPinIcon, TagIcon, WrenchIcon } from '../components/Icons';
-import { colors, size, spacing, typography } from '../styles';
+import { borderRadius, colors, palette, size, spacing, typography } from '../styles';
 
 let MapView: any = null;
 let Marker: any = null;
@@ -78,10 +78,10 @@ const IssueDetailScreen = () => {
               Tags
             </Text>
           </View>
-        
-        <View style={styles.divider} />
 
-        {/* Category */}
+          <View style={styles.divider} />
+
+          {/* Category */}
           <View style={styles.infoRow}>
             <TagIcon
               color={colors.textPrimary}
@@ -91,7 +91,7 @@ const IssueDetailScreen = () => {
             <Text style={styles.infoRowText}>
               Category
             </Text>
-          </View> 
+          </View>
 
         </View>
 
@@ -137,7 +137,7 @@ const IssueDetailScreen = () => {
       </ScrollView>
 
       {/* Bottom Action Button */}
-      <TouchableOpacity style={styles.endorseButton}>
+      <TouchableOpacity style={styles.endorseButton} >
         <Text style={styles.endorseText}>Endorse</Text>
       </TouchableOpacity>
     </View>
@@ -149,60 +149,60 @@ export default IssueDetailScreen;
 const styles = StyleSheet.create({
   page: {
     flex: 1,
-    backgroundColor: '#f4f4f4',
+    backgroundColor: palette.ckLight,
   },
 
   container: {
-    padding: 16,
+    padding: spacing.md,
     paddingBottom: 120,
   },
 
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 14,
+    marginBottom: spacing.md,
   },
 
   headerIcon: {
     fontSize: 32,
-    marginRight: 8,
+    marginRight: spacing.sm,
   },
 
   headerTitle: {
-    fontSize: 30,
+    fontSize: typography.sizeXxl,
     fontWeight: 'bold',
-    color: '#d24b57',
+    color: palette.ckRed,
     flex: 1,
   },
 
   countBadge: {
-    backgroundColor: '#ddd',
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    backgroundColor: palette.ckMediumGray,
+    borderRadius: borderRadius.md,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
     alignItems: 'center',
   },
 
   countLabel: {
-    fontSize: 10,
-    color: '#555',
+    fontSize: typography.sizeXs,
+    color: colors.textPrimary,
   },
 
   countValue: {
-    fontSize: 20,
+    fontSize: typography.sizeXl,
     fontWeight: 'bold',
   },
 
   infoCard: {
-    backgroundColor: '#e6e6e6',
-    borderRadius: 14,
-    padding: 14,
-    marginBottom: 16,
+    backgroundColor: palette.ckLightGray,
+    borderRadius: borderRadius.ml,
+    padding: spacing.sd,
+    marginBottom: spacing.md,
   },
 
   infoRowText: {
-    fontSize: 16,
-    color: '#444',
+    fontSize: typography.sizeLg,
+    color: colors.textSecondary,
   },
 
   infoRow: {
@@ -218,71 +218,71 @@ const styles = StyleSheet.create({
 
   divider: {
     height: 1,
-    backgroundColor: '#ccc',
-    marginVertical: 4,
+    backgroundColor: palette.ckDarkGray,
+    marginVertical: spacing.xs,
   },
 
   tagRow: {
     flexDirection: 'row',
-    marginTop: 8,
+    marginTop: spacing.sm,
   },
 
   tag: {
-    backgroundColor: '#333',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-    marginRight: 8,
+    backgroundColor: palette.ckDark,
+    paddingHorizontal: spacing.sd,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.md,
+    marginRight: spacing.sm,
   },
 
   tagText: {
-    color: '#fff',
+    color: palette.ckLight,
   },
 
   image: {
     width: 300,
     height: 200,
-    marginRight: 10,
-    marginBottom: 16,
-    borderRadius: 8,
+    marginRight: spacing.sm,
+    marginBottom: spacing.md,
+    borderRadius: borderRadius.md,
   },
 
   description: {
-    fontSize: 16,
-    marginBottom: 16,
+    fontSize: typography.sizeLg,
+    marginBottom: spacing.md,
   },
 
   map: {
     height: 220,
-    borderRadius: 16,
+    borderRadius: borderRadius.lg,
     overflow: 'hidden',
   },
 
   mapFallback: {
     textAlign: 'center',
-    marginVertical: 20,
-    color: '#888',
+    marginVertical: spacing.ml,
+    color: palette.ckMediumGray,
   },
 
   time: {
-    marginTop: 10,
-    color: '#666',
+    marginTop: spacing.sm,
+    color: palette.ckDarkGray,
   },
 
   endorseButton: {
     position: 'absolute',
-    bottom: 20,
-    left: 20,
-    right: 20,
-    backgroundColor: '#d24b57',
-    padding: 18,
+    bottom: spacing.ml,
+    left: spacing.ml,
+    right: spacing.ml,
+    backgroundColor: palette.ckRed,
+    padding: spacing.md,
     borderRadius: 40,
     alignItems: 'center',
   },
 
   endorseText: {
-    fontSize: 22,
+    fontSize: typography.sizeXl,
     fontWeight: 'bold',
-    color: '#000',
+    color: palette.ckDark,
   }
 },);
