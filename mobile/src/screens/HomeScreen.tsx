@@ -19,7 +19,6 @@ export default function HomeScreen() {
     const [refreshing, setRefreshing] = useState(false)
     const [visibleCategories, setVisibleCategories] = useState(IssueCategoryArray)
     const [visibleStatuses, setVisibleStatuses] = useState(IssueStatusArray)
-    const [isListOpen, setIsListOpen] = useState(false)
 
     //get contexts from above layer(s)
     const queryClient = useQueryClient()
@@ -68,14 +67,16 @@ export default function HomeScreen() {
             </MessageView>
         )
     }
-
+    const visibleIssues = data.issues.filter((issue: any) =>
+        visibleCategories.map(i => i.toLowerCase()).includes(issue.category.replace(/_/g, " ").toLowerCase()) &&
+        visibleStatuses.map(i => i.toUpperCase().replace(/ /g, "_")).includes(issue.status)
+    )
     return (
         <View style={{ flex: 1 }}>
 
             <MapViewScreen
-                issues={data.issues}
+                issues={visibleIssues}
                 refetch={refetch}
-                setIsListOpen={setIsListOpen}
             />
 
             <View style={styles.overlay}>
@@ -97,121 +98,13 @@ export default function HomeScreen() {
                         <StatusIcon size={size.xxl} style={{ alignSelf: "center" }} />
                     </FilterCheckList>
 
+                </View>
+                <View style={styles.buttonCol}>
                     <IconButton onPress={refetch}
-                        style={[styles.button,
-                        isListOpen ? { position: "absolute", bottom: spacing.lg } : {}
-                        ]}>
+                        style={styles.button}>
                         <RefreshIcon size={size.xxl} style={{ alignSelf: "center" }} />
                     </IconButton>
                 </View>
-
-                <View style={styles.iconChart}>
-                    <View style={styles.iconRow}>
-                        <View style={[styles.textContainer,
-                        (visibleCategories.length != 7) ? { display: "none" } : { display: undefined }
-                        ]}>
-                            <CategoryIcon size={typography.sizeLg} color={colors.textContrast} />
-                            <Text style={styles.text}>All</Text>
-                        </View>
-
-                        <View style={[styles.iconContainer,
-                        (visibleCategories.length != 7 && visibleCategories.includes("Pothole")) ? { display: undefined } : { display: "none" }
-                        ]}>
-                            <TrafficConeIcon size={typography.sizeLg} color={colors.textPrimary} />
-                        </View>
-
-                        <View style={[styles.iconContainer,
-                        (visibleCategories.length != 7 && visibleCategories.includes("Streetlight")) ? { display: undefined } : { display: "none" }
-                        ]}>
-                            <LightBulbIcon size={typography.sizeLg} color={colors.textPrimary} />
-                        </View>
-
-                        <View style={[styles.iconContainer,
-                        (visibleCategories.length != 7 && visibleCategories.includes("Graffiti")) ? { display: undefined } : { display: "none" }
-                        ]}>
-                            <SprayPaintIcon size={typography.sizeLg} color={colors.textPrimary} />
-                        </View>
-
-                        <View style={[styles.iconContainer,
-                        (visibleCategories.length != 7 && visibleCategories.includes("Illegal Dumping")) ? { display: undefined } : { display: "none" }
-                        ]}>
-                            <TrashIcon size={typography.sizeLg} color={colors.textPrimary} />
-                        </View>
-
-                        <View style={[styles.iconContainer,
-                        (visibleCategories.length != 7 && visibleCategories.includes("Broken Sidewalk")) ? { display: undefined } : { display: "none" }
-                        ]}>
-                            <BrokenIcon size={typography.sizeLg} color={colors.textPrimary} />
-                        </View>
-
-                        <View style={[styles.iconContainer,
-                        (visibleCategories.length != 7 && visibleCategories.includes("Traffic Signal")) ? { display: undefined } : { display: "none" }
-                        ]}>
-                            <TrafficLightIcon size={typography.sizeLg} color={colors.textPrimary} />
-                        </View>
-
-                        <View style={[styles.iconContainer,
-                        (visibleCategories.length != 7 && visibleCategories.includes("Other")) ? { display: undefined } : { display: "none" }
-                        ]}>
-                            <ExclamationPointIcon size={typography.sizeLg} color={colors.textPrimary} />
-                        </View>
-
-                    </View>
-
-                    <View style={{ ...styles.iconRow, flexWrap: "wrap", rowGap: spacing.xs }}>
-                        <View style={[styles.textContainer,
-                        { backgroundColor: palette.ckDark },
-                        (visibleStatuses.length != 6) ? { display: "none" } : { display: undefined }
-                        ]}>
-                            <StatusIcon size={typography.sizeLg} color={colors.textContrast} />
-                            <Text style={styles.text}>All</Text>
-                        </View>
-
-                        <View style={[styles.textContainer,
-                        { backgroundColor: colors.statusReported },
-                        (visibleStatuses.length != 6 && visibleStatuses.includes("Reported")) ? { display: undefined } : { display: "none" }
-                        ]}>
-                            <Text style={{ ...styles.statusText }}>R</Text>
-                        </View>
-
-                        <View style={[styles.textContainer,
-                        { backgroundColor: colors.statusAcknowledged },
-                        (visibleStatuses.length != 6 && visibleStatuses.includes("Acknowledged")) ? { display: undefined } : { display: "none" }
-                        ]}>
-                            <Text style={{ ...styles.statusText }}>A</Text>
-                        </View>
-
-                        <View style={[styles.textContainer,
-                        { backgroundColor: colors.statusInProgress },
-                        (visibleStatuses.length != 6 && visibleStatuses.includes("In Progress")) ? { display: undefined } : { display: "none" }
-                        ]}>
-                            <Text style={{ ...styles.statusText, color: colors.textPrimary }}>IP</Text>
-                        </View>
-
-                        <View style={[styles.textContainer,
-                        { backgroundColor: colors.statusResolved },
-                        (visibleStatuses.length != 6 && visibleStatuses.includes("Resolved")) ? { display: undefined } : { display: "none" }
-                        ]}>
-                            <Text style={{ ...styles.statusText }}>R</Text>
-                        </View>
-
-                        <View style={[styles.textContainer,
-                        { backgroundColor: colors.statusCommunityResolved },
-                        (visibleStatuses.length != 6 && visibleStatuses.includes("Community Resolved")) ? { display: undefined } : { display: "none" }
-                        ]}>
-                            <Text style={{ ...styles.statusText, color: colors.textPrimary }}>CR</Text>
-                        </View>
-
-                        <View style={[styles.textContainer,
-                        { backgroundColor: colors.statusClosed },
-                        (visibleStatuses.length != 6 && visibleStatuses.includes("Closed")) ? { display: undefined } : { display: "none" }
-                        ]}>
-                            <Text style={{ ...styles.statusText, color: colors.textPrimary }}>C</Text>
-                        </View>
-
-                    </View>
-                </View>
-
             </View>
 
             <View style={[styles.textContainer,
@@ -285,24 +178,13 @@ const styles = StyleSheet.create({
     overlay: {
         position: "absolute",
         flexDirection: "row",
-        justifyContent: "flex-start",
-        height: "100%"
+        justifyContent: "space-between",
+        width: "100%",
     },
     buttonCol: {
         width: "auto",
         margin: spacing.sm,
-        rowGap: spacing.sm
-    },
-    iconChart: {
-        margin: spacing.sm,
         rowGap: spacing.sm,
-        width: "75%"
+        justifyContent: "flex-end",
     },
-    iconRow: {
-        flexDirection: "row",
-        width: "90%",
-        columnGap: spacing.sm,
-        marginRight: spacing.sm,
-    }
-
 })
