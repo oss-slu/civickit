@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
   },
 
   countBadge: {
-    backgroundColor: palette.ckMediumGray,
+    backgroundColor: palette.ckLightGray,
     borderRadius: borderRadius.md,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
