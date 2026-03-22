@@ -21,11 +21,9 @@ export default function Pin({ issue }: any) {
         </View>
     )
     const [pinImage, setPinImage] = useState(
-        <View style={{ ...styles.pin }}>
-            <Image source={require('../../assets/pins/' + 'REPORTED' + '.svg')}
-                style={{ width: width, height: height }}
-            />
-        </View >
+        <Image source={require('../../assets/pins/' + 'REPORTED' + '.svg')}
+            style={{ width: width, height: height }}
+        />
     )
 
     //get correct icon and pin
@@ -71,44 +69,36 @@ export default function Pin({ issue }: any) {
         if (issue.status == "ACKNOWLEDGED") {
 
             setPinImage(
-                <View style={styles.pin}>
-                    <Image source={require('../../assets/pins/' + 'ACKNOWLEDGED' + '.svg')}
-                        style={{ width: width, height: height }} />
-                </View >
+                <Image source={require('../../assets/pins/' + 'ACKNOWLEDGED' + '.svg')}
+                    style={{ width: width, height: height }} />
+
             )
         } else if (issue.status == "IN_PROGRESS") {
             setPinImage(
-                <View style={styles.pin}>
-                    <Image source={require('../../assets/pins/' + 'IN_PROGRESS' + '.svg')}
-                        style={{ width: width, height: height }} />
-                </View >
+                <Image source={require('../../assets/pins/' + 'IN_PROGRESS' + '.svg')}
+                    style={{ width: width, height: height }} />
+
             )
         } else if (issue.status == "RESOLVED") {
             setPinImage(
-                <View style={styles.pin}>
-                    <Image source={require('../../assets/pins/' + 'RESOLVED' + '.svg')}
-                        style={{ width: width, height: height }} />
-                </View >
+                <Image source={require('../../assets/pins/' + 'RESOLVED' + '.svg')}
+                    style={{ width: width, height: height }} />
             )
         } else if (issue.status == "COMMUNITY_RESOLVED") {
             setPinImage(
-                <View style={styles.pin}>
-                    <Image source={require('../../assets/pins/' + 'COMMUNITY_RESOLVED' + '.svg')}
-                        style={{ width: width, height: height }} />
-                </View >
+                <Image source={require('../../assets/pins/' + 'COMMUNITY_RESOLVED' + '.svg')}
+                    style={{ width: width, height: height }} />
             )
         } else if (issue.status == "CLOSED") {
             setPinImage(
-                <View style={styles.pin}>
-                    <Image source={require('../../assets/pins/' + 'CLOSED' + '.svg')}
-                        style={{ width: width, height: height }} />
-                </View >
+                <Image source={require('../../assets/pins/' + 'CLOSED' + '.svg')}
+                    style={{ width: width, height: height }} />
             )
         }
     }, [])
 
     return (
-        <View style={{ ...styles.container }}>
+        <View style={styles.container}>
             {pinImage}
             {icon}
         </View>
@@ -121,9 +111,6 @@ const styles = StyleSheet.create({
         flex: 1,
         alignContent: "center",
         alignItems: "center",
-    },
-    pin: {
-
     },
     icon: {
         position: "absolute",
