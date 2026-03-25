@@ -2,57 +2,71 @@
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useContext, useRef, useState } from 'react';
-import { View, Text, DimensionValue } from 'react-native';
+import { View, Text, DimensionValue, Dimensions, Animated, useAnimatedValue } from 'react-native';
 import { Marker, Callout, PROVIDER_GOOGLE } from 'react-native-maps';
 import { StackParams } from '../types/StackParams';
 import { LocationContext } from '../types/LocationContext';
 import { userLocation } from '../types/userLocation';
 import Pin from '../components/Pin';
-import { colors, palette, size, typography } from '../styles';
+import { borderRadius, colors, globalStyles, palette, size, typography } from '../styles';
 import { StyleSheet } from 'react-native'
 import MapView from "react-native-maps"
 import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet';
 import IssueListScreen from './IssueListScreen';
-import { UpArrowIcon } from '../components/Icons';
 import CalloutPopup from '../components/CalloutPopup';
-import { Issue } from '@civickit/shared';
+import { GetNearbyIssueResponse, Issue } from '@civickit/shared';
 
 export default function MapViewScreen({ issues, refetch }: any) {
     const navigation = useNavigation<StackNavigationProp<StackParams>>();
     const bottomSheetRef = useRef<BottomSheet>(null);
     const snapPoints = ["10%", "30%", "80%"]
-    const [bottomSheetPos, setBottomSheetPos] = useState<DimensionValue>("10%");
-    const [isCalloutVisible, setIsCalloutVisible] = useState(true)
-    const [currentIssue, setCurrentIssue] = useState<Issue | undefined>(undefined)
+    const [bottomSheetPos, setBottomSheetPos] = useState<String>("10%");
+    const [currentIssue, setCurrentIssue] = useState<GetNearbyIssueResponse | undefined>(undefined)
+    const fadeAnim = useAnimatedValue(0);
+    const posAnim = useAnimatedValue(0)
 
     //get contexts from above layer(s)
     const location = useContext(LocationContext) as unknown as userLocation
 
-    const onMarkerPress = (issue: Issue) => {
+    const onMarkerPress = (issue: GetNearbyIssueResponse) => {
         setCurrentIssue(issue)
+        openCallout()
     }
 
-    //currently causing too many re-renders
-    if (isCalloutVisible && bottomSheetPos == snapPoints[2]) {
-        setIsCalloutVisible(false)
-    } else if (!isCalloutVisible && currentIssue != undefined) {
-        setIsCalloutVisible(true)
+    const openCallout = () => {
+        Animated.timing(fadeAnim, {
+            toValue: 1,
+            duration: 200,
+            useNativeDriver: true,
+        }).start(({ finished }) => {
+        })
     }
-    //need callout popup, sits ontop of bottomsheet
-    //disapears when bottomsheet is fully open
-    //appears when pin is clicked
-    //fade in and up to view
+    const closeCallout = (callback?: any) => {
+        Animated.timing(fadeAnim, {
+            toValue: 0,
+            duration: 200,
+            useNativeDriver: true,
+        }).start(({ finished }) => {
+            callback
+        });
+    };
+    const moveCallout = (toIndex: number, toPosition: number) => {
+        if (toIndex != 2) {
+            Animated.timing(posAnim, {
+                toValue: toPosition - 132,
+                duration: 200,
+                useNativeDriver: true,
+            }).start(({ finished }) => {
+            })
+        }
 
-    const styles = StyleSheet.create({
-        callout: {
-            position: "absolute",
-            bottom: bottomSheetPos,
-        },
-        calloutText: {
-            fontSize: typography.sizeMd,
-            color: colors.textPrimary
-        },
-    })
+    }
+
+    if (currentIssue != undefined && bottomSheetPos == snapPoints[2]) {
+        closeCallout()
+    } else if (currentIssue != undefined && bottomSheetPos < snapPoints[2]) {
+        openCallout()
+    }
 
     return (
         <View style={{ flex: 1 }}>
@@ -80,9 +94,31 @@ export default function MapViewScreen({ issues, refetch }: any) {
                 )}
             </MapView>
 
-            <CalloutPopup style={[styles.callout,
-            isCalloutVisible ? { display: undefined } : { display: "none" }
-            ]} />
+            {/* {currentIssue != undefined && */}
+            <Animated.View
+                style={[{
+                    opacity: fadeAnim,
+                    width: "100%",
+                    transform: [{
+                        translateY: posAnim
+                    }],
+                    position: "absolute",
+
+                },
+                currentIssue != undefined ? { display: undefined } : { display: "none" }]}
+            >
+                <CalloutPopup
+                    issue={currentIssue}
+                    onClosePress={() => {
+                        closeCallout(() => { setCurrentIssue(undefined) })
+
+                    }}
+                    onForwardPress={() => {
+                        navigation.navigate("Issue Details", { issue: currentIssue! })
+                    }}
+                />
+            </Animated.View>
+            {/* } */}
 
             <BottomSheet
                 ref={bottomSheetRef}
@@ -111,6 +147,9 @@ export default function MapViewScreen({ issues, refetch }: any) {
                 overDragResistanceFactor={0.5}
                 enableOverDrag={false}
                 onChange={(index: number) => { setBottomSheetPos(snapPoints[index]) }}
+                onAnimate={(fromIndex, toIndex, fromPosition, toPosition) => {
+                    moveCallout(toIndex, toPosition)
+                }}
             >
                 <IssueListScreen issues={issues} refetch={refetch} />
             </BottomSheet>

@@ -1,5 +1,6 @@
 // shared/src/types/api.ts
 import { IssueCategory, IssueStatus } from "../enums/issue";
+import { User } from "./user";
 
 export interface ApiResponse<T> {
     success: boolean;
@@ -30,6 +31,7 @@ export interface GetNearbyIssueResponse {
     status: IssueStatus;
     distance: string
     upvoteCount: number
+    author: Pick<User, 'id' | 'name' | 'profileImage'>;
 }
 
 export interface LoginDTO {

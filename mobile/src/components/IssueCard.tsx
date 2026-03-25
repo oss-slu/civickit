@@ -17,15 +17,16 @@ import {
 } from 'react-native';
 import { globalStyles } from '../styles';
 import { borderRadius, colors, size, spacing, typography } from '../styles';
-import { BrokenIcon, LightBulbIcon, LocationPinIcon, RoadIcon, SprayPaintIcon, TrafficConeIcon, TrafficLightIcon, TrashIcon } from './Icons';
+import { BrokenIcon, LightBulbIcon, LocationPinIcon, RoadIcon, SprayPaintIcon, TrafficConeIcon, TrafficLightIcon, TrashIcon, UpvoteIcon } from './Icons';
 
 interface IssueCardProps {
   issue: GetNearbyIssueResponse;
   variant?: 'compact' | 'expanded';
   onPress?: () => void;
+  style?: any;
+  animated?: boolean
 }
 
-//TODO: update to include other statuses
 const statusColors: Record<string, string> = {
   reported: colors.statusReported,
   resolved: colors.statusResolved,
@@ -36,7 +37,7 @@ const statusColors: Record<string, string> = {
   default: colors.background,
 };
 
-export default function IssueCard({ issue, variant = 'compact', onPress }: any) {
+export default function IssueCard({ issue, variant = 'compact', onPress, style, animated = true }: IssueCardProps) {
   const scale = useRef(new Animated.Value(1)).current;
   const [icon, setIcon] = useState(<LocationPinIcon size={typography.sizeLg} color={colors.textPrimary} />)
 
@@ -61,19 +62,24 @@ export default function IssueCard({ issue, variant = 'compact', onPress }: any) 
   }, [])
 
   const handlePressIn = (event: GestureResponderEvent) => {
-    Animated.spring(scale, {
-      toValue: 0.97,
-      useNativeDriver: true,
-    }).start();
+    if (animated) {
+      Animated.spring(scale, {
+        toValue: 0.97,
+        useNativeDriver: true,
+      }).start();
+    }
   };
 
   const handlePressOut = () => {
-    Animated.spring(scale, {
-      toValue: 1,
-      friction: 3,
-      tension: 100,
-      useNativeDriver: true,
-    }).start();
+    if (animated) {
+      Animated.spring(scale, {
+        toValue: 1,
+        friction: 3,
+        tension: 100,
+        useNativeDriver: true,
+      }).start();
+    }
+
   };
 
   const statusColor =
@@ -87,6 +93,7 @@ export default function IssueCard({ issue, variant = 'compact', onPress }: any) 
         globalStyles.card,
         isExpanded ? { height: size.cardExpanded } : { height: size.cardCompact },
         { transform: [{ scale }] },
+        style
       ]}
     >
       <Pressable
@@ -145,8 +152,9 @@ export default function IssueCard({ issue, variant = 'compact', onPress }: any) 
 
             {/* Upvotes */}
             <View style={styles.upvotes}>
+              <UpvoteIcon color={colors.textPrimary} size={typography.sizeLg} />
               <Text style={styles.upvoteText}>
-                ⬆ {issue.upvoteCount}
+                {issue.upvoteCount}
               </Text>
             </View>
           </View>

@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Platform, Text, ScrollView, FlatList, Image, StyleSheet, View, TouchableOpacity } from 'react-native';
 import { useRoute, RouteProp } from '@react-navigation/native';
-import { Issue } from '@civickit/shared';
+import { GetNearbyIssueResponse, Issue } from '@civickit/shared';
 import { format, formatDistanceToNow } from 'date-fns';
 import { CategoryIcon, ClockIcon, LocationPinIcon, TagIcon, WrenchIcon } from '../components/Icons';
 import { borderRadius, colors, palette, size, spacing, typography } from '../styles';
@@ -17,7 +17,7 @@ if (Platform.OS !== 'web') {
 }
 
 type IssueDetailRouteProp = RouteProp<
-  { IssueDetails: { issue: Issue } },
+  { IssueDetails: { issue: Issue | GetNearbyIssueResponse } },
   'IssueDetails'
 >;
 

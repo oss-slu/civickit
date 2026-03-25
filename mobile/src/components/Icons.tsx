@@ -1,4 +1,5 @@
 // mobile/src/components/Icons.tsx
+//icons sourced from https://icons.expo.fyi/Index
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Entypo from "@expo/vector-icons/Entypo";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -219,9 +220,18 @@ export function WarningIcon(props: IconProps) {
     )
 }
 
-export function UpArrowIcon(props: IconProps) {
+export function UpvoteIcon(props: IconProps) {
     return (
         <Entypo name="arrow-bold-up"
+            color={props.color}
+            size={props.size}
+            style={props.style} />
+    )
+}
+
+export function RightArrowIcon(props: IconProps) {
+    return (
+        <Feather name="arrow-right"
             color={props.color}
             size={props.size}
             style={props.style} />
