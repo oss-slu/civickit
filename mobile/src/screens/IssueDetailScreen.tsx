@@ -6,6 +6,7 @@ import { GetNearbyIssueResponse, Issue } from '@civickit/shared';
 import { format, formatDistanceToNow } from 'date-fns';
 import { CategoryIcon, ClockIcon, LocationPinIcon, TagIcon, WrenchIcon } from '../components/Icons';
 import { borderRadius, colors, palette, size, spacing, typography } from '../styles';
+import Pin from '../components/Pin';
 
 let MapView: any = null;
 let Marker: any = null;
@@ -125,7 +126,10 @@ const IssueDetailScreen = () => {
                 latitude: issue.latitude,
                 longitude: issue.longitude,
               }}
-            />
+            >
+
+              <Pin issue={issue} />
+            </Marker>
           </MapView>
         ) : (
           <Text style={styles.mapFallback}>Map not supported on web</Text>
