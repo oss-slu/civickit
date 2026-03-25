@@ -102,13 +102,3 @@ function IssueListContextWrapper({ location, children }: any) {
         </LocationContext.Provider>
     )
 }
-
-// <Stack.Screen name="List" component={IssueListScreen}
-//                             options={{
-//                                 presentation: "formSheet",
-//                                 sheetAllowedDetents: [0.4, 0.95],
-//                                 sheetInitialDetentIndex: 0,
-//                                 sheetLargestUndimmedDetentIndex: 0,
-//                                 sheetCornerRadius: borderRadius.lg,
-//                                 sheetElevation: 10
-//                             }} />
