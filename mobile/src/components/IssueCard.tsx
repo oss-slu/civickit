@@ -59,7 +59,7 @@ export default function IssueCard({ issue, variant = 'compact', onPress, style, 
       setIcon(<TrafficLightIcon size={typography.sizeLg} color={colors.textPrimary}
         style={{ marginRight: spacing.xs }} />)
     }
-  }, [])
+  }, [issue])
 
   const handlePressIn = (event: GestureResponderEvent) => {
     if (animated) {
