@@ -97,5 +97,3 @@ export const globalStyles = StyleSheet.create({
     },
 
 });
-
-//globalize icons in other file

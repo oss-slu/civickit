@@ -2,19 +2,19 @@
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useContext, useRef, useState } from 'react';
-import { View, Text, DimensionValue, Dimensions, Animated, useAnimatedValue } from 'react-native';
-import { Marker, Callout, PROVIDER_GOOGLE } from 'react-native-maps';
+import { View, Animated, useAnimatedValue } from 'react-native';
+import { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { StackParams } from '../types/StackParams';
 import { LocationContext } from '../types/LocationContext';
 import { userLocation } from '../types/userLocation';
 import Pin from '../components/Pin';
-import { borderRadius, colors, globalStyles, palette, size, typography } from '../styles';
-import { StyleSheet } from 'react-native'
+import { colors, palette, size } from '../styles';
 import MapView from "react-native-maps"
 import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet';
 import IssueListScreen from './IssueListScreen';
 import CalloutPopup from '../components/CalloutPopup';
-import { GetNearbyIssueResponse, Issue } from '@civickit/shared';
+import { GetNearbyIssueResponse } from '@civickit/shared';
+
 
 export default function MapViewScreen({ issues, refetch }: any) {
     const navigation = useNavigation<StackNavigationProp<StackParams>>();
@@ -23,7 +23,8 @@ export default function MapViewScreen({ issues, refetch }: any) {
     const [bottomSheetPos, setBottomSheetPos] = useState<String>("10%");
     const [currentIssue, setCurrentIssue] = useState<GetNearbyIssueResponse | undefined>(undefined)
     const fadeAnim = useAnimatedValue(0);
-    const posAnim = useAnimatedValue(0)
+    const posAnim = useAnimatedValue(0);
+    const [paddingBottom, setPaddingBottom] = useState("130%")
 
     //get contexts from above layer(s)
     const location = useContext(LocationContext) as unknown as userLocation
@@ -52,12 +53,15 @@ export default function MapViewScreen({ issues, refetch }: any) {
     };
     const moveCallout = (toIndex: number, toPosition: number) => {
         if (toIndex != 2) {
+            setPaddingBottom("130%")
             Animated.timing(posAnim, {
                 toValue: toPosition - 132,
                 duration: 200,
                 useNativeDriver: true,
             }).start(({ finished }) => {
             })
+        } else {
+            setPaddingBottom("20%")
         }
 
     }
@@ -94,7 +98,6 @@ export default function MapViewScreen({ issues, refetch }: any) {
                 )}
             </MapView>
 
-            {/* {currentIssue != undefined && */}
             <Animated.View
                 style={[{
                     opacity: fadeAnim,
@@ -118,7 +121,6 @@ export default function MapViewScreen({ issues, refetch }: any) {
                     }}
                 />
             </Animated.View>
-            {/* } */}
 
             <BottomSheet
                 ref={bottomSheetRef}
@@ -127,7 +129,8 @@ export default function MapViewScreen({ issues, refetch }: any) {
                 enableContentPanningGesture={false}
                 handleStyle={{
                     backgroundColor: colors.background,
-                    height: size.xl
+                    height: size.xl,
+                    justifyContent: "center"
                 }}
                 backgroundStyle={{
                     backgroundColor: colors.background
@@ -151,7 +154,11 @@ export default function MapViewScreen({ issues, refetch }: any) {
                     moveCallout(toIndex, toPosition)
                 }}
             >
-                <IssueListScreen issues={issues} refetch={refetch} />
+                <IssueListScreen
+                    issues={issues}
+                    refetch={refetch}
+                    style={{ paddingBottom: paddingBottom }}
+                />
             </BottomSheet>
         </View>
     );
