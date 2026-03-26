@@ -5,7 +5,7 @@ import { useRoute, RouteProp } from '@react-navigation/native';
 import { GetNearbyIssueResponse, Issue } from '@civickit/shared';
 import { format, formatDistanceToNow } from 'date-fns';
 import { CategoryIcon, ClockIcon, LocationPinIcon, TagIcon, WrenchIcon } from '../components/Icons';
-import { borderRadius, colors, palette, size, spacing, typography } from '../styles';
+import { colors, size, spacing, typography } from '../styles';
 import Pin from '../components/Pin';
 
 let MapView: any = null;
