@@ -6,8 +6,11 @@ export const palette = {
     ckBlue: "#3A78AC",
     ckDarkBlue: "#30638E",
     ckRed: "#D1495B",
+    ckDarkRed: "#ac2c3d",
     ckYellow: "#EDAE49",
+    ckDarkYellow: "#a86d0e",
     ckLightGreen: "#9DCBBA",
+    ckMediumGreen: "#74b59d",
     ckGreen: "#2A9D8F",
     ckDarkGreen: "#1c7268",
 
@@ -41,7 +44,7 @@ export const colors = {
     border: palette.ckLightGray,
 
     statusReported: palette.ckRed,
-    statusAcknowledged: palette.ckDarkBlue,
+    statusAcknowledged: palette.ckBlue,
     statusInProgress: palette.ckYellow,
     statusCommunityResolved: palette.ckLightGreen,
     statusResolved: palette.ckGreen,
@@ -93,4 +96,42 @@ export const size = {
     cardExpanded: 120,
     longButton: 200,
     imageLg: 340,
+};
+
+export const statusColors: Record<string, { background: string, stroke: string, text: string }> = {
+    reported: {
+        background: colors.statusReported,
+        stroke: palette.ckDarkRed,
+        text: colors.textContrast
+    },
+    resolved: {
+        background: colors.statusResolved,
+        stroke: palette.ckDarkGreen,
+        text: colors.textContrast
+    },
+    acknowledged: {
+        background: colors.statusAcknowledged,
+        stroke: palette.ckDarkBlue,
+        text: colors.textContrast
+    },
+    in_progress: {
+        background: colors.statusInProgress,
+        stroke: palette.ckDarkYellow,
+        text: colors.textPrimary
+    },
+    community_resolved: {
+        background: colors.statusCommunityResolved,
+        stroke: palette.ckMediumGreen,
+        text: colors.textPrimary
+    },
+    closed: {
+        background: colors.statusClosed,
+        stroke: palette.ckDarkGray,
+        text: colors.textContrast
+    },
+    default: {
+        background: colors.background,
+        stroke: colors.backgroundSecondary,
+        text: colors.textPrimary
+    }
 };

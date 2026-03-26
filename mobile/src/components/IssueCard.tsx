@@ -17,7 +17,8 @@ import {
 } from 'react-native';
 import { globalStyles } from '../styles';
 import { borderRadius, colors, size, spacing, typography } from '../styles';
-import { BrokenIcon, LightBulbIcon, LocationPinIcon, RoadIcon, SprayPaintIcon, TrafficConeIcon, TrafficLightIcon, TrashIcon, UpvoteIcon } from './Icons';
+import { BrokenIcon, ExclamationPointIcon, LightBulbIcon, LocationPinIcon, RoadIcon, SprayPaintIcon, TrafficConeIcon, TrafficLightIcon, TrashIcon, UpvoteIcon } from './Icons';
+import { statusColors } from '../styles/theme';
 
 interface IssueCardProps {
   issue: GetNearbyIssueResponse;
@@ -27,19 +28,9 @@ interface IssueCardProps {
   animated?: boolean
 }
 
-const statusColors: Record<string, string> = {
-  reported: colors.statusReported,
-  resolved: colors.statusResolved,
-  acknowleged: colors.statusAcknowledged,
-  in_progress: colors.statusInProgress,
-  community_resolved: colors.statusCommunityResolved,
-  closed: colors.statusClosed,
-  default: colors.background,
-};
-
 export default function IssueCard({ issue, variant = 'compact', onPress, style, animated = true }: IssueCardProps) {
   const scale = useRef(new Animated.Value(1)).current;
-  const [icon, setIcon] = useState(<LocationPinIcon size={typography.sizeLg} color={colors.textPrimary} />)
+  const [icon, setIcon] = useState(<ExclamationPointIcon size={typography.sizeLg} color={colors.textPrimary} style={{ marginRight: spacing.xs }} />)
 
   useEffect(() => {
     if (issue.category == "POTHOLE") {
@@ -58,6 +49,8 @@ export default function IssueCard({ issue, variant = 'compact', onPress, style, 
     } else if (issue.category == "TRAFFIC_SIGNAL") {
       setIcon(<TrafficLightIcon size={typography.sizeLg} color={colors.textPrimary}
         style={{ marginRight: spacing.xs }} />)
+    } else {
+      setIcon(<ExclamationPointIcon size={typography.sizeLg} color={colors.textPrimary} style={{ marginRight: spacing.xs }} />)
     }
   }, [issue])
 
@@ -142,10 +135,10 @@ export default function IssueCard({ issue, variant = 'compact', onPress, style, 
             <View
               style={{
                 ...styles.statusBadge,
-                backgroundColor: statusColor,
+                backgroundColor: statusColor.background
               }}
             >
-              <Text style={styles.statusText}>
+              <Text style={{ ...styles.statusText, color: statusColor.text }}>
                 {issue.status.replace(/_/g, " ")}
               </Text>
             </View>
@@ -197,12 +190,13 @@ const styles = StyleSheet.create({
   statusBadge: {
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
-    borderRadius: borderRadius.lg,
+    borderRadius: borderRadius.full,
   },
   statusText: {
-    fontSize: typography.sizeMd,
+    fontSize: typography.sizeSm,
     fontWeight: typography.weightBold,
     color: colors.textPrimary,
+    textAlign: "center"
   },
   upvotes: {
     flexDirection: 'row',

@@ -7,12 +7,13 @@ import { userLocation } from "../types/userLocation";
 import ENV from '../config/env';
 import { MessageView } from "../components/MessageView";
 import { View, Text, StyleSheet } from 'react-native';
-import { BrokenIcon, CategoryIcon, ExclamationPointIcon, LightBulbIcon, RefreshIcon, SprayPaintIcon, StatusIcon, TrafficConeIcon, TrafficLightIcon, TrashIcon, UpArrowIcon, WarningIcon } from '../components/Icons';
+import { CategoryIcon, RefreshIcon, StatusIcon, WarningIcon } from '../components/Icons';
 import { borderRadius, colors, globalStyles, palette, size, spacing, typography } from '../styles';
 import { IssueCategoryArray } from "../types/IssueCategoryArray";
 import { IssueStatusArray } from "../types/IssueStatusArray";
 import FilterCheckList from "../components/FilterCheckList";
 import IconButton from "../components/IconButton";
+import PinShape from "../../assets/PinShape";
 
 //mobile/src/screens/HomeScreen.tsx
 export default function HomeScreen() {
