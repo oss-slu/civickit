@@ -18,7 +18,8 @@
     "db:test:setup": "DATABASE_URL=$TEST_DATABASE_URL npx prisma migrate deploy",
     "db:up": "docker compose up -d",
     "db:down": "docker compose down",
-    "db:setup": "docker compose up -d && sleep 2 && npx prisma db push && npx prisma generate"
+    "db:setup": "docker compose up -d && sleep 2 && npx prisma db push && npx prisma generate",
+    "dev:proxy": "cloudflared tunnel --url http://localhost:3000"
   },
   "keywords": [],
   "author": "",
@@ -63,6 +64,7 @@
     "@types/pg": "^8.16.0",
     "@types/supertest": "^6.0.3",
     "@vitest/coverage-v8": "^4.0.18",
+    "cloudflared": "^0.7.1",
     "dotenv": "^17.3.1",
     "prisma": "^7.4.1",
     "supertest": "^7.2.2",

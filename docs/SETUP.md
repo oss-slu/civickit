@@ -67,6 +67,12 @@ npx expo start --no-dev --minify
 3. Then scan the QR code using the Camera app (iOS) or Expo Go(Android)
 * In both cases the app, Expo Go, must be installed on the device
 
+If the mobile is loading but it is failing to fetch, we can proxy the backend via cloudflare
+1. ensure dependencies are up to date in backend `npm install`
+2. in `backend/` run `npm run dev`
+3. in `backend/` run `npm run dev:proxy` which generates a cloudflare public link. Put that link in `env.ts` in as apiUrl
+4. in `mobile/` run `npx expo --tunnel` 
+
 ## Web Setup (not created yet)
 1. `cd web && npm install`
 2. `npm run dev`

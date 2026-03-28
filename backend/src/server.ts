@@ -14,10 +14,17 @@ import { authMiddleware } from './middleware/auth.middleware';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = Number(process.env.PORT) || 3000;
 
 // Middleware
-app.use(cors());
+const corsOptions = {
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
+
+app.use(cors(corsOptions));
+app.options('/{*path}', cors(corsOptions)); // handle preflight
 app.use(express.json());
 
 // Health check
@@ -30,7 +37,7 @@ const limiter = RateLimit({
   windowMs: 15 * 60 * 1000, //15 minutes
   max: 100, //max 100 requests per window
 })
-app.use(limiter)
+//app.use(limiter)
 
 // Routes
 // TODO: Add routes
