@@ -53,4 +53,11 @@ export class UpvoteService {
     return { upvoteCount };
   }
 
+  // async getUpvoteCount(issueId: string, userId: string) {
+  //   const upvoteCount = await this.upvoteRepository.countUpvotes(issueId);
+  //   const hasUpvoted = await this.upvoteRepository.exists(issueId, userId);
+
+  //   return { upvoteCount, hasUpvoted };
+  // }
+
 }

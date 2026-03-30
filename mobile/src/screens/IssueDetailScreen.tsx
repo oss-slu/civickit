@@ -1,5 +1,5 @@
 // mobile/src/screens/IssueDetailScreen.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect, use } from 'react';
 import { Platform, Text, ScrollView, FlatList, Image, StyleSheet, View, TouchableOpacity } from 'react-native';
 import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
 import { GetNearbyIssueResponse, Issue } from '@civickit/shared';
@@ -23,13 +23,50 @@ type IssueDetailRouteProp = RouteProp<
   'IssueDetails'
 >;
 
+useEffect(() => {
+  (async () => {
+
+  })();
+}, []);
+
 const IssueDetailScreen = () => {
   const route = useRoute<IssueDetailRouteProp>();
   const { issue } = route.params;
   const navigation = useNavigation();
   const { authToken } = useAuth();
 
-  const [category, setCategory] = useState<String>(issue.category.replace(/_/g, " ").toLowerCase())
+  const handleEndorse = async () => {
+    if (loading) return;
+
+    try {
+      setLoading(true);
+
+      //DO NOT LEAVE THIS HERE, TESTING PURPOSES ONLY
+      const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbWwxcHB4aTQwMDAwbW5pdGVidmNqb2k2IiwiaWF0IjoxNzc0Mjc3OTI0LCJleHAiOjE3NzQ4ODI3MjR9.HZM4EfD7arRk7f2LMSnzo9Pd0e_xL9vt_tBeQeq8LnI";
+
+      const method = hasEndorsed ? 'DELETE' : 'POST';
+
+      const res = await fetch(
+        `${ENV.apiUrl}/issues/${issue.id}/upvote`,
+        {
+          method,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await res.json();
+
+      setHasEndorsed(data.upvoted);
+      setUpvoteCount(data.upvoteCount);
+
+    } catch (err) {
+      console.error('Endorse failed:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <View style={styles.page}>

@@ -36,6 +36,9 @@ export default function IssueCreationScreen() {
     const { authToken } = useAuth();
     //TODO: implement tags
 
+    //DO NOT LEAVE THIS HERE, TESTING PURPOSES ONLY
+    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbWwxcHB4aTQwMDAwbW5pdGVidmNqb2k2IiwiaWF0IjoxNzc0ODg3ODE3LCJleHAiOjE3NzU0OTI2MTd9.xQIfQPFVQ6DCEiebQM_69PMWX2EqFtICMMWnmwchxos"
+
     //get location
     useEffect(() => {
         (async () => {
