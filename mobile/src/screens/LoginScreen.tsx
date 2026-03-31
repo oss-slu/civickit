@@ -14,20 +14,23 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { StackParams } from '../types/StackParams';
-import { loginUser, saveToken } from '../services/AuthService';
+import { useAuth } from '../contexts/AuthContext';
+import { loginUser } from '../services/AuthService';
+import { globalStyles } from '../styles';
 
-// ─── Validation ───────────────────────────────────────────────────────────────
 
 const isValidEmail = (email: string) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 
-// ─── Component ────────────────────────────────────────────────────────────────
+// Component 
 
 export default function LoginScreen() {
     const navigation = useNavigation<StackNavigationProp<StackParams>>();
 
+    //tracks user input and loading state while loggin in
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
     // Separate error slots so errors appear inline under their field
@@ -35,8 +38,7 @@ export default function LoginScreen() {
     const [passwordError, setPasswordError] = useState('');
     const [serverError, setServerError] = useState('');
 
-    // ── Validation ────────────────────────────────────────────────────────────
-
+    // Validation
     const validate = (): boolean => {
         let valid = true;
         setEmailError('');
@@ -59,19 +61,16 @@ export default function LoginScreen() {
         return valid;
     };
 
-    // ── Submit ────────────────────────────────────────────────────────────────
+    const { login } = useAuth();
 
+    //Submit
     const handleLogin = async () => {
         if (!validate()) return;
 
         try {
             setIsLoading(true);
             const { token } = await loginUser(email.trim(), password);
-            await saveToken(token);
-            // Replace so the user can't navigate back to the login screen
-            //navigation.replace('Nearby Issues', {});
-            const res = await loginUser(email, password);
-            await saveToken(res.token);
+            await login(token);
         } catch (error: any) {
             setServerError(error.message);
         } finally {
@@ -79,7 +78,7 @@ export default function LoginScreen() {
         }
     };
 
-    // ── Render ────────────────────────────────────────────────────────────────
+    // Render
 
     return (
         <KeyboardAvoidingView
@@ -105,13 +104,20 @@ export default function LoginScreen() {
                 {!!emailError && <Text style={styles.fieldError}>{emailError}</Text>}
 
                 {/* Password */}
-                <TextInput
-                    style={[styles.textBox, passwordError ? styles.textBoxError : null]}
-                    placeholder="Password"
-                    value={password}
-                    onChangeText={text => { setPassword(text); setPasswordError(''); }}
-                    secureTextEntry
-                />
+                <View style={styles.passwordWrapper}>
+                    <TextInput
+                        style={[styles.textBox, styles.passwordInput, passwordError ? styles.textBoxError : null]}
+                        placeholder="Password"
+                        value={password}
+                        onChangeText={text => { setPassword(text); setPasswordError(''); }}
+                        secureTextEntry={!showPassword}
+                    />
+                    <TouchableOpacity
+                        style={styles.passwordToggle}
+                        onPress={() => setShowPassword(prev => !prev)}>
+                        <Text style={styles.passwordToggleText}>{showPassword ? 'Hide' : 'Show'}</Text>
+                    </TouchableOpacity>
+                </View>
                 {!!passwordError && <Text style={styles.fieldError}>{passwordError}</Text>}
 
                 {/* Server error (e.g. "Invalid credentials") */}
@@ -146,7 +152,6 @@ export default function LoginScreen() {
     );
 }
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
     flex: {
@@ -169,14 +174,35 @@ const styles = StyleSheet.create({
         marginBottom: 32,
     },
     textBox: {
-        paddingVertical: 12,
-        paddingHorizontal: 16,
-        backgroundColor: '#e7e7e7',
-        borderRadius: 16,
+        ...globalStyles.textBox,
         marginTop: 12,
         fontSize: 15,
         borderWidth: 1,
         borderColor: 'transparent',
+        height: 52,
+    },
+    passwordWrapper: {
+        position: 'relative',
+        marginTop: 12,
+    },
+    passwordInput: {
+        paddingRight: 110,
+        height: 52,
+    },
+    passwordToggle: {
+        position: 'absolute',
+        transform: [{ translateY: 5 }],
+        right: 16,
+        top: 0,
+        bottom: 0,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingHorizontal: 8,
+    },
+    passwordToggleText: {
+        color: '#197a15',
+        fontWeight: '700',
+        fontSize: 14,
     },
     textBoxError: {
         borderColor: '#d32f2f',

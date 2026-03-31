@@ -31,18 +31,6 @@ export function useAuthToken() {
             setIsLoading(false);
         })();
     }, [refresh]);
-    /*useEffect(() => {
-        (async () => {
-            try {
-                const token = await getToken();
-                setIsLoggedIn(!!token);
-            } catch {
-                setIsLoggedIn(false);
-            } finally {
-                setIsLoading(false);
-            }
-        })();
-    }, []);*/
 
     return { isLoggedIn, isLoading, refreshAuth: () => setRefresh(r => r + 1) };
 }

@@ -2,21 +2,22 @@
 import * as SecureStore from 'expo-secure-store';
 import ENV from '../config/env';
 
+//reusable ket used to store/retrieve JWR token from secure storage
 export const AUTH_TOKEN_KEY = 'AUTH_TOKEN';
 
+//represents a logged in user
 export interface AuthUser {
     id: string;
     name: string;
     email: string;
 }
-
+//represents what the backend returns after login/register
 export interface AuthResponse {
     token: string;
     user: AuthUser;
 }
 
-// ─── Token Storage ────────────────────────────────────────────────────────────
-
+// Token Storage 
 export const saveToken = async (token: string): Promise<void> => {
     await SecureStore.setItemAsync(AUTH_TOKEN_KEY, token);
 };
@@ -29,8 +30,7 @@ export const deleteToken = async (): Promise<void> => {
     await SecureStore.deleteItemAsync(AUTH_TOKEN_KEY);
 };
 
-// ─── API Calls ────────────────────────────────────────────────────────────────
-
+// API Calls
 export const registerUser = async (
     name: string,
     email: string,
@@ -41,7 +41,6 @@ export const registerUser = async (
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, password }),
     });
-
     const json = await response.json();
 
     if (!response.ok) {

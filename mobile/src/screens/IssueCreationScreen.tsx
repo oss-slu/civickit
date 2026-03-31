@@ -18,6 +18,7 @@ import IconButton from '../components/IconButton';
 import { CameraIcon, PictureIcon } from '../components/Icons';
 import LoadingScreen from './LoadingScreen';
 import { IssueCategoryArray } from '../types/IssueCategoryArray';
+import { useAuth } from '../contexts/AuthContext';
 
 
 export default function IssueCreationScreen() {
@@ -31,10 +32,8 @@ export default function IssueCreationScreen() {
 
     const [isLoading, setIsLoading] = useState(false)
     const navigation = useNavigation<StackNavigationProp<StackParams>>()
+    const { authToken } = useAuth();
     //TODO: implement tags
-
-    //DO NOT LEAVE THIS HERE, TESTING PURPOSES ONLY
-    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbWw1ZW03N3YwMDAwbDQwYmFnbWk2em01IiwiaWF0IjoxNzczOTY3NzgxLCJleHAiOjE3NzQ1NzI1ODF9.GvgAPbHilpbaUlbmW1kjXj2JyjBGEu9klnTY0J2jwgQ"
 
     //get location
     useEffect(() => {
@@ -150,10 +149,14 @@ export default function IssueCreationScreen() {
                 formData.append('images', { uri: uri, type: 'image/jpeg', name: 'photo.jpg' } as unknown as File);
             });
 
+            if (!authToken) {
+                navigation.navigate('Error', { errorMessage: 'Not authenticated' });
+                throw new Error('No auth token available');
+            }
             const request = new Request(ENV.apiUrl + '/issues/', {
                 method: 'POST',
                 headers: {
-                    Authorization: `Bearer ${token}`,
+                    Authorization: `Bearer ${authToken}`,
                 },
                 body: formData
             })

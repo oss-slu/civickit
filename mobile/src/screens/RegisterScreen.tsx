@@ -13,15 +13,14 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { StackParams } from '../types/StackParams';
-import { registerUser, saveToken } from '../services/AuthService';
-
-// ─── Validation ───────────────────────────────────────────────────────────────
-
+import { registerUser } from '../services/AuthService';
+import { useAuth } from '../contexts/AuthContext';
+import { globalStyles } from '../styles';
+// Validation
 const isValidEmail = (email: string) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 
-// ─── Component ────────────────────────────────────────────────────────────────
-
+// Component
 export default function RegisterScreen() {
     const navigation = useNavigation<StackNavigationProp<StackParams>>();
 
@@ -29,6 +28,8 @@ export default function RegisterScreen() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
     const [nameError, setNameError] = useState('');
@@ -37,8 +38,9 @@ export default function RegisterScreen() {
     const [confirmPasswordError, setConfirmPasswordError] = useState('');
     const [serverError, setServerError] = useState('');
 
-    // ── Validation ────────────────────────────────────────────────────────────
+    const { login } = useAuth();
 
+    // Validation
     const validate = (): boolean => {
         let valid = true;
         setNameError('');
@@ -79,16 +81,14 @@ export default function RegisterScreen() {
         return valid;
     };
 
-    // ── Submit ────────────────────────────────────────────────────────────────
-
+    // Submit 
     const handleRegister = async () => {
         if (!validate()) return;
 
         try {
             setIsLoading(true);
             const { token } = await registerUser(name.trim(), email.trim(), password);
-            await saveToken(token);
-            navigation.replace('Nearby Issues', {});
+            await login(token);
         } catch (error: any) {
             setServerError(error.message);
         } finally {
@@ -96,7 +96,7 @@ export default function RegisterScreen() {
         }
     };
 
-    // ── Render ────────────────────────────────────────────────────────────────
+    // Render
 
     return (
         <KeyboardAvoidingView
@@ -132,23 +132,37 @@ export default function RegisterScreen() {
                 {!!emailError && <Text style={styles.fieldError}>{emailError}</Text>}
 
                 {/* Password */}
-                <TextInput
-                    style={[styles.textBox, passwordError ? styles.textBoxError : null]}
-                    placeholder="Password (min. 8 characters)"
-                    value={password}
-                    onChangeText={text => { setPassword(text); setPasswordError(''); }}
-                    secureTextEntry
-                />
+                <View style={styles.passwordWrapper}>
+                    <TextInput
+                        style={[styles.textBox, styles.passwordInput, passwordError ? styles.textBoxError : null]}
+                        placeholder="Password (min. 8 characters)"
+                        value={password}
+                        onChangeText={text => { setPassword(text); setPasswordError(''); }}
+                        secureTextEntry={!showPassword}
+                    />
+                    <TouchableOpacity
+                        style={styles.passwordToggle}
+                        onPress={() => setShowPassword(prev => !prev)}>
+                        <Text style={styles.passwordToggleText}>{showPassword ? 'Hide' : 'Show'}</Text>
+                    </TouchableOpacity>
+                </View>
                 {!!passwordError && <Text style={styles.fieldError}>{passwordError}</Text>}
 
                 {/* Confirm Password */}
-                <TextInput
-                    style={[styles.textBox, confirmPasswordError ? styles.textBoxError : null]}
-                    placeholder="Confirm Password"
-                    value={confirmPassword}
-                    onChangeText={text => { setConfirmPassword(text); setConfirmPasswordError(''); }}
-                    secureTextEntry
-                />
+                <View style={styles.passwordWrapper}>
+                    <TextInput
+                        style={[styles.textBox, styles.passwordInput, confirmPasswordError ? styles.textBoxError : null]}
+                        placeholder="Confirm Password"
+                        value={confirmPassword}
+                        onChangeText={text => { setConfirmPassword(text); setConfirmPasswordError(''); }}
+                        secureTextEntry={!showConfirmPassword}
+                    />
+                    <TouchableOpacity
+                        style={styles.passwordToggle}
+                        onPress={() => setShowConfirmPassword(prev => !prev)}>
+                        <Text style={styles.passwordToggleText}>{showConfirmPassword ? 'Hide' : 'Show'}</Text>
+                    </TouchableOpacity>
+                </View>
                 {!!confirmPasswordError && (
                     <Text style={styles.fieldError}>{confirmPasswordError}</Text>
                 )}
@@ -173,7 +187,7 @@ export default function RegisterScreen() {
                 {/* Switch to Login */}
                 <TouchableOpacity
                     style={styles.switchRow}
-                    onPress={() => navigation.navigate('Login', {})}>
+                    onPress={() => navigation.goBack()}>
                     <Text style={styles.switchText}>
                         Already have an account?{' '}
                         <Text style={styles.switchLink}>Log in</Text>
@@ -185,7 +199,7 @@ export default function RegisterScreen() {
     );
 }
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
+// Styles
 
 const styles = StyleSheet.create({
     flex: {
@@ -208,14 +222,35 @@ const styles = StyleSheet.create({
         marginBottom: 32,
     },
     textBox: {
-        paddingVertical: 12,
-        paddingHorizontal: 16,
-        backgroundColor: '#e7e7e7',
-        borderRadius: 16,
+        ...globalStyles.textBox,
         marginTop: 12,
         fontSize: 15,
         borderWidth: 1,
         borderColor: 'transparent',
+        height: 52,
+    },
+    passwordWrapper: {
+        position: 'relative',
+        marginTop: 12,
+    },
+    passwordInput: {
+        paddingRight: 110,
+        height: 52,
+    },
+    passwordToggle: {
+        position: 'absolute',
+        transform: [{ translateY: 5 }],
+        right: 16,
+        top: 0,
+        bottom: 0,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingHorizontal: 8,
+    },
+    passwordToggleText: {
+        color: '#197a15',
+        fontWeight: '700',
+        fontSize: 14,
     },
     textBoxError: {
         borderColor: '#d32f2f',
