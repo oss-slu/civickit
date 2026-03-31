@@ -16,6 +16,7 @@ import { StackParams } from '../types/StackParams';
 import { registerUser } from '../services/AuthService';
 import { useAuth } from '../contexts/AuthContext';
 import { globalStyles } from '../styles';
+import { colors, spacing, typography, borderRadius } from '../styles/theme';
 // Validation
 const isValidEmail = (email: string) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
@@ -139,6 +140,7 @@ export default function RegisterScreen() {
                         value={password}
                         onChangeText={text => { setPassword(text); setPasswordError(''); }}
                         secureTextEntry={!showPassword}
+                        autoCapitalize="none"
                     />
                     <TouchableOpacity
                         style={styles.passwordToggle}
@@ -156,6 +158,7 @@ export default function RegisterScreen() {
                         value={confirmPassword}
                         onChangeText={text => { setConfirmPassword(text); setConfirmPasswordError(''); }}
                         secureTextEntry={!showConfirmPassword}
+                        autoCapitalize="none"
                     />
                     <TouchableOpacity
                         style={styles.passwordToggle}
@@ -204,34 +207,35 @@ export default function RegisterScreen() {
 const styles = StyleSheet.create({
     flex: {
         flex: 1,
-        backgroundColor: 'white',
+        backgroundColor: colors.surface,
     },
     container: {
-        padding: 24,
-        paddingTop: 48,
+        ...globalStyles.container,
+        padding: spacing.lg,
+        paddingTop: spacing.xxxl,
         flexGrow: 1,
     },
     heading: {
-        fontSize: 28,
-        fontWeight: '700',
-        marginBottom: 4,
+        fontSize: typography.sizeXxl,
+        fontWeight: typography.weightBold,
+        marginBottom: spacing.xs,
     },
     subheading: {
-        fontSize: 16,
-        color: '#666',
-        marginBottom: 32,
+        fontSize: typography.sizeLg,
+        color: colors.textSecondary,
+        marginBottom: spacing.xl,
     },
     textBox: {
         ...globalStyles.textBox,
-        marginTop: 12,
-        fontSize: 15,
+        marginTop: spacing.sm,
+        fontSize: typography.sizeLg,
         borderWidth: 1,
         borderColor: 'transparent',
         height: 52,
     },
     passwordWrapper: {
         position: 'relative',
-        marginTop: 12,
+        marginTop: spacing.sm,
     },
     passwordInput: {
         paddingRight: 110,
@@ -240,63 +244,63 @@ const styles = StyleSheet.create({
     passwordToggle: {
         position: 'absolute',
         transform: [{ translateY: 5 }],
-        right: 16,
+        right: spacing.md,
         top: 0,
         bottom: 0,
         justifyContent: 'center',
         alignItems: 'center',
-        paddingHorizontal: 8,
+        paddingHorizontal: spacing.sm,
     },
     passwordToggleText: {
-        color: '#197a15',
-        fontWeight: '700',
-        fontSize: 14,
+        color: colors.primary,
+        fontWeight: typography.weightBold,
+        fontSize: typography.sizeMd,
     },
     textBoxError: {
-        borderColor: '#d32f2f',
+        borderColor: colors.error,
     },
     fieldError: {
-        color: '#d32f2f',
-        fontSize: 12,
-        marginTop: 4,
-        marginLeft: 4,
+        color: colors.error,
+        fontSize: typography.sizeSm,
+        marginTop: spacing.xs,
+        marginLeft: spacing.xs,
     },
     serverErrorBox: {
-        marginTop: 16,
-        padding: 12,
+        marginTop: spacing.md,
+        padding: spacing.sd,
         backgroundColor: '#fdecea',
-        borderRadius: 12,
+        borderRadius: borderRadius.md,
     },
     serverErrorText: {
-        color: '#d32f2f',
-        fontSize: 14,
+        color: colors.error,
+        fontSize: typography.sizeMd,
         textAlign: 'center',
     },
     button: {
-        marginTop: 24,
-        backgroundColor: '#197a15',
-        borderRadius: 16,
-        paddingVertical: 14,
+        marginTop: spacing.lg,
+        backgroundColor: colors.primary,
+        borderRadius: borderRadius.lg,
+        paddingVertical: spacing.sd,
         alignItems: 'center',
     },
     buttonDisabled: {
-        backgroundColor: '#d1d1d1',
+        backgroundColor: colors.backgroundSecondary,
     },
     buttonText: {
-        color: 'white',
-        fontWeight: '600',
-        fontSize: 16,
+        color: colors.textContrast,
+        fontWeight: typography.weightMedium,
+        fontSize: typography.sizeMd,
     },
     switchRow: {
-        marginTop: 20,
+        marginTop: spacing.ml,
         alignItems: 'center',
     },
     switchText: {
-        color: '#444',
-        fontSize: 14,
+        color: colors.textPrimary,
+        fontSize: typography.sizeLg,
     },
     switchLink: {
-        color: '#197a15',
-        fontWeight: '600',
+        color: colors.primary,
+        fontWeight: typography.weightMedium,
     },
 });
