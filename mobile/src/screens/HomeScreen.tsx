@@ -25,7 +25,7 @@ export default function HomeScreen() {
     const location = useContext(LocationContext) as unknown as userLocation
 
     //fetch issues from database 
-    var { data, isLoading, error, refetch } = useQuery({
+    const { data, isLoading, error, refetch } = useQuery({
         queryKey: ['issues', 'nearby'],
         queryFn: async () => {
             console.log("url: ", ENV.apiUrl)
