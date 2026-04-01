@@ -1,12 +1,13 @@
 // mobile/src/screens/IssueDetailScreen.tsx
 import React, { useEffect, useState } from 'react';
 import { Platform, Text, ScrollView, FlatList, Image, StyleSheet, View, TouchableOpacity } from 'react-native';
-import { useRoute, RouteProp } from '@react-navigation/native';
+import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
 import { GetNearbyIssueResponse, Issue } from '@civickit/shared';
 import { format, formatDistanceToNow } from 'date-fns';
 import { CategoryIcon, ClockIcon, LocationPinIcon, TagIcon, WrenchIcon } from '../components/Icons';
 import { borderRadius, colors, palette, size, spacing, typography } from '../styles';
 import Pin from '../components/Pin';
+import { useAuth } from '../contexts/AuthContext';
 
 let MapView: any = null;
 let Marker: any = null;
@@ -25,6 +26,8 @@ type IssueDetailRouteProp = RouteProp<
 const IssueDetailScreen = () => {
   const route = useRoute<IssueDetailRouteProp>();
   const { issue } = route.params;
+  const navigation = useNavigation();
+  const { authToken } = useAuth();
 
   const [category, setCategory] = useState<String>(issue.category.replace(/_/g, " ").toLowerCase())
 
