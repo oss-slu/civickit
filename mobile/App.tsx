@@ -12,6 +12,7 @@ import IssueCreationScreen from './src/screens/IssueCreationScreen';
 import IssueDetailScreen from './src/screens/IssueDetailScreen';
 import LoginScreen from './src/screens/LoginScreen';
 import RegisterScreen from './src/screens/RegisterScreen';
+import NewIssueButton from './src/components/NewIssueButton';
 
 const queryClient = new QueryClient();
 
@@ -25,7 +26,10 @@ function AppNavigator() {
       <Stack.Navigator screenOptions={{ animation: 'slide_from_right' }}>
         {isLoggedIn ? (
           <>
-            <Stack.Screen name="Nearby Issues" component={HomeScreen} />
+            <Stack.Screen name="Nearby Issues" component={HomeScreen}
+            options={{
+                  headerRight: () => (<NewIssueButton isDisabled={false} />),
+                }} /> 
             <Stack.Screen name="Create Issue" component={IssueCreationScreen} />
             <Stack.Screen name="Issue Details" component={IssueDetailScreen} />
           </>
