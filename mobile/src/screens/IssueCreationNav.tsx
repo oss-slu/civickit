@@ -1,7 +1,5 @@
 // mobile/src/screens/LandingScreen.tsx
-import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { QueryClient } from '@tanstack/react-query';
 import IssueCreationScreen from './IssueCreationScreen';
 import IssueDetailScreen from './IssueDetailScreen';
 import ErrorScreen from './ErrorScreen';

@@ -1,19 +1,21 @@
+//mobile/src/screens/HomeScreen.tsx
 import { useContext, useState } from "react";
-import LoadingScreen from "./LoadingScreen";
-import MapViewScreen from "./MapViewScreen";
 import { LocationContext } from "../types/LocationContext";
 import { useAuth } from '../contexts/AuthContext';
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { userLocation } from "../types/userLocation";
-import ENV from '../config/env';
 import { MessageView } from "../components/MessageView";
 import { View, Text, StyleSheet } from 'react-native';
 import { CategoryIcon, RefreshIcon, StatusIcon, WarningIcon } from '../components/Icons';
 import { borderRadius, colors, globalStyles, palette, size, spacing, typography } from '../styles';
 import { IssueCategoryArray } from "../types/IssueCategoryArray";
 import { IssueStatusArray } from "../types/IssueStatusArray";
+
 import FilterCheckList from "../components/FilterCheckList";
 import IconButton from "../components/IconButton";
+import ENV from '../config/env';
+import LoadingScreen from "./LoadingScreen";
+import MapViewScreen from "./MapViewScreen";
 
 //mobile/src/screens/HomeScreen.tsx
 export default function HomeScreen() {
