@@ -176,7 +176,7 @@ export default function IssueCreationScreen() {
                 color: colors.textContrast
             });
             const issue = await response.json()
-            navigation.replace('Issue Details', { issue: issue })
+            navigation.navigate('Issue Details', { issue: issue })
 
         } catch (error: any) {
             if (error.message.includes("latitude") || error.message.includes("longtitude")) {
