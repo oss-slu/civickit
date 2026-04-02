@@ -11,4 +11,6 @@ export type StackParams = {
     "Error": {
         errorMessage: string
     },
+    "Register": {},
+    "Login": {},
 }

@@ -2,6 +2,7 @@ import { useContext, useState } from "react";
 import LoadingScreen from "./LoadingScreen";
 import MapViewScreen from "./MapViewScreen";
 import { LocationContext } from "../types/LocationContext";
+import { useAuth } from '../contexts/AuthContext';
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { userLocation } from "../types/userLocation";
 import ENV from '../config/env';
@@ -23,6 +24,7 @@ export default function HomeScreen() {
     //get contexts from above layer(s)
     const queryClient = useQueryClient()
     const location = useContext(LocationContext) as unknown as userLocation
+    const { logout } = useAuth();
 
     //fetch issues from database 
     var { data, isLoading, error, refetch } = useQuery({
@@ -104,6 +106,10 @@ export default function HomeScreen() {
                         style={styles.button}>
                         <RefreshIcon size={size.xl} style={{ alignSelf: "center", marginBottom: 2 }} />
                     </IconButton>
+                    <IconButton onPress={logout}
+                        style={[styles.button, styles.logoutButton]}>
+                        <Text style={styles.logoutText}>Logout</Text>
+                    </IconButton>
                 </View>
             </View>
 
@@ -177,5 +183,14 @@ const styles = StyleSheet.create({
         width: "auto",
         columnGap: spacing.sm,
         justifyContent: "flex-end",
+    },
+    logoutButton: {
+        paddingHorizontal: spacing.sm,
+        paddingVertical: spacing.xs,
+    },
+    logoutText: {
+        fontSize: typography.sizeSm,
+        color: colors.textPrimary,
+        fontWeight: typography.weightBold,
     },
 })
