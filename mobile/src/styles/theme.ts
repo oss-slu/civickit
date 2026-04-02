@@ -54,7 +54,7 @@ export const colors = {
 export const spacing = {
     xs: 4,
     sm: 8,
-    sd: 14,
+    sd: 12,
     md: 16,
     ml: 20,
     lg: 24,
@@ -96,6 +96,7 @@ export const size = {
     cardExpanded: 120,
     longButton: 200,
     imageLg: 340,
+    navBar: 88
 };
 
 export const statusColors: Record<string, { background: string, stroke: string, text: string }> = {

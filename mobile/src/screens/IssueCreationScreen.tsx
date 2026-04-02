@@ -197,7 +197,7 @@ export default function IssueCreationScreen() {
 
     return (
         <>
-            <KeyboardAwareScrollView enableOnAndroid enableAutomaticScroll extraScrollHeight={300}
+            <KeyboardAwareScrollView enableOnAndroid enableAutomaticScroll extraScrollHeight={100}
                 style={styles.container}
                 contentContainerStyle={{ gap: spacing.sm }}>
 

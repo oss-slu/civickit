@@ -19,12 +19,12 @@ import { GetNearbyIssueResponse } from '@civickit/shared';
 export default function MapViewScreen({ issues, refetch }: any) {
     const navigation = useNavigation<StackNavigationProp<StackParams>>();
     const bottomSheetRef = useRef<BottomSheet>(null);
-    const snapPoints = ["10%", "30%", "80%"]
-    const [bottomSheetPos, setBottomSheetPos] = useState<String>("10%");
+    const snapPoints = [36, "30%", "80%"]
+    const [bottomSheetPos, setBottomSheetPos] = useState<String | number>(36);
     const [currentIssue, setCurrentIssue] = useState<GetNearbyIssueResponse | undefined>(undefined)
     const fadeAnim = useAnimatedValue(0);
     const posAnim = useAnimatedValue(0);
-    const [paddingBottom, setPaddingBottom] = useState("130%")
+    const [paddingBottom, setPaddingBottom] = useState("110%")
 
     //get contexts from above layer(s)
     const location = useContext(LocationContext) as unknown as userLocation
@@ -48,12 +48,14 @@ export default function MapViewScreen({ issues, refetch }: any) {
             duration: 200,
             useNativeDriver: true,
         }).start(({ finished }) => {
-            callback
+            if (callback != undefined) {
+                callback()
+            }
         });
     };
     const moveCallout = (toIndex: number, toPosition: number) => {
         if (toIndex != 2) {
-            setPaddingBottom("130%")
+            setPaddingBottom("110%")
             Animated.timing(posAnim, {
                 toValue: toPosition - 132,
                 duration: 200,
@@ -61,7 +63,7 @@ export default function MapViewScreen({ issues, refetch }: any) {
             }).start(({ finished }) => {
             })
         } else {
-            setPaddingBottom("20%")
+            setPaddingBottom("10%")
         }
 
     }
@@ -113,7 +115,11 @@ export default function MapViewScreen({ issues, refetch }: any) {
                 <CalloutPopup
                     issue={currentIssue}
                     onClosePress={() => {
-                        closeCallout(() => { setCurrentIssue(undefined) })
+                        closeCallout(() => {
+
+                            setCurrentIssue(undefined)
+                        })
+
 
                     }}
                     onForwardPress={() => {
@@ -136,7 +142,8 @@ export default function MapViewScreen({ issues, refetch }: any) {
                     backgroundColor: colors.background
                 }}
                 handleIndicatorStyle={{
-                    backgroundColor: palette.ckDarkGray
+                    backgroundColor: palette.ckDarkGray,
+                    width: size.xxxl
                 }}
                 backdropComponent={(props: any) => (
                     <BottomSheetBackdrop

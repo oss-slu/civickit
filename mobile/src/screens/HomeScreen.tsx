@@ -89,7 +89,7 @@ export default function HomeScreen() {
                         buttonStyle={styles.button}
                         setSelectedValues={setVisibleCategories}
                     >
-                        <CategoryIcon size={size.xxl} style={{ alignSelf: "center" }} />
+                        <CategoryIcon size={size.xl} style={{ alignSelf: "center" }} />
                     </FilterCheckList>
 
                     <FilterCheckList
@@ -97,14 +97,14 @@ export default function HomeScreen() {
                         buttonStyle={styles.button}
                         setSelectedValues={setVisibleStatuses}
                     >
-                        <StatusIcon size={size.xxl} style={{ alignSelf: "center" }} />
+                        <StatusIcon size={size.xl} style={{ alignSelf: "center" }} />
                     </FilterCheckList>
 
                 </View>
                 <View style={styles.buttonCol}>
                     <IconButton onPress={refetch}
                         style={styles.button}>
-                        <RefreshIcon size={size.xxl} style={{ alignSelf: "center" }} />
+                        <RefreshIcon size={size.xl} style={{ alignSelf: "center", marginBottom: 2 }} />
                     </IconButton>
                     <IconButton onPress={logout}
                         style={[styles.button, styles.logoutButton]}>
@@ -159,18 +159,6 @@ const styles = StyleSheet.create({
         width: "auto",
         columnGap: spacing.xs,
     },
-    iconContainer: {
-        width: size.xl,
-        backgroundColor: palette.ckYellow,
-        padding: spacing.sm,
-        borderRadius: borderRadius.full,
-        alignSelf: "center",
-        justifyContent: "center",
-        alignItems: "center",
-        ...globalStyles.shadow,
-        flexDirection: "row",
-        columnGap: spacing.xs
-    },
     text: {
         fontSize: typography.sizeLg,
         fontWeight: typography.weightBold,
@@ -184,13 +172,16 @@ const styles = StyleSheet.create({
     overlay: {
         position: "absolute",
         flexDirection: "row",
-        justifyContent: "space-between",
+        // justifyContent: "space-between",
+        alignItems: "flex-start",
         width: "100%",
+        margin: spacing.sm,
+        columnGap: spacing.sm,
     },
     buttonCol: {
+        flexDirection: "row",
         width: "auto",
-        margin: spacing.sm,
-        rowGap: spacing.sm,
+        columnGap: spacing.sm,
         justifyContent: "flex-end",
     },
     logoutButton: {
