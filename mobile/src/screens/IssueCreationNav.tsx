@@ -11,9 +11,10 @@ import NewIssueButton from '../components/NewIssueButton';
 import { colors, typography } from '../styles';
 import HomeScreen from './HomeScreenWrapper';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-const Stack = createNativeStackNavigator<StackParams>();
+import { IssueCreationParams } from '../types/IssueCreationParams';
+const Stack = createNativeStackNavigator<IssueCreationParams>();
 
-export default function LandingScreen() {
+export default function IssueCreationNav() {
 
     return (
         <Stack.Navigator screenOptions={{
@@ -28,7 +29,7 @@ export default function LandingScreen() {
 
         }}
         >
-            <Stack.Screen name="Nearby Issues" component={HomeScreen} />
+            <Stack.Screen name="Report An Issue" component={IssueCreationScreen} />
             <Stack.Screen name="Issue Details" component={IssueDetailScreen} />
             <Stack.Screen name="Error" component={ErrorScreen} />
         </Stack.Navigator>
