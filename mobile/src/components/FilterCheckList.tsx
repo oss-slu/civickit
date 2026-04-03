@@ -10,7 +10,7 @@ export default function ModalDropdown({ data, setSelectedValues, buttonStyle, ch
     const [isVisible, setIsVisible] = useState(false)
     const [selected, setSelected] = useState(() => {
         let list: boolean[] = []
-        for (var i = 0; i < data.length; i++) {
+        for (let i = 0; i < data.length; i++) {
             list.push(true);
         }
         return list
