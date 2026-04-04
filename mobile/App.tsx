@@ -23,6 +23,7 @@ import IssueDetailScreen from './src/screens/IssueDetailScreen';
 import LoginScreen from './src/screens/LoginScreen';
 import RegisterScreen from './src/screens/RegisterScreen';
 import NewIssueButton from './src/components/NewIssueButton';
+import IssueCreationNav from './src/screens/IssueCreationNav';
 
 const Tab = createBottomTabNavigator<TabParams>();
 
@@ -64,7 +65,7 @@ function MainTabNavigator() {
           ),
         }} />
 
-      <Tab.Screen name="Report An Issue" component={IssueCreationScreen}
+      <Tab.Screen name="ReportIssue" component={IssueCreationNav}
         options={{
           tabBarIcon: () => (
             <View
@@ -76,6 +77,7 @@ function MainTabNavigator() {
               />
             </View>
           ),
+          headerShown: false
         }} />
       <Tab.Screen name="Events" component={EventsScreen}
         options={{

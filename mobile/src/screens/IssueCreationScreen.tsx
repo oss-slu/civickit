@@ -4,21 +4,22 @@ import * as Location from 'expo-location';
 import React, { useEffect, useState } from 'react';
 import { userLocation } from '../types/userLocation';
 import { View, StyleSheet, ScrollView, TextInput, Text, FlatList, TouchableOpacity } from 'react-native';
-import SelectedImage from '../components/SelectedImage';
-import ModalDropdown from '../components/ModalDropdown';
-import ENV from '../config/env';
-import { useNavigation, } from '@react-navigation/native';
+import { useFocusEffect, useNavigation, } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { showMessage } from "react-native-flash-message";
 import { StackParams } from '../types/StackParams';
 import { borderRadius, colors, globalStyles, spacing, palette, size, typography } from '../styles';
-import Button from '../components/Button';
-import IconButton from '../components/IconButton';
 import { CameraIcon, PictureIcon } from '../components/Icons';
-import LoadingScreen from './LoadingScreen';
 import { IssueCategoryArray } from '../types/IssueCategoryArray';
 import { useAuth } from '../contexts/AuthContext';
+
+import LoadingScreen from './LoadingScreen';
+import Button from '../components/Button';
+import IconButton from '../components/IconButton';
+import SelectedImage from '../components/SelectedImage';
+import ModalDropdown from '../components/ModalDropdown';
+import ENV from '../config/env';
 
 
 export default function IssueCreationScreen() {
@@ -176,7 +177,10 @@ export default function IssueCreationScreen() {
                 color: colors.textContrast
             });
             const issue = await response.json()
-            navigation.replace('Issue Details', { issue: issue })
+            setImages([])
+            setTitle("")
+            setDescription("")
+            navigation.navigate('Issue Details', { issue: issue })
 
         } catch (error: any) {
             if (error.message.includes("latitude") || error.message.includes("longtitude")) {
