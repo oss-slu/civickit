@@ -6,6 +6,7 @@ import { GetNearbyIssueResponse, Issue } from '@civickit/shared';
 import { format, formatDistanceToNow } from 'date-fns';
 import { CategoryIcon, ClockIcon, LocationPinIcon, TagIcon, WrenchIcon } from '../components/Icons';
 import { borderRadius, colors, palette, size, spacing, typography } from '../styles';
+import ENV from '../config/env';
 import Pin from '../components/Pin';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -32,8 +33,10 @@ useEffect(() => {
 const IssueDetailScreen = () => {
   const route = useRoute<IssueDetailRouteProp>();
   const { issue } = route.params;
-  const navigation = useNavigation();
-  const { authToken } = useAuth();
+
+  const [hasEndorsed, setHasEndorsed] = useState(false);
+  const [upvoteCount, setUpvoteCount] = useState(issue.upvoteCount ?? 0);
+  const [loading, setLoading] = useState(false);
 
   const handleEndorse = async () => {
     if (loading) return;
@@ -42,7 +45,7 @@ const IssueDetailScreen = () => {
       setLoading(true);
 
       //DO NOT LEAVE THIS HERE, TESTING PURPOSES ONLY
-      const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbWwxcHB4aTQwMDAwbW5pdGVidmNqb2k2IiwiaWF0IjoxNzc0Mjc3OTI0LCJleHAiOjE3NzQ4ODI3MjR9.HZM4EfD7arRk7f2LMSnzo9Pd0e_xL9vt_tBeQeq8LnI";
+      const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbWwxcHB4aTQwMDAwbW5pdGVidmNqb2k2IiwiaWF0IjoxNzc0ODg3ODE3LCJleHAiOjE3NzU0OTI2MTd9.xQIfQPFVQ6DCEiebQM_69PMWX2EqFtICMMWnmwchxos";
 
       const method = hasEndorsed ? 'DELETE' : 'POST';
 
@@ -68,6 +71,8 @@ const IssueDetailScreen = () => {
     }
   };
 
+  const [category, setCategory] = useState<String>(issue.category.replace(/_/g, " ").toLowerCase())
+
   return (
     <View style={styles.page}>
       <ScrollView contentContainerStyle={styles.container}>
@@ -80,7 +85,7 @@ const IssueDetailScreen = () => {
 
           <View style={styles.countBadge}>
             <Text style={styles.countLabel}>count</Text>
-            <Text style={styles.countValue}>{issue.upvoteCount ?? 0}</Text>
+            <Text style={styles.countValue}>{upvoteCount}</Text>
           </View>
         </View>
 
@@ -180,9 +185,9 @@ const IssueDetailScreen = () => {
         </Text>
       </ScrollView>
 
-      {/* Bottom Action Button */}
-      <TouchableOpacity style={styles.endorseButton} >
-        <Text style={styles.endorseText}>Endorse</Text>
+      {/* Upvote / Endorse Button */}
+      <TouchableOpacity style={styles.endorseButton} onPress={handleEndorse}>
+        <Text style={styles.endorseText}>{hasEndorsed ? 'Endorsed ✓' : 'Endorse'}</Text>
       </TouchableOpacity>
     </View>
   );
