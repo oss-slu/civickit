@@ -3,6 +3,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import React, { useEffect, useState } from 'react';
 import { userLocation } from '../types/userLocation';
+import { uploadImagesToCloudinary } from '../services/cloudinaryService';
 import { View, StyleSheet, ScrollView, TextInput, Text, FlatList, TouchableOpacity } from 'react-native';
 import { useFocusEffect, useNavigation, } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack'
@@ -140,47 +141,80 @@ export default function IssueCreationScreen() {
 
     const handleSubmit = async () => {
         try {
-            const formData = new FormData();
-            formData.append('title', title);
-            formData.append('description', description);
-            formData.append('category', category!);
-            formData.append('latitude', location!.latitude.toString());
-            formData.append('longitude', location!.longitude.toString());
-            images.forEach(uri => {
-                formData.append('images', { uri: uri, type: 'image/jpeg', name: 'photo.jpg' } as unknown as File);
-            });
-
             if (!authToken) {
                 navigation.navigate('Error', { errorMessage: 'Not authenticated' });
                 throw new Error('No auth token available');
             }
-            const request = new Request(ENV.apiUrl + '/issues/', {
+
+            const totalStartTime = Date.now();
+            const performanceLog = {
+                timestamp: new Date().toISOString(),
+                imageCount: images.length,
+                times: {} as any,
+            };
+
+            setIsLoading(true);
+
+            // Step 1: Upload images to Cloudinary
+            let imageUrls: string[] = [];
+            if (images.length > 0) {
+                try {
+                    const imageUploadStartTime = Date.now();
+                    showMessage({
+                        message: "Uploading images...",
+                        backgroundColor: palette.ckGreen,
+                        color: colors.textContrast
+                    });
+                    imageUrls = await uploadImagesToCloudinary(images, authToken);
+                    performanceLog.times.imageUploadMs = Date.now() - imageUploadStartTime;
+                } catch (uploadError) {
+                    setIsLoading(false);
+                    navigation.navigate('Error', { errorMessage: 'Image upload to Cloudinary failed' });
+                    throw uploadError;
+                }
+            }
+
+            // Step 2: Send issue data with image URLs to backend
+            const requestBody = {
+                title,
+                description,
+                category: category!,
+                latitude: location!.latitude,
+                longitude: location!.longitude,
+                images: imageUrls
+            };
+
+            const backendStartTime = Date.now();
+            const response = await fetch(ENV.apiUrl + '/issues/', {
                 method: 'POST',
                 headers: {
+                    'Content-Type': 'application/json',
                     Authorization: `Bearer ${authToken}`,
                 },
-                body: formData
-            })
+                body: JSON.stringify(requestBody)
+            });
+            performanceLog.times.backendSubmitMs = Date.now() - backendStartTime;
 
-            setIsLoading(true)
+            setIsLoading(false);
 
-            const response = await fetch(request)
-            setIsLoading(false)
             if (!response.ok) {
-                navigation.navigate('Error', { errorMessage: 'Upload Failed' })
+                navigation.navigate('Error', { errorMessage: 'Upload Failed' });
                 throw new Error("Issue could not be reported at this time");
             }
+
+            performanceLog.times.totalMs = Date.now() - totalStartTime;
+            console.log('Issue Creation Performance:', performanceLog);
 
             showMessage({
                 message: "Issue reported! Thank you for making your community better",
                 backgroundColor: palette.ckGreen,
                 color: colors.textContrast
             });
-            const issue = await response.json()
-            setImages([])
-            setTitle("")
-            setDescription("")
-            navigation.navigate('Issue Details', { issue: issue })
+            const issue = await response.json();
+            setImages([]);
+            setTitle("");
+            setDescription("");
+            navigation.navigate('Issue Details', { issue: issue });
 
         } catch (error: any) {
             if (error.message.includes("latitude") || error.message.includes("longtitude")) {
