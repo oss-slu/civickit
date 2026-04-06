@@ -10,6 +10,8 @@ import authRoutes from "./routes/auth.routes";
 import loginRoutes from './routes/login.routes';
 import RateLimit from 'express-rate-limit';
 import { authMiddleware } from './middleware/auth.middleware';
+import { errorHandler } from './middleware/error.middleware';
+import { requestLogger } from './middleware/logger.middleware';
 
 dotenv.config();
 
@@ -26,6 +28,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.options('/{*path}', cors(corsOptions)); // handle preflight
 app.use(express.json());
+app.use(requestLogger);
 
 // Health check
 app.get('/health', (req, res) => {
@@ -47,13 +50,16 @@ app.use('/api/auth', authRoutes);
 app.use('/api/issues/upvote', authMiddleware);
 
 // Error handling
-app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error("FULL ERROR:", err);
-
-  return res.status(err.status || 500).json({
-    error: err.message || 'Something went wrong!'
+// 404 handler
+app.use((req, res, next) => {
+  res.status(404).json({
+    success: false,
+    message: 'Route not found',
   });
 });
+
+// global error handler
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
