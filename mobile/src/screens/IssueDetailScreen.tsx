@@ -1,5 +1,5 @@
 // mobile/src/screens/IssueDetailScreen.tsx
-import React, { useState, useEffect, use } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Platform, Text, ScrollView, FlatList, Image, StyleSheet, View, TouchableOpacity } from 'react-native';
 import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
 import { GetNearbyIssueResponse, Issue } from '@civickit/shared';
@@ -24,12 +24,6 @@ type IssueDetailRouteProp = RouteProp<
   'IssueDetails'
 >;
 
-useEffect(() => {
-  (async () => {
-
-  })();
-}, []);
-
 const IssueDetailScreen = () => {
   const route = useRoute<IssueDetailRouteProp>();
   const { issue } = route.params;
@@ -38,14 +32,39 @@ const IssueDetailScreen = () => {
   const [upvoteCount, setUpvoteCount] = useState(issue.upvoteCount ?? 0);
   const [loading, setLoading] = useState(false);
 
+  const navigation = useNavigation();
+  const { authToken } = useAuth();
+
+  useEffect(() => {
+    const fetchUpvoteState = async () => {
+      try {
+        const res = await fetch(
+          `${ENV.apiUrl}/issues/${issue.id}/upvote`,
+          {
+            headers: {
+              Authorization: `Bearer ${authToken}`,
+            },
+          }
+        );
+
+        const data = await res.json();
+
+        setHasEndorsed(data.upvoted);
+        setUpvoteCount(data.upvoteCount);
+      } catch (err) {
+        console.error("Failed to fetch upvote state:", err);
+      }
+    };
+
+    fetchUpvoteState();
+  }, []);
+
+
   const handleEndorse = async () => {
     if (loading) return;
 
     try {
       setLoading(true);
-
-      //DO NOT LEAVE THIS HERE, TESTING PURPOSES ONLY
-      const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbWwxcHB4aTQwMDAwbW5pdGVidmNqb2k2IiwiaWF0IjoxNzc0ODg3ODE3LCJleHAiOjE3NzU0OTI2MTd9.xQIfQPFVQ6DCEiebQM_69PMWX2EqFtICMMWnmwchxos";
 
       const method = hasEndorsed ? 'DELETE' : 'POST';
 
@@ -54,7 +73,7 @@ const IssueDetailScreen = () => {
         {
           method,
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${authToken}`,
           },
         }
       );

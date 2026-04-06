@@ -43,8 +43,8 @@ export class UpvoteController {
     try {
       const { issueId } = req.params;
       const userId = String(req.userId);
-      // const result = await upvoteService.getUpvoteCount(String(issueId), userId);
-      const result = await upvoteService.getUpvoteCount(String(issueId));
+      const result = await upvoteService.getUpvoteCount(String(issueId), userId);
+      // const result = await upvoteService.getUpvoteCount(String(issueId));
 
       res.status(200).json(result);
 

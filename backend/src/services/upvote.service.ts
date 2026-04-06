@@ -47,17 +47,16 @@ export class UpvoteService {
     };
   }
 
-  async getUpvoteCount(issueId: string) {
-    const upvoteCount = await this.upvoteRepository.countUpvotes(issueId);
+  async getUpvoteCount(issueId: string, userId: string) {
+    const [count, hasUpvoted] = await Promise.all([
+      this.upvoteRepository.countUpvotes(issueId),
+      this.upvoteRepository.exists(issueId, userId),
+    ]);
 
-    return { upvoteCount };
+    return {
+      upvoteCount: count,
+      upvoted: hasUpvoted,
+    };
   }
-
-  // async getUpvoteCount(issueId: string, userId: string) {
-  //   const upvoteCount = await this.upvoteRepository.countUpvotes(issueId);
-  //   const hasUpvoted = await this.upvoteRepository.exists(issueId, userId);
-
-  //   return { upvoteCount, hasUpvoted };
-  // }
 
 }
