@@ -51,7 +51,7 @@ async function getUploadSignature(authToken: string): Promise<UploadSignature> {
             expiresAt: Date.now() + SIGNATURE_CACHE_DURATION_MS,
         };
         
-        console.log(`⏱️ Signature Request: ${elapsed}ms (network + parse)`);
+        console.log(`Signature Request: ${elapsed}ms (network + parse)`);
         return result;
     } catch (error) {
         console.error('Error getting upload signature:', error);
