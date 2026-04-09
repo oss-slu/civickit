@@ -5,6 +5,7 @@ import IssueDetailScreen from './IssueDetailScreen';
 import ErrorScreen from './ErrorScreen';
 import { StackParams } from '../types/StackParams';
 import { colors, typography } from '../styles';
+import IssuePhotoScreen from './IssuePhotoScreen';
 const Stack = createNativeStackNavigator<StackParams>();
 
 export default function IssueCreationNav() {
@@ -22,6 +23,10 @@ export default function IssueCreationNav() {
 
         }}
         >
+            <Stack.Screen name="Issue Picture" component={IssuePhotoScreen}
+                options={{
+                    headerShown: false
+                }} />
             <Stack.Screen name="Report An Issue" component={IssueCreationScreen} />
             <Stack.Screen name="Issue Details" component={IssueDetailScreen} />
             <Stack.Screen name="Error" component={ErrorScreen} />

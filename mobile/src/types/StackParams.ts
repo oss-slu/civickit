@@ -14,4 +14,5 @@ export type StackParams = {
     "Main": {},
     "Register": {},
     "Login": {},
+    "Issue Picture": {}
 }

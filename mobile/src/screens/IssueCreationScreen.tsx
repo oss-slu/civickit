@@ -97,7 +97,7 @@ export default function IssueCreationScreen() {
                 mediaTypes: ['images'],
                 quality: 0.8,
             });
-            //does not work on web, retruns unusable uri
+            //does not work on web, returns unusable uri
             if (!result.canceled) {
                 setImages([...images, result.assets[0].uri]);
             }
