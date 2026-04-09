@@ -2,9 +2,11 @@
 import { Request, Response, NextFunction } from 'express';
 import { IssueService } from '../services/issue.service';
 import { IssueRepository } from '../repositories/issue.repository';
+import { UpvoteRepository } from '../repositories/upvote.repository';
 
 const issueRepository = new IssueRepository();
-const issueService = new IssueService(issueRepository);
+const upvoteRepository = new UpvoteRepository();
+const issueService = new IssueService(issueRepository, upvoteRepository);
 
 export class IssueController {
   async createIssue(req: Request, res: Response, next: NextFunction) {
