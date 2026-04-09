@@ -27,4 +27,18 @@ export class UpvoteRepository {
       where: { issueId },
     });
   }
+
+  async exists(issueId: string, userId: string): Promise<boolean> {
+    const upvote = await prisma.upvote.findUnique({
+      where: {
+        issueId_userId: {
+          issueId,
+          userId,
+        },
+      },
+      select: { issueId: true },
+    });
+
+    return !!upvote;
+  }
 }

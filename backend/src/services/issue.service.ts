@@ -3,9 +3,11 @@
 import { IssueRepository } from '../repositories/issue.repository';
 import { CreateIssueDTO } from '@civickit/shared';
 import { uploadImage } from '../utils/cloudinary';
+import { UpvoteRepository } from '../repositories/upvote.repository';
+import { is } from 'zod/v4/locales';
 
 export class IssueService {
-  constructor(private issueRepository: IssueRepository) { }
+  constructor(private issueRepository: IssueRepository, private upvoteRepository: UpvoteRepository) { }
 
   async createIssue(data: CreateIssueDTO, userId: string, files?: Express.Multer.File[]) {
     let uploadedImages: string[] = [];
@@ -34,9 +36,23 @@ export class IssueService {
     return this.issueRepository.create({ ...data, userId, images: uploadedImages });
   }
 
-
   async getNearbyIssues(lat: number, lng: number, radius?: number) {
-    return this.issueRepository.findNearby(lat, lng, radius);
+    const issues = await this.issueRepository.findNearby(lat, lng, radius);
+
+    const issuesWithUpvoteCounts = await Promise.all(
+      issues.map(async (issue) => {
+
+        const upvoteCount = await this.upvoteRepository.countUpvotes(issue.id);
+
+        return {
+          ...issue,
+          upvoteCount,
+        };
+
+      })
+    );
+
+    return issuesWithUpvoteCounts;
   }
 
   async getIssueById(id: string) {
@@ -44,6 +60,12 @@ export class IssueService {
     if (!issue) {
       throw { status: 404, message: 'Issue not found' };
     }
-    return issue;
+
+    const upvoteCount = await this.upvoteRepository.countUpvotes(issue.id);
+
+    return {
+      ...issue,
+      upvoteCount,
+    };
   }
 }

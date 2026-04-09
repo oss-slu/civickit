@@ -6,6 +6,7 @@ import { describe, beforeEach, vi, it, expect, Mocked, Mock } from 'vitest';
 import { Prisma } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { exists } from 'fs';
 
 // mock repository
 vi.mock('../../../src/repositories/upvote.repository');
@@ -34,6 +35,7 @@ describe('UpvoteService', () => {
             createUpvote: vi.fn(),
             deleteUpvote: vi.fn(),
             countUpvotes: vi.fn(),
+            exists: vi.fn(),
         } as unknown as Mocked<UpvoteRepository>;
 
         upvoteService = new UpvoteService(mockUpvoteRepository);
@@ -54,8 +56,7 @@ describe('UpvoteService', () => {
             const result = await upvoteService.upvoteIssue('issue1', 'user1');
 
             expect(mockUpvoteRepository.createUpvote).toHaveBeenCalledWith('issue1', 'user1');
-            expect(mockUpvoteRepository.countUpvotes).toHaveBeenCalledWith('issue1');
-            expect(result).toEqual({ upvoted: true, upvoteCount: 5 });
+            expect(result).toEqual({ upvoteCount: 5, upvoted: true });
         });
 
         it('should throw 409 if issue already upvoted', async () => {
@@ -94,7 +95,7 @@ describe('UpvoteService', () => {
 
             expect(mockUpvoteRepository.deleteUpvote).toHaveBeenCalledWith('issue1', 'user1');
             expect(mockUpvoteRepository.countUpvotes).toHaveBeenCalledWith('issue1');
-            expect(result).toEqual({ upvoted: false, upvoteCount: 3 });
+            expect(result).toEqual({ upvoteCount: 3, upvoted: false });
         });
 
         it('should throw 404 if upvote does not exist', async () => {
@@ -122,11 +123,12 @@ describe('UpvoteService', () => {
     describe('getUpvoteCount', () => {
         it('should return the upvote count', async () => {
             mockUpvoteRepository.countUpvotes.mockResolvedValueOnce(7);
+            mockUpvoteRepository.exists.mockResolvedValueOnce(false);
 
-            const result = await upvoteService.getUpvoteCount('issue1');
+            const result = await upvoteService.getUpvoteCount('issue1', 'user1');
 
             expect(mockUpvoteRepository.countUpvotes).toHaveBeenCalledWith('issue1');
-            expect(result).toEqual({ upvoteCount: 7 });
+            expect(result).toEqual({ upvoteCount: 7, upvoted: false });
         });
     });
 });

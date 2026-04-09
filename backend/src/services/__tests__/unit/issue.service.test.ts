@@ -6,15 +6,19 @@
 
 import { IssueService } from '../../issue.service';
 import { IssueRepository } from '../../../repositories/issue.repository';
+import { UpvoteRepository } from '../../../repositories/upvote.repository';
 import { describe, beforeEach, vi, it, expect, Mocked } from 'vitest';
 import { CreateIssueDTO } from '@civickit/shared';
+import { mock } from 'node:test';
 
 // Mock the repository, not integration test
 vi.mock('../../../src/repositories/issue.repository');
+vi.mock('../../../src/repositories/upvote.repository');
 
 describe('IssueService', () => {
   let issueService: IssueService;
   let mockIssueRepository: Mocked<IssueRepository>;
+  let mockUpvoteRepository: Mocked<UpvoteRepository>;
 
   beforeEach(() => {
     // Create mock repository
@@ -23,8 +27,15 @@ describe('IssueService', () => {
       findById: vi.fn(),
       findNearby: vi.fn(),
     } as unknown as Mocked<IssueRepository>;
-    //mockIssueRepository = new IssueRepository() as Mocked<IssueRepository>;
-    issueService = new IssueService(mockIssueRepository);
+
+    mockUpvoteRepository = {
+      createUpvote: vi.fn(),
+      deleteUpvote: vi.fn(),
+      countUpvotes: vi.fn(),
+      exists: vi.fn(),
+    } as unknown as Mocked<UpvoteRepository>;
+
+    issueService = new IssueService(mockIssueRepository, mockUpvoteRepository);
   });
 
   const makeInput = (

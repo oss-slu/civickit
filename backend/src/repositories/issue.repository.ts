@@ -1,6 +1,6 @@
 // backend/src/repositories/issue.repository.ts
 import prisma from "../prisma";
-import { CreateIssueDTO } from '@civickit/shared';
+import { CreateIssueDTO, Issue } from '@civickit/shared';
 
 export class IssueRepository {
   async create(data: CreateIssueDTO & { userId: string }) {
@@ -32,7 +32,7 @@ export class IssueRepository {
     });
   }
 
-  async findNearby(lat: number, lng: number, radiusMeters: number = 1000) {
+  async findNearby(lat: number, lng: number, radiusMeters: number = 1000): Promise<Issue[]> {
     // Using raw SQL for PostGIS geospatial query
     return prisma.$queryRaw`
       SELECT 
