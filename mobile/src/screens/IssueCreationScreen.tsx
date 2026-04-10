@@ -141,6 +141,17 @@ export default function IssueCreationScreen() {
 
     const handleSubmit = async () => {
         try {
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('description', description);
+            formData.append('category', category!);
+            formData.append('latitude', location!.latitude.toString());
+            formData.append('longitude', location!.longitude.toString());
+            formData.append('address', address);
+            images.forEach(uri => {
+                formData.append('images', { uri: uri, type: 'image/jpeg', name: 'photo.jpg' } as unknown as File);
+            });
+
             if (!authToken) {
                 navigation.navigate('Error', { errorMessage: 'Not authenticated' });
                 throw new Error('No auth token available');

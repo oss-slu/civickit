@@ -8,6 +8,7 @@ import { CategoryIcon, ClockIcon, LocationPinIcon, TagIcon, WrenchIcon } from '.
 import { borderRadius, colors, palette, size, spacing, typography } from '../styles';
 import { useAuth } from '../contexts/AuthContext';
 import { PROVIDER_GOOGLE } from 'react-native-maps/lib/ProviderConstants';
+import { useResolvedAddress, LocationSource } from '../hooks/useResolvedAddress';
 import ENV from '../config/env';
 import Pin from '../components/Pin';
 
@@ -35,6 +36,13 @@ const IssueDetailScreen = () => {
 
   const navigation = useNavigation();
   const { authToken } = useAuth();
+
+  const locationSources: LocationSource[] = [
+    // Future: unshift an EXIF source here when image EXIF extraction is implemented
+    // e.g. { latitude: exifCoords.lat, longitude: exifCoords.lng, priority: 'exif' }
+    { latitude: issue.latitude, longitude: issue.longitude, priority: 'gps' },
+  ];
+  const resolvedAddress = useResolvedAddress(locationSources);
 
   useEffect(() => {
     const fetchUpvoteState = async () => {
@@ -129,7 +137,7 @@ const IssueDetailScreen = () => {
               size={typography.sizeLg}
               style={styles.icon} />
             <Text style={styles.infoRowText}>
-              Neighborhood / Location
+              {resolvedAddress}
             </Text>
           </View>
 
@@ -273,7 +281,7 @@ const styles = StyleSheet.create({
   infoRowText: {
     fontSize: typography.sizeLg,
     color: colors.textSecondary,
-    textTransform: 'capitalize'
+    //textTransform: 'capitalize' causes region to lowercase, and Pm to act weird, need to fix categories without doing this line because now tags is all lowercase
   },
 
   infoRow: {

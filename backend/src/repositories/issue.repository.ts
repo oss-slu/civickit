@@ -11,6 +11,7 @@ export class IssueRepository {
         category: data.category,
         latitude: data.latitude,
         longitude: data.longitude,
+        address: data.address,
         images: data.images,
         userId: data.userId,
       },
