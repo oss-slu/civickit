@@ -1,17 +1,17 @@
 //mobile/src/screens/IssueCreationScreen.tsx
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { userLocation } from '../types/userLocation';
 import { uploadImagesToCloudinary } from '../services/cloudinaryService';
 import { View, StyleSheet, ScrollView, TextInput, Text, FlatList, TouchableOpacity } from 'react-native';
-import { useFocusEffect, useNavigation, } from '@react-navigation/native';
+import { StaticScreenProps, useFocusEffect, useNavigation, } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { showMessage } from "react-native-flash-message";
 import { StackParams } from '../types/StackParams';
 import { borderRadius, colors, globalStyles, spacing, palette, size, typography } from '../styles';
-import { CameraIcon, PictureIcon } from '../components/Icons';
+import { CameraIcon, PictureIcon, PlusIcon } from '../components/Icons';
 import { IssueCategoryArray } from '../types/IssueCategoryArray';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -21,21 +21,20 @@ import IconButton from '../components/IconButton';
 import SelectedImage from '../components/SelectedImage';
 import ModalDropdown from '../components/ModalDropdown';
 import ENV from '../config/env';
-
+import { AddressContext, CategoryContext, DescriptionContext, ImagesContext, TitleContext, UserLocationContext } from './IssueCreationNav';
 
 export default function IssueCreationScreen() {
-    const [images, setImages] = useState<string[]>([]);
-    const [location, setLocation] = useState<userLocation | null>(null);
-    const [address, setAddress] = useState<string>('Detecting location...');
-    const [title, setTitle] = useState<string>("");
-    const [category, setCategory] = useState<"POTHOLE" | "STREETLIGHT" | "GRAFFITI" | "ILLEGAL_DUMPING" | "BROKEN_SIDEWALK" | "TRAFFIC_SIGNAL" | "OTHER">();
-    const [description, setDescription] = useState<string>("");
+    const { images, setImages } = useContext(ImagesContext);
+    const { location, setLocation } = useContext(UserLocationContext);
+    const { address, setAddress } = useContext(AddressContext);
+    const { title, setTitle } = useContext(TitleContext);
+    const { category, setCategory } = useContext(CategoryContext);
+    const { description, setDescription } = useContext(DescriptionContext);
     const [submitAllowed, setSubmitAllowed] = useState<boolean>(false)
 
     const [isLoading, setIsLoading] = useState(false)
     const navigation = useNavigation<StackNavigationProp<StackParams>>()
     const { authToken } = useAuth();
-    //TODO: implement tags
 
     //get location
     useEffect(() => {
@@ -60,7 +59,7 @@ export default function IssueCreationScreen() {
                 } else {
                     setAddress(`${geocode[0].city}`);
                 }
-                console.log(`${geocode[0].street}, ${geocode[0].city}`)
+                // console.log(`${geocode[0].street}, ${geocode[0].city}`)
             }
         })();
     }, []);
@@ -96,6 +95,7 @@ export default function IssueCreationScreen() {
             const result = await ImagePicker.launchCameraAsync({
                 mediaTypes: ['images'],
                 quality: 0.8,
+
             });
             //does not work on web, returns unusable uri
             if (!result.canceled) {
@@ -137,6 +137,18 @@ export default function IssueCreationScreen() {
         return (
             <LoadingScreen />
         )
+    }
+
+    const handleCancel = () => {
+        setImages([])
+        setLocation(null)
+        setAddress('Detecting location...')
+        setTitle("")
+        setCategory(null)
+        setDescription("")
+
+
+        navigation.popTo("Camera", {})
     }
 
     const handleSubmit = async () => {
@@ -211,9 +223,13 @@ export default function IssueCreationScreen() {
                 color: colors.textContrast
             });
             const issue = await response.json();
-            setImages([]);
-            setTitle("");
-            setDescription("");
+            setImages([])
+            setLocation(null)
+            setAddress('Detecting location...')
+            setTitle("")
+            setCategory(null)
+            setDescription("")
+            navigation.replace("Camera", {})
             navigation.navigate('Issue Details', { issue: issue });
 
         } catch (error: any) {
@@ -245,25 +261,34 @@ export default function IssueCreationScreen() {
                     style={styles.titleTextBox}
                     maxLength={100} />
 
-                <ScrollView contentContainerStyle={styles.imageContainer}>
-                    <PictureIcon color={colors.textMuted}
-                        size={size.imageLg} style={[styles.defaultImage,
-                        images.length > 0 ? { display: "none" } : { display: "flex" }]} />
+                <View style={styles.imageContainer}>
 
-                    <FlatList
-                        data={images}
-                        horizontal
-                        keyExtractor={(item, index) => index.toString()}
-                        renderItem={({ item }) => (
-                            <SelectedImage source={item}
-                                width={size.imageLg}
-                                height={size.imageLg}
-                                onDeletePressed={onImageDeletePressed}
-                                style={{ marginHorizontal: spacing.sm }}
-                            />
-                        )}
-                    />
-                </ScrollView>
+                    <ScrollView >
+                        <PictureIcon color={colors.textMuted}
+                            size={size.imageLg} style={[styles.defaultImage,
+                            images.length > 0 ? { display: "none" } : { display: "flex" }]} />
+
+                        <FlatList
+                            data={images}
+                            horizontal
+                            style={{ alignSelf: "center" }}
+                            keyExtractor={(item, index) => index.toString()}
+                            renderItem={({ item }) => (
+                                <SelectedImage source={item}
+                                    width={size.imageLg}
+                                    height={size.imageLg}
+                                    onDeletePressed={onImageDeletePressed}
+                                    style={{ marginHorizontal: spacing.sm }}
+                                />
+                            )}
+                        />
+                    </ScrollView>
+
+                    <IconButton onPress={() => { navigation.navigate("Camera", { uri: images }) }} style={styles.photoButton}>
+                        <PlusIcon color={colors.textContrast}
+                            size={size.xl} />
+                    </IconButton>
+                </View>
 
                 <View style={styles.addressContainer}>
                     <Text style={styles.addressText}>{address}</Text>
@@ -279,28 +304,24 @@ export default function IssueCreationScreen() {
                     placeholder='Issue Description...'
                     style={styles.descTextBox}
                     multiline
-                    numberOfLines={7}
+                    numberOfLines={5}
                     maxLength={500}
                     focusable
                 />
             </KeyboardAwareScrollView>
 
             <View style={styles.buttonRow}>
-                <IconButton onPress={openCamera} style={styles.photoButton}>
-                    <CameraIcon color={colors.textContrast}
-                        size={size.lg} />
-                </IconButton>
+
+                <Button onPress={handleCancel}
+                    style={{ ...styles.submitButton, backgroundColor: palette.ckRed }}
+                    text="Cancel">
+                </Button>
 
                 <Button onPress={handleSubmit}
                     style={styles.submitButton}
                     isDisabled={!submitAllowed}
                     text="Submit">
                 </Button>
-
-                <IconButton onPress={pickImage} style={styles.photoButton}>
-                    <PictureIcon color={colors.textContrast}
-                        size={size.lg} />
-                </IconButton>
             </View>
         </>
 
@@ -323,7 +344,8 @@ const styles = StyleSheet.create({
         alignContent: "center",
         paddingVertical: spacing.sm,
         gap: spacing.sm,
-        height: "auto"
+        height: "auto",
+
     },
     defaultImage: {
         alignSelf: "center",
@@ -336,10 +358,13 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         width: "100%",
         position: "absolute",
-        bottom: spacing.xxxl,
+        bottom: spacing.lg,
     },
     photoButton: {
         backgroundColor: palette.ckBlue,
+        position: "absolute",
+        bottom: spacing.sm,
+        right: spacing.sm,
         ...globalStyles.shadow
     },
     submitButton: {

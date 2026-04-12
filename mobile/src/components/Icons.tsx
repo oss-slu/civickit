@@ -273,3 +273,12 @@ export function UserIcon(props: IconProps) {
             style={props.style} />
     )
 }
+
+export function FlipCameraIcon(props: IconProps) {
+    return (
+        <MaterialIcons name="flip-camera-android"
+            color={props.color}
+            size={props.size}
+            style={props.style} />
+    )
+}

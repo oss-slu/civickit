@@ -57,7 +57,7 @@ export const globalStyles = StyleSheet.create({
         justifyContent: "center",
         alignContent: "center",
         alignItems: "center",
-        textAlign: "center"
+        textAlign: "center",
     },
 
     disabledbutton: {

@@ -37,7 +37,7 @@ export default function HomeScreen() {
                 ENV.apiUrl + '/issues/nearby?lat=' +
                 location.latitude + '&lng=' + location.longitude + '&radius=5000'
             );
-            console.log("fetch", response)
+            // console.log("fetch", response)
             if (!response.ok) throw new Error('Failed to fetch');
             return response.json();
         }
