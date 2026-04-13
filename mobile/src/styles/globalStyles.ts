@@ -85,15 +85,17 @@ export const globalStyles = StyleSheet.create({
         borderRadius: borderRadius.lg,
         backgroundColor: colors.backgroundSecondary,
         paddingHorizontal: spacing.md,
-        color: colors.textPrimary
+        paddingVertical: spacing.sm,
+        color: colors.textPrimary,
     },
 
     shadow: {
         elevation: 2,
         shadowColor: palette.ckDark,
-        shadowOpacity: 0.05,
-        shadowRadius: 16,
-        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        shadowOffset: { width: 0, height: 4 },
+
     },
 
 });

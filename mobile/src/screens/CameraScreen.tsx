@@ -90,10 +90,7 @@ export default function CameraScreen() {
                 enableTorch={enableTorch}
             />
 
-            <View style={styles.lowerButtonRow}>
-
-
-
+            <View style={styles.upperButtonRow}>
                 <IconButton onPress={() => { setEnableTorch(!enableTorch) }} style={{
                     ...styles.roundButton,
                 }}>
@@ -105,20 +102,6 @@ export default function CameraScreen() {
                             size={size.lg} />
                     )}
 
-                </IconButton>
-
-                <IconButton onPress={pickImage} style={{
-                    ...styles.squareButton,
-                }}>
-                    <PictureIcon color={colors.textContrast}
-                        size={size.lg} />
-                </IconButton>
-
-                <Button style={styles.takePicButton} onPress={takePicture}>
-                </Button>
-
-                <IconButton style={styles.roundButton} onPress={toggleCameraFacing}>
-                    <FlipCameraIcon size={typography.sizeXxl} color={colors.textContrast} />
                 </IconButton>
 
                 <IconButton onPress={toggleFlash} style={{
@@ -134,6 +117,24 @@ export default function CameraScreen() {
 
                 </IconButton>
             </View>
+            <View style={styles.lowerButtonRow}>
+
+                <IconButton onPress={pickImage} style={{
+                    ...styles.squareButton,
+                }}>
+                    <PictureIcon color={colors.textContrast}
+                        size={size.lg} />
+                </IconButton>
+
+                <Button style={styles.takePicButton} onPress={takePicture}>
+                </Button>
+
+                <IconButton style={styles.flipButton} onPress={toggleCameraFacing}>
+                    <FlipCameraIcon size={typography.sizeXxl} color={colors.textContrast} />
+                </IconButton>
+
+
+            </View>
         </View>
     )
 }
@@ -144,15 +145,28 @@ const styles = StyleSheet.create({
         flex: 1,
         height: "100%"
     },
+    upperButtonRow: {
+        position: "absolute",
+        padding: spacing.sm,
+        marginTop: spacing.sm,
+        flex: 1,
+        flexDirection: "row",
+        justifyContent: "space-between",
+        rowGap: spacing.sm,
+        alignContent: "center",
+        alignItems: "center",
+        alignSelf: "flex-end",
+        width: "100%"
+    },
     lowerButtonRow: {
         position: "absolute",
         bottom: spacing.xl,
         flex: 1,
         flexDirection: "row",
         justifyContent: "center",
-        columnGap: spacing.sm,
+        columnGap: spacing.md,
         alignContent: "center",
-        alignItems: "center",
+        alignItems: "flex-end",
         alignSelf: "center",
     },
     takePicButton: {
@@ -164,15 +178,21 @@ const styles = StyleSheet.create({
         opacity: 0.9,
         marginHorizontal: spacing.sm
     },
-    roundButton: {
+    flipButton: {
         height: 60,
         width: 60,
         backgroundColor: palette.ckDark,
         opacity: 0.8,
     },
+    roundButton: {
+        height: 56,
+        width: 56,
+        backgroundColor: palette.ckDark,
+        opacity: 0.6,
+    },
     squareButton: {
-        height: 60,
-        width: 60,
+        height: 56,
+        width: 56,
         borderRadius: borderRadius.md,
         backgroundColor: palette.ckDark,
         opacity: 0.8

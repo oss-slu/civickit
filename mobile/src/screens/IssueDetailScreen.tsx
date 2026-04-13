@@ -5,7 +5,7 @@ import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
 import { GetNearbyIssueResponse, Issue } from '@civickit/shared';
 import { format, formatDistanceToNow } from 'date-fns';
 import { CategoryIcon, ClockIcon, LocationPinIcon, TagIcon, WrenchIcon } from '../components/Icons';
-import { borderRadius, colors, palette, size, spacing, typography } from '../styles';
+import { borderRadius, colors, globalStyles, palette, size, spacing, typography } from '../styles';
 import ENV from '../config/env';
 import Pin from '../components/Pin';
 import { useAuth } from '../contexts/AuthContext';
@@ -347,6 +347,7 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     borderRadius: 40,
     alignItems: 'center',
+    ...globalStyles.shadow
   },
 
   endorseText: {

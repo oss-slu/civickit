@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
     picture: {
         width: "100%",
         height: "100%",
-        resizeMode: "contain",
+        resizeMode: "center",
     },
     buttonRow: {
         flexDirection: "row",

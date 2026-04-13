@@ -46,7 +46,7 @@ export default function IssueCreationNav() {
             >
                 <Stack.Screen name="Camera" component={CameraScreen}
                     options={{
-                        headerShown: false
+                        headerShown: true
                     }} />
                 <Stack.Screen name="Issue Details" component={IssueDetailScreen} />
                 <Stack.Screen name="Photo Validation" component={PhotoValidationScreen}
