@@ -244,7 +244,9 @@ export default function IssueCreationScreen() {
                         />
                     </ScrollView>
 
-                    <IconButton onPress={() => { navigation.navigate("Camera", { uri: images }) }} style={styles.photoButton}>
+                    <IconButton onPress={() => { navigation.navigate("Camera", { uri: images }) }}
+                        style={images.length < 5 ? styles.photoButton : styles.disabledPhotoButton}
+                        isDisabled={images.length >= 5}>
                         <PlusIcon color={colors.textContrast}
                             size={size.xl} />
                     </IconButton>
@@ -322,6 +324,13 @@ const styles = StyleSheet.create({
     },
     photoButton: {
         backgroundColor: palette.ckBlue,
+        position: "absolute",
+        bottom: spacing.sm,
+        right: spacing.sm,
+        ...globalStyles.shadow
+    },
+    disabledPhotoButton: {
+        backgroundColor: palette.ckMediumGray,
         position: "absolute",
         bottom: spacing.sm,
         right: spacing.sm,
