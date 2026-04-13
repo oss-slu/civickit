@@ -282,3 +282,39 @@ export function FlipCameraIcon(props: IconProps) {
             style={props.style} />
     )
 }
+
+export function LightingOutlineIcon(props: IconProps) {
+    return (
+        <MaterialCommunityIcons name="lightning-bolt-outline"
+            color={props.color}
+            size={props.size}
+            style={props.style} />
+    )
+}
+
+export function LightingFillIcon(props: IconProps) {
+    return (
+        <MaterialCommunityIcons name="lightning-bolt"
+            color={props.color}
+            size={props.size}
+            style={props.style} />
+    )
+}
+
+export function FlashlightOnIcon(props: IconProps) {
+    return (
+        <MaterialIcons name="flashlight-on"
+            color={props.color}
+            size={props.size}
+            style={props.style} />
+    )
+}
+
+export function FlashlightOffIcon(props: IconProps) {
+    return (
+        <MaterialIcons name="flashlight-off"
+            color={props.color}
+            size={props.size}
+            style={props.style} />
+    )
+}

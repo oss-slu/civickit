@@ -1,14 +1,14 @@
 import * as ImagePicker from 'expo-image-picker';
 import { useContext, useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, } from 'react-native';
-import { CameraView, CameraType, useCameraPermissions, Camera } from 'expo-camera';
+import { CameraView, CameraType, useCameraPermissions, Camera, FlashMode } from 'expo-camera';
 import { MessageView } from '../components/MessageView';
 import Button from '../components/Button';
 import { borderRadius, colors, palette, size, spacing, typography } from '../styles';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { StackParams } from '../types/StackParams';
-import { FlipCameraIcon, PictureIcon } from '../components/Icons';
+import { FlashlightOffIcon, FlashlightOnIcon, FlipCameraIcon, LightingFillIcon, LightingOutlineIcon, PictureIcon } from '../components/Icons';
 import IconButton from '../components/IconButton';
 import { ImagesContext } from './IssueCreationNav';
 
@@ -16,6 +16,8 @@ import { ImagesContext } from './IssueCreationNav';
 export default function CameraScreen() {
     const { images, setImages } = useContext(ImagesContext);
     const [facing, setFacing] = useState<CameraType>('back');
+    const [flashOn, setFlashOn] = useState<FlashMode>('off')
+    const [enableTorch, setEnableTorch] = useState<boolean>(false)
     const [permissions, requestPermission] = useCameraPermissions();
     const ref = useRef<CameraView>(null);
 
@@ -39,6 +41,10 @@ export default function CameraScreen() {
 
     const toggleCameraFacing = () => {
         setFacing(current => (current === 'back' ? 'front' : 'back'))
+    }
+
+    const toggleFlash = () => {
+        setFlashOn(current => (current === 'off' ? 'on' : 'off'))
     }
 
 
@@ -80,11 +86,25 @@ export default function CameraScreen() {
                 animateShutter={false}
                 facing={facing}
                 mirror={true}
+                flash={flashOn}
+                enableTorch={enableTorch}
             />
 
-            <View style={styles.buttonRow}>
+            <View style={styles.lowerButtonRow}>
+                <IconButton onPress={() => { setEnableTorch(!enableTorch) }} style={{
+                    ...styles.roundButton,
+                }}>
+                    {enableTorch ? (
+                        <FlashlightOnIcon color={palette.ckYellow}
+                            size={size.lg} />
+                    ) : (
+                        <FlashlightOffIcon color={colors.textContrast}
+                            size={size.lg} />
+                    )}
+
+                </IconButton>
                 <IconButton onPress={pickImage} style={{
-                    ...styles.cameraRollButton,
+                    ...styles.squareButton,
                 }}>
                     <PictureIcon color={colors.textContrast}
                         size={size.lg} />
@@ -93,8 +113,21 @@ export default function CameraScreen() {
                 <Button style={styles.takePicButton} onPress={takePicture}>
                 </Button>
 
-                <IconButton style={styles.flipButton} onPress={toggleCameraFacing}>
+                <IconButton style={styles.roundButton} onPress={toggleCameraFacing}>
                     <FlipCameraIcon size={typography.sizeXxl} color={colors.textContrast} />
+                </IconButton>
+
+                <IconButton onPress={toggleFlash} style={{
+                    ...styles.roundButton,
+                }}>
+                    {flashOn == 'on' ? (
+                        <LightingFillIcon color={palette.ckYellow}
+                            size={size.lg} />
+                    ) : (
+                        <LightingOutlineIcon color={colors.textContrast}
+                            size={size.lg} />
+                    )}
+
                 </IconButton>
             </View>
         </View>
@@ -107,13 +140,13 @@ const styles = StyleSheet.create({
         flex: 1,
         height: "100%"
     },
-    buttonRow: {
+    lowerButtonRow: {
         position: "absolute",
         bottom: spacing.xl,
         flex: 1,
         flexDirection: "row",
         justifyContent: "center",
-        columnGap: spacing.lg,
+        columnGap: spacing.sm,
         alignContent: "center",
         alignItems: "center",
         alignSelf: "center",
@@ -124,15 +157,16 @@ const styles = StyleSheet.create({
         backgroundColor: palette.ckYellow,
         borderWidth: 5,
         borderColor: palette.ckLight,
-        opacity: 0.9
+        opacity: 0.9,
+        marginHorizontal: spacing.sm
     },
-    flipButton: {
+    roundButton: {
         height: 60,
         width: 60,
         backgroundColor: palette.ckDark,
         opacity: 0.8,
     },
-    cameraRollButton: {
+    squareButton: {
         height: 60,
         width: 60,
 
