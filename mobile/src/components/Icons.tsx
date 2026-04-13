@@ -318,3 +318,12 @@ export function FlashlightOffIcon(props: IconProps) {
             style={props.style} />
     )
 }
+
+export function MapIcon(props: IconProps) {
+    return (
+        <Feather name="map"
+            color={props.color}
+            size={props.size}
+            style={props.style} />
+    )
+}
