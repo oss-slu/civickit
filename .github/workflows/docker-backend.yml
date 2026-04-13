@@ -1,8 +1,8 @@
-name: Docker Build - CivicKit Backend (Local Test)
+name: Docker Build - CivicKit Backend
 
 on:
   push:
-    branches: [ test/docker-ci ]
+    branches: [ main, develop ]
   pull_request:
     branches: [ main, develop ]
 
@@ -14,21 +14,25 @@ jobs:
         working-directory: backend
     steps:
       - uses: actions/checkout@v4
+
       - name: Use Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
+
       - name: Install dependencies
         run: npm install
+
       - name: Generate Prisma Client
         run: npx prisma generate
+
       - name: Run tests
         run: npm test
 
   docker-build:
     needs: test
-    # Local reference - this is the key for testing in same repo
-    uses: ./.github/workflows/docker-build-push.yml
+    # This calls your reusable template
+    uses: oss-slu/oss_cicd_automation/.github/workflows/docker-build-push.yml@116-cicd-template-registry---create-reusable-docker-build-workflow-template
 
     with:
       image_name: civickit-backend
