@@ -9,6 +9,8 @@ export const palette = {
     ckDarkRed: "#ac2c3d",
     ckYellow: "#EDAE49",
     ckDarkYellow: "#a86d0e",
+    ckOrange: "#da6f1d",
+    ckDarkOrange: "#a94d06",
     ckLightGreen: "#9DCBBA",
     ckMediumGreen: "#74b59d",
     ckGreen: "#2A9D8F",
@@ -44,7 +46,7 @@ export const colors = {
     border: palette.ckLightGray,
 
     statusReported: palette.ckRed,
-    statusAcknowledged: palette.ckBlue,
+    statusAcknowledged: palette.ckOrange,
     statusInProgress: palette.ckYellow,
     statusCommunityResolved: palette.ckLightGreen,
     statusResolved: palette.ckGreen,
@@ -112,7 +114,7 @@ export const statusColors: Record<string, { background: string, stroke: string, 
     },
     acknowledged: {
         background: colors.statusAcknowledged,
-        stroke: palette.ckDarkBlue,
+        stroke: palette.ckDarkOrange,
         text: colors.textContrast
     },
     in_progress: {
