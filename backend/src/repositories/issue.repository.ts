@@ -43,13 +43,13 @@ export class IssueRepository {
       SELECT 
         i.*,
         ST_Distance(
-          ST_MakePoint(i.longitude, i.latitude)::geography,
-          ST_MakePoint(${lng}, ${lat})::geography
+          ST_SetSRID(ST_MakePoint(i.longitude, i.latitude), 4326)::geography,
+          ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326)::geography
         ) as distance
       FROM "Issue" i
       WHERE ST_DWithin(
-        ST_MakePoint(i.longitude, i.latitude)::geography,
-        ST_MakePoint(${lng}, ${lat})::geography,
+        ST_SetSRID(ST_MakePoint(i.longitude, i.latitude), 4326)::geography,
+        ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326)::geography,
         ${radiusMeters}
       )
       ORDER BY distance ASC

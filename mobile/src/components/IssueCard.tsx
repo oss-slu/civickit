@@ -123,7 +123,7 @@ export default function IssueCard({ issue, variant = 'compact', onPress, style, 
             <>
               {issue.distance !== undefined && (
                 <Text style={styles.distance}>
-                  {parseFloat(issue.distance).toFixed(1)} km away
+                  {parseFloat(issue.distance).toFixed(1)} meters away
                 </Text>
               )}
             </>
