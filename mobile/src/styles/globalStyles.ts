@@ -11,18 +11,9 @@ export const globalStyles = StyleSheet.create({
 
     card: {
         backgroundColor: colors.backgroundSecondary,
-
         borderRadius: borderRadius.lg,
         borderWidth: 0,
-
         padding: spacing.sm,
-
-        // elevation: 2,
-        // shadowColor: palette.ckDark,
-        // shadowOpacity: 0.05,
-        // shadowRadius: 16,
-        // shadowOffset: { width: 0, height: 2 },
-
         flexDirection: 'row',
         flex: 1,
     },
