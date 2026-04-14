@@ -4,7 +4,7 @@ import { StackParams } from '../types/StackParams';
 import { colors, typography } from '../styles';
 import IssueDetailScreen from './IssueDetailScreen';
 import ErrorScreen from './ErrorScreen';
-import HomeScreen from './HomeScreenWrapper';
+import HomeScreenWrapper from './HomeScreenWrapper';
 
 const Stack = createNativeStackNavigator<StackParams>();
 
@@ -23,7 +23,7 @@ export default function LandingScreen() {
 
         }}
         >
-            <Stack.Screen name="Nearby Issues" component={HomeScreen} />
+            <Stack.Screen name="Nearby Issues" component={HomeScreenWrapper} />
             <Stack.Screen name="Issue Details" component={IssueDetailScreen} />
             <Stack.Screen name="Error" component={ErrorScreen} />
         </Stack.Navigator>

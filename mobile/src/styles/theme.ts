@@ -18,6 +18,8 @@ export const palette = {
 
     ckLight: "#F9FAFB",
     ckDark: "#111827",
+
+    ckVeryDarkGray: "#1a1a1a",
     ckDarkGray: "#6B7280",
     ckMediumGray: "#9CA3AF",
     ckLightGray: "#E5E7EB",
@@ -72,6 +74,7 @@ export const typography = {
     sizeLg: 16,
     sizeXl: 20,
     sizeXxl: 28,
+    sizeXxxl: 40,
     weightRegular: '400' as const,
     weightMedium: '500' as const,
     weightBold: '700' as const,
@@ -96,7 +99,7 @@ export const size = {
     x4l: 84,
     cardCompact: 80,
     cardExpanded: 120,
-    longButton: 200,
+    longButton: 180,
     imageLg: 340,
     navBar: 88
 };

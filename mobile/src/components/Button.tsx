@@ -2,7 +2,7 @@
 import { globalStyles } from '../styles';
 import { TouchableOpacity, Text } from 'react-native';
 
-export default function NewIssueButton({ text, onPress, style, isDisabled = false }: any) {
+export default function Button({ text, onPress, style, isDisabled = false }: any) {
     return (
         <TouchableOpacity
             onPress={onPress}

@@ -1,23 +1,30 @@
 //mobile/src/components/SelectedImage.tsx
 import { Image, StyleSheet, View } from 'react-native'
-import { globalStyles, borderRadius, colors, palette, size, typography } from '../styles';
+import { globalStyles, borderRadius, colors, palette, size, typography, spacing } from '../styles';
 import IconButton from './IconButton';
 import { CloseXIcon } from './Icons';
 
 export default function SelectedImage({ source, onDeletePressed, width, height, style }: any) {
     const styles = StyleSheet.create({
+        container: {
+
+            justifyContent: "center",
+            alignItems: "center",
+        },
         image: {
             width: width,
             height: height,
-            borderRadius: borderRadius.md
+            borderRadius: borderRadius.md,
+            resizeMode: "center",
         },
         buttonContainer: {
             position: 'absolute',
-            justifyContent: "center"
+            justifyContent: "center",
+            alignItems: "center",
+            top: spacing.sm,
         },
         button: {
             backgroundColor: palette.ckRed,
-            margin: size.sm,
             fontWeight: typography.weightBold,
             height: size.xxl,
             borderWidth: 0,
@@ -26,7 +33,7 @@ export default function SelectedImage({ source, onDeletePressed, width, height, 
     });
 
     return (
-        <View style={style}>
+        <View style={{ ...styles.container, ...style }}>
             <Image source={{ uri: source }} style={styles.image} />
             <View style={styles.buttonContainer}>
                 <IconButton onPress={() => onDeletePressed(source)}

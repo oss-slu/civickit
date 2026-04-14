@@ -9,21 +9,17 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { TabParams } from './src/types/TabParams'
 import { colors, globalStyles, palette, size, spacing, typography } from './src/styles';
 import { View, StyleSheet } from 'react-native';
-import { CalendarIcon, LocationPinIcon, PlusIcon, SearchIcon, UserIcon } from './src/components/Icons';
+import { CalendarIcon, MapIcon, PlusIcon, SearchIcon, UserIcon } from './src/components/Icons';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-
 import FlashMessage from 'react-native-flash-message';
 import LandingScreen from './src/screens/LandingScreen';
 import FeedScreen from './src/screens/FeedScreen';
 import EventsScreen from './src/screens/EventsScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
-import HomeScreen from './src/screens/HomeScreenWrapper';
-import IssueCreationScreen from './src/screens/IssueCreationScreen';
-import IssueDetailScreen from './src/screens/IssueDetailScreen';
 import LoginScreen from './src/screens/LoginScreen';
 import RegisterScreen from './src/screens/RegisterScreen';
-import NewIssueButton from './src/components/NewIssueButton';
 import IssueCreationNav from './src/screens/IssueCreationNav';
+import React from 'react';
 
 const Tab = createBottomTabNavigator<TabParams>();
 
@@ -46,7 +42,7 @@ function MainTabNavigator() {
       <Tab.Screen name="Map" component={LandingScreen}
         options={{
           tabBarIcon: () => (
-            <LocationPinIcon
+            <MapIcon
               color={colors.textPrimary}
               size={size.lg}
               style={{ ...styles.icon, ...styles.navIcons }}
@@ -172,6 +168,6 @@ const styles = StyleSheet.create({
     marginTop: spacing.sd,
   },
   navIcons: {
-    paddingTop: spacing.xs
+    paddingTop: spacing.sm
   }
 });

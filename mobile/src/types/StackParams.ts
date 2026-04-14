@@ -14,4 +14,8 @@ export type StackParams = {
     "Main": {},
     "Register": {},
     "Login": {},
+    "Camera": {},
+    "Photo Validation": {
+        uri: string
+    }
 }

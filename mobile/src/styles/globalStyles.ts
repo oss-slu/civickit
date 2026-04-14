@@ -11,18 +11,9 @@ export const globalStyles = StyleSheet.create({
 
     card: {
         backgroundColor: colors.backgroundSecondary,
-
         borderRadius: borderRadius.lg,
         borderWidth: 0,
-
         padding: spacing.sm,
-
-        // elevation: 2,
-        // shadowColor: palette.ckDark,
-        // shadowOpacity: 0.05,
-        // shadowRadius: 16,
-        // shadowOffset: { width: 0, height: 2 },
-
         flexDirection: 'row',
         flex: 1,
     },
@@ -57,7 +48,7 @@ export const globalStyles = StyleSheet.create({
         justifyContent: "center",
         alignContent: "center",
         alignItems: "center",
-        textAlign: "center"
+        textAlign: "center",
     },
 
     disabledbutton: {
@@ -85,15 +76,17 @@ export const globalStyles = StyleSheet.create({
         borderRadius: borderRadius.lg,
         backgroundColor: colors.backgroundSecondary,
         paddingHorizontal: spacing.md,
-        color: colors.textPrimary
+        paddingVertical: spacing.sm,
+        color: colors.textPrimary,
     },
 
     shadow: {
         elevation: 2,
         shadowColor: palette.ckDark,
-        shadowOpacity: 0.05,
-        shadowRadius: 16,
-        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 2,
+        shadowOffset: { width: 0, height: 4 },
+
     },
 
 });
