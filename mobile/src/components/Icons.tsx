@@ -273,3 +273,13 @@ export function UserIcon(props: IconProps) {
             style={props.style} />
     )
 }
+
+export function RecenterIcon(props: IconProps) {
+    return (
+        <AntDesign name="aim"
+            color={props.color}
+            size={props.size}
+            style={props.style}
+        />
+    )
+}
