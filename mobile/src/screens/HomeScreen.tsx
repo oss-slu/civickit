@@ -1,12 +1,12 @@
 //mobile/src/screens/HomeScreen.tsx
-import { useCallback, useContext, useState } from "react";
+import { useContext, useCallback, useRef, useState } from "react";
 import { LocationContext } from "../types/LocationContext";
 import { useAuth } from '../contexts/AuthContext';
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { userLocation } from "../types/userLocation";
 import { MessageView } from "../components/MessageView";
 import { View, Text, StyleSheet } from 'react-native';
-import { CategoryIcon, RefreshIcon, StatusIcon, WarningIcon } from '../components/Icons';
+import { CategoryIcon, RecenterIcon, RefreshIcon, StatusIcon, WarningIcon } from '../components/Icons';
 import { borderRadius, colors, globalStyles, palette, size, spacing, typography } from '../styles';
 import { IssueCategoryArray } from "../types/IssueCategoryArray";
 import { IssueStatusArray } from "../types/IssueStatusArray";
@@ -16,6 +16,7 @@ import IconButton from "../components/IconButton";
 import ENV from '../config/env';
 import LoadingScreen from "./LoadingScreen";
 import MapViewScreen from "./MapViewScreen";
+import MapView from "react-native-maps";
 
 //mobile/src/screens/HomeScreen.tsx
 export default function HomeScreen() {
@@ -27,6 +28,7 @@ export default function HomeScreen() {
     const queryClient = useQueryClient()
     const location = useContext(LocationContext) as unknown as userLocation
     const { logout } = useAuth();
+    const mapRef = useRef<MapView | null>(null);
 
     //fetch issues from database 
     const { data, isLoading, isFetching, error, refetch } = useQuery({
@@ -82,17 +84,29 @@ export default function HomeScreen() {
         visibleCategories.map(i => i.toLowerCase()).includes(issue.category.replace(/_/g, " ").toLowerCase()) &&
         visibleStatuses.map(i => i.toUpperCase().replace(/ /g, "_")).includes(issue.status)
     )
+    const recenterMap = () => {
+        if (!location?.latitude || !location?.longitude) return;
+
+        mapRef.current?.animateToRegion({
+            latitude: location.latitude,
+            longitude: location.longitude,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+        });
+    };
+
     return (
         <View style={{ flex: 1 }}>
 
             <MapViewScreen
+                ref={mapRef}
                 issues={visibleIssues}
                 refetch={refetch}
             />
 
             <View style={styles.overlay}>
 
-                <View style={styles.buttonCol}>
+                <View style={styles.buttonColLeft}>
                     <FilterCheckList
                         data={IssueCategoryArray}
                         buttonStyle={styles.button}
@@ -116,11 +130,20 @@ export default function HomeScreen() {
                         loading={isFetching}>
                         <RefreshIcon size={size.xl} style={{ alignSelf: "center", marginBottom: 2 }} />
                     </IconButton>
+
                     <IconButton onPress={logout}
                         style={[styles.button, styles.logoutButton]}>
                         <Text style={styles.logoutText}>Logout</Text>
                     </IconButton>
                 </View>
+
+                <View style={styles.buttonColRight}>
+                    <IconButton onPress={recenterMap}
+                        style={[styles.button]}>
+                        <RecenterIcon size={size.xl} style={{ alignSelf: "center" }} />
+                    </IconButton>
+                </View>
+
             </View>
 
             <View style={[styles.textContainer,
@@ -182,17 +205,22 @@ const styles = StyleSheet.create({
     overlay: {
         position: "absolute",
         flexDirection: "row",
-        // justifyContent: "space-between",
-        alignItems: "flex-start",
+        justifyContent: "space-between",
+        alignItems: "center",
         width: "100%",
         margin: spacing.sm,
         columnGap: spacing.sm,
     },
-    buttonCol: {
+    buttonColLeft: {
         flexDirection: "row",
-        width: "auto",
+        columnGap: spacing.sm,
+        justifyContent: "flex-start",
+    },
+    buttonColRight: {
+        flexDirection: "row",
         columnGap: spacing.sm,
         justifyContent: "flex-end",
+        paddingHorizontal: spacing.md,
     },
     logoutButton: {
         paddingHorizontal: spacing.sm,
