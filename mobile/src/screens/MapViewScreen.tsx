@@ -14,9 +14,10 @@ import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet';
 import IssueListScreen from './IssueListScreen';
 import CalloutPopup from '../components/CalloutPopup';
 import { GetNearbyIssueResponse } from '@civickit/shared';
+import { map } from 'leaflet';
 
 
-export default function MapViewScreen({ issues, refetch }: any) {
+export default function MapViewScreen({ issues, refetch, ref }: any) {
     const navigation = useNavigation<StackNavigationProp<StackParams>>();
     const bottomSheetRef = useRef<BottomSheet>(null);
     const snapPoints = [36, "30%", "80%"]
@@ -78,6 +79,9 @@ export default function MapViewScreen({ issues, refetch }: any) {
         <View style={{ flex: 1 }}>
             <MapView
                 provider={PROVIDER_GOOGLE}
+                ref={ref}
+                showsUserLocation={true}
+                showsMyLocationButton={false}
                 style={{ flex: 1 }}
                 initialRegion={location ? {
                     latitude: location.latitude,
@@ -85,7 +89,7 @@ export default function MapViewScreen({ issues, refetch }: any) {
                     latitudeDelta: 0.05,
                     longitudeDelta: 0.05,
                 } : undefined}
-                showsUserLocation
+            // showsUserLocation
             >
                 {issues.map((issue: any) =>
                     <Marker
