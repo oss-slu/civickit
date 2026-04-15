@@ -1,5 +1,5 @@
 //mobile/src/screens/HomeScreen.tsx
-import { useContext, useRef, useState } from "react";
+import { useCallback, useRef, useContext, useState } from "react";
 import { LocationContext } from "../types/LocationContext";
 import { useAuth } from '../contexts/AuthContext';
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -31,7 +31,7 @@ export default function HomeScreen() {
     const mapRef = useRef<MapView | null>(null);
 
     //fetch issues from database 
-    const { data, isLoading, error, refetch } = useQuery({
+    const { data, isLoading, isFetching, error, refetch } = useQuery({
         queryKey: ['issues', 'nearby'],
         queryFn: async () => {
             console.log("url: ", ENV.apiUrl)
@@ -44,6 +44,13 @@ export default function HomeScreen() {
             return response.json();
         }
     }, queryClient);
+
+    // Guarded refresh handler — prevents spamming while a fetch is in progress
+    const handleRefresh = useCallback(() => {
+        if (!isFetching) {
+            refetch();
+        }
+    }, [isFetching, refetch]);
 
     //check if still loading
     if (isLoading) {
@@ -116,9 +123,11 @@ export default function HomeScreen() {
                         <StatusIcon size={size.xl} style={{ alignSelf: "center" }} />
                     </FilterCheckList>
 
+                </View>
+                <View style={styles.buttonCol}>
                     <IconButton onPress={refetch}
                         style={styles.button}>
-                        <RefreshIcon size={size.xl} style={{ alignSelf: "center" }} />
+                        <RefreshIcon size={size.xl} style={{ alignSelf: "center", marginBottom: 2 }} />
                     </IconButton>
 
                     <IconButton onPress={logout}
