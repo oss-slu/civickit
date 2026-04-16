@@ -10,7 +10,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { StackParams } from '../types/StackParams';
 import { FlashlightOffIcon, FlashlightOnIcon, FlipCameraIcon, LightingFillIcon, LightingOutlineIcon, PictureIcon } from '../components/Icons';
 import IconButton from '../components/IconButton';
-import { ImagesContext } from '../types/FormContexts';
+import { ImagesContext } from '../contexts/FormContexts';
 
 
 export default function CameraScreen() {
