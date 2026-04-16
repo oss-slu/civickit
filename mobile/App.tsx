@@ -20,6 +20,9 @@ import LoginScreen from './src/screens/LoginScreen';
 import RegisterScreen from './src/screens/RegisterScreen';
 import IssueCreationNav from './src/screens/IssueCreationNav';
 import React from 'react';
+import { LocationProvider } from './src/contexts/LocationContext';
+import { NearbyIssuesProvider } from './src/contexts/NearbyIssuesContext';
+import LandingScreenNav from './src/screens/LandingScreenNav';
 
 const Tab = createBottomTabNavigator<TabParams>();
 
@@ -29,73 +32,77 @@ const Stack = createNativeStackNavigator<StackParams>();
 
 function MainTabNavigator() {
   return (
-    <Tab.Navigator screenOptions={{
-      tabBarStyle: {
-        backgroundColor: colors.background,
-      },
-      tabBarShowLabel: false,
-      animation: "shift",
-      tabBarActiveBackgroundColor: colors.backgroundSecondary,
-      headerTitleAlign: "left"
-    }}
-    >
-      <Tab.Screen name="Map" component={LandingScreen}
-        options={{
-          tabBarIcon: () => (
-            <MapIcon
-              color={colors.textPrimary}
-              size={size.lg}
-              style={{ ...styles.icon, ...styles.navIcons }}
-            />
-          ),
-          headerShown: false
-        }} />
-      <Tab.Screen name="Feed" component={FeedScreen}
-        options={{
-          tabBarIcon: () => (
-            <SearchIcon
-              color={colors.textPrimary}
-              size={size.lg}
-              style={{ ...styles.icon, ...styles.navIcons }}
-            />
-          ),
-        }} />
+    <LocationProvider>
+      <NearbyIssuesProvider>
+        <Tab.Navigator screenOptions={{
+          tabBarStyle: {
+            backgroundColor: colors.background,
+          },
+          tabBarShowLabel: false,
+          animation: "shift",
+          tabBarActiveBackgroundColor: colors.backgroundSecondary,
+          headerTitleAlign: "left"
+        }}
+        >
+          <Tab.Screen name="Map" component={LandingScreenNav}
+            options={{
+              tabBarIcon: () => (
+                <MapIcon
+                  color={colors.textPrimary}
+                  size={size.lg}
+                  style={{ ...styles.icon, ...styles.navIcons }}
+                />
+              ),
+              headerShown: false
+            }} />
+          <Tab.Screen name="Feed" component={FeedScreen}
+            options={{
+              tabBarIcon: () => (
+                <SearchIcon
+                  color={colors.textPrimary}
+                  size={size.lg}
+                  style={{ ...styles.icon, ...styles.navIcons }}
+                />
+              ),
+            }} />
 
-      <Tab.Screen name="ReportIssue" component={IssueCreationNav}
-        options={{
-          tabBarIcon: () => (
-            <View
-              style={styles.plusButton}>
-              <PlusIcon
-                color={colors.textContrast}
-                size={size.xl}
-                style={styles.icon}
-              />
-            </View>
-          ),
-          headerShown: false
-        }} />
-      <Tab.Screen name="Events" component={EventsScreen}
-        options={{
-          tabBarIcon: () => (
-            <CalendarIcon
-              color={colors.textPrimary}
-              size={size.lg}
-              style={{ ...styles.icon, ...styles.navIcons }}
-            />
-          ),
-        }} />
-      <Tab.Screen name="Profile" component={ProfileScreen}
-        options={{
-          tabBarIcon: () => (
-            <UserIcon
-              color={colors.textPrimary}
-              size={size.lg}
-              style={{ ...styles.icon, ...styles.navIcons }}
-            />
-          ),
-        }} />
-    </Tab.Navigator>
+          <Tab.Screen name="ReportIssue" component={IssueCreationNav}
+            options={{
+              tabBarIcon: () => (
+                <View
+                  style={styles.plusButton}>
+                  <PlusIcon
+                    color={colors.textContrast}
+                    size={size.xl}
+                    style={styles.icon}
+                  />
+                </View>
+              ),
+              headerShown: false
+            }} />
+          <Tab.Screen name="Events" component={EventsScreen}
+            options={{
+              tabBarIcon: () => (
+                <CalendarIcon
+                  color={colors.textPrimary}
+                  size={size.lg}
+                  style={{ ...styles.icon, ...styles.navIcons }}
+                />
+              ),
+            }} />
+          <Tab.Screen name="Profile" component={ProfileScreen}
+            options={{
+              tabBarIcon: () => (
+                <UserIcon
+                  color={colors.textPrimary}
+                  size={size.lg}
+                  style={{ ...styles.icon, ...styles.navIcons }}
+                />
+              ),
+            }} />
+        </Tab.Navigator>
+      </NearbyIssuesProvider>
+    </LocationProvider>
   )
 }
 

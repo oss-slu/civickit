@@ -17,7 +17,7 @@ export default function CalloutPopup({ style, issue, onClosePress, onForwardPres
 
     if (issue != undefined) {
         return (
-            <View style={{ ...style, ...styles.container }}>
+            <View style={{ ...styles.container, ...style, }}>
                 <IconButton style={styles.button}
                     onPress={onClosePress}>
                     <CloseXIcon size={typography.sizeXl} color={colors.textPrimary} />
@@ -27,7 +27,8 @@ export default function CalloutPopup({ style, issue, onClosePress, onForwardPres
                     variant="expanded"
                     style={{
                         borderRadius: 0,
-                        backgroundColor: colors.background
+                        backgroundColor: colors.background,
+
                     }}
                     animated={false}
                 />
@@ -45,7 +46,7 @@ const styles = StyleSheet.create({
         margin: spacing.sm,
         flexDirection: "row",
         backgroundColor: colors.background,
-        borderRadius: borderRadius.lg
+        borderRadius: borderRadius.lg,
     },
     button: {
         backgroundColor: colors.background,

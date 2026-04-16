@@ -1,7 +1,7 @@
 //mobile/src/types/FormContexts.ts
 
 import { createContext } from "react"
-import { userLocation } from "./userLocation"
+import { userLocation } from "../types/userLocation"
 
 export const ImagesContext = createContext({ images: [], setImages: (images: string[]) => { } })
 export const UserLocationContext = createContext({ location: { latitude: 0, longitude: 0 }, setLocation: (location: userLocation | null) => { } })

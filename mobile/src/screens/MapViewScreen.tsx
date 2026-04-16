@@ -5,10 +5,10 @@ import { useContext, useRef, useState } from 'react';
 import { View, Animated, useAnimatedValue } from 'react-native';
 import { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { StackParams } from '../types/StackParams';
-import { LocationContext } from '../types/LocationContext';
+import { useLocation } from '../contexts/LocationContext';
 import { userLocation } from '../types/userLocation';
 import Pin from '../components/Pin';
-import { colors, palette, size } from '../styles';
+import { colors, globalStyles, palette, size } from '../styles';
 import MapView from "react-native-maps"
 import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet';
 import IssueListScreen from './IssueListScreen';
@@ -20,14 +20,14 @@ export default function MapViewScreen({ issues, refetch }: any) {
     const navigation = useNavigation<StackNavigationProp<StackParams>>();
     const bottomSheetRef = useRef<BottomSheet>(null);
     const snapPoints = [36, "30%", "80%"]
-    const [bottomSheetPos, setBottomSheetPos] = useState<String | number>(36);
+    const [bottomSheetInd, setBottomSheetInd] = useState<number>(0);
     const [currentIssue, setCurrentIssue] = useState<GetNearbyIssueResponse | undefined>(undefined)
     const fadeAnim = useAnimatedValue(0);
     const posAnim = useAnimatedValue(0);
     const [paddingBottom, setPaddingBottom] = useState("110%")
 
     //get contexts from above layer(s)
-    const location = useContext(LocationContext) as unknown as userLocation
+    const location = useLocation().location
 
     const onMarkerPress = (issue: GetNearbyIssueResponse) => {
         setCurrentIssue(issue)
@@ -68,9 +68,9 @@ export default function MapViewScreen({ issues, refetch }: any) {
 
     }
 
-    if (currentIssue != undefined && bottomSheetPos == snapPoints[2]) {
+    if (currentIssue != undefined && bottomSheetInd == 2) {
         closeCallout()
-    } else if (currentIssue != undefined && bottomSheetPos < snapPoints[2]) {
+    } else if (currentIssue != undefined && bottomSheetInd < 2) {
         openCallout()
     }
 
@@ -114,6 +114,7 @@ export default function MapViewScreen({ issues, refetch }: any) {
             >
                 <CalloutPopup
                     issue={currentIssue}
+
                     onClosePress={() => {
                         closeCallout(() => {
 
@@ -156,7 +157,9 @@ export default function MapViewScreen({ issues, refetch }: any) {
                 )}
                 overDragResistanceFactor={0.5}
                 enableOverDrag={false}
-                onChange={(index: number) => { setBottomSheetPos(snapPoints[index]) }}
+                onChange={(index: number) => {
+                    setBottomSheetInd(index)
+                }}
                 onAnimate={(fromIndex, toIndex, fromPosition, toPosition) => {
                     moveCallout(toIndex, toPosition)
                 }}

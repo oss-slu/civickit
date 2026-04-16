@@ -10,7 +10,7 @@ import PhotoValidationScreen from './PhotoValidationScreen';
 import CameraScreen from './CameraScreen';
 import { userLocation } from '../types/userLocation';
 import { createContext, useState } from 'react';
-import { ImagesContext, UserLocationContext, AddressContext, TitleContext, CategoryContext, DescriptionContext } from '../types/FormContexts';
+import { ImagesContext, UserLocationContext, AddressContext, TitleContext, CategoryContext, DescriptionContext } from '../contexts/FormContexts';
 
 const Stack = createNativeStackNavigator<StackParams>();
 
