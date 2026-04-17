@@ -19,7 +19,7 @@ const catColors = [
 export default function CategoryPieChart({ categoryNumbers }: any) {
     let i = 0;
     const [pieData, setPieData] = useState(
-        IssueCategoryArray.map(category => ({
+        IssueCategoryArray.map((category) => ({
             value: categoryNumbers[category.toUpperCase().replace(" ", "_")],
             color: catColors[i++],
             text: category
