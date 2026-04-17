@@ -1,13 +1,15 @@
 //mobile/src/components/StatusBarGraph.tsx
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BarChart, PieChart } from "react-native-gifted-charts"
 import { IssueStatusArray } from "../types/IssueStatusArray";
 import { borderRadius, colors, spacing, statusColors } from "../styles/theme";
 import { Text, StyleSheet } from "react-native"
 
 export default function StatusBarGraph({ statusNumbers }: any) {
-    const [barData, setBarData] = useState(
-        IssueStatusArray.map(status => ({
+    const [barData, setBarData] = useState<any>(undefined)
+
+    useEffect(() => {
+        setBarData(IssueStatusArray.map(status => ({
             value: statusNumbers[status.toUpperCase().replace(" ", "_")],
             frontColor: statusColors[status.toLowerCase().replace(" ", "_")].background,
             label: status,
@@ -16,15 +18,15 @@ export default function StatusBarGraph({ statusNumbers }: any) {
                     color: statusColors[status.toLowerCase().replace(" ", "_")].background
                 }}>{statusNumbers[status.toUpperCase().replace(" ", "_")]}</Text>
             )
-        }))
-    )
+        })))
+    }, [statusNumbers])
 
+    console.log(barData)
     return (
         <BarChart
             noOfSections={3}
             barBorderRadius={borderRadius.md}
             frontColor="lightgray"
-
             data={barData}
             yAxisThickness={0}
             xAxisThickness={0}

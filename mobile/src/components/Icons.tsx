@@ -327,3 +327,12 @@ export function MapIcon(props: IconProps) {
             style={props.style} />
     )
 }
+
+export function CaretDownIcon(props: IconProps) {
+    return (
+        <AntDesign name="caret-down"
+            color={props.color}
+            size={props.size}
+            style={props.style} />
+    )
+}

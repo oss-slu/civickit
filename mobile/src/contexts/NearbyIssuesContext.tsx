@@ -1,6 +1,6 @@
 // mobile/src/contexts/NearbyIssuesContext.ts
 import { QueryObserverResult, RefetchOptions, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createContext, useContext } from "react";
+import { createContext, useContext, useState } from "react";
 import { useLocation } from "./LocationContext";
 import { userLocation } from "../types/userLocation";
 import ENV from '../config/env';
@@ -20,8 +20,7 @@ export const NearbyIssuesProvider = ({ children }: any) => {
 
     const queryClient = useQueryClient()
     const location = useLocation().location
-    const locationError = useLocation().error
-    const locationLoading = useLocation().isLoading
+    const [radius, setRadius] = useState<number>(1)
 
     //fetch issues from database 
     const { data, isLoading, error, refetch } = useQuery({
@@ -30,7 +29,8 @@ export const NearbyIssuesProvider = ({ children }: any) => {
             console.log("url: ", ENV.apiUrl)
             const response = await fetch(
                 ENV.apiUrl + '/issues/nearby?lat=' +
-                location.latitude + '&lng=' + location.longitude + '&radius=5000'
+                location.latitude + '&lng=' + location.longitude
+                + '&radius=' + radius * 1609.34 //1 mile
             );
             // console.log("fetch", response)
             if (!response.ok) throw new Error('Failed to fetch');

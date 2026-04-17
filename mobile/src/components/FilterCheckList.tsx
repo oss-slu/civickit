@@ -6,7 +6,7 @@ import { Checkbox } from 'expo-checkbox';
 import IconButton from "./IconButton";
 import { FilterIcon } from "./Icons";
 
-export default function ModalDropdown({ data, setSelectedValues, buttonStyle, children }: any) {
+export default function FilterCheckList({ data, setSelectedValues, buttonStyle, children }: any) {
     const [isVisible, setIsVisible] = useState(false)
     const [selected, setSelected] = useState(() => {
         let list: boolean[] = []
