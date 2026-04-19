@@ -20,6 +20,7 @@ import MapView from "react-native-maps";
 
 //mobile/src/screens/HomeScreen.tsx
 export default function HomeScreen() {
+    const [isMinLoading, setIsMinLoading] = useState(false)
     const [refreshing, setRefreshing] = useState(false)
     const [visibleCategories, setVisibleCategories] = useState(IssueCategoryArray)
     const [visibleStatuses, setVisibleStatuses] = useState(IssueStatusArray)
@@ -45,12 +46,17 @@ export default function HomeScreen() {
         }
     }, queryClient);
 
-    // Guarded refresh handler — prevents spamming while a fetch is in progress
+    // Guarded refresh handler — prevents spamming while a fetch or animation is in progress
     const handleRefresh = useCallback(() => {
-        if (!isFetching) {
+        if (!isFetching && !isMinLoading) {
+            setIsMinLoading(true);
             refetch();
+            // Ensure animation plays for at least 800ms (one full spin)
+            setTimeout(() => {
+                setIsMinLoading(false);
+            }, 800);
         }
-    }, [isFetching, refetch]);
+    }, [isFetching, isMinLoading, refetch]);
 
     //check if still loading
     if (isLoading) {
@@ -127,7 +133,7 @@ export default function HomeScreen() {
                 <View style={styles.buttonCol}>
                     <IconButton onPress={handleRefresh}
                         style={styles.button}
-                        loading={isFetching}>
+                        loading={isFetching || isMinLoading}>
                         <RefreshIcon size={size.xl} style={{ alignSelf: "center", marginBottom: 2 }} />
                     </IconButton>
 
