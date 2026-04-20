@@ -21,7 +21,7 @@ export default function StatusBarGraph({ statusNumbers }: any) {
         })))
     }, [statusNumbers])
 
-    console.log(barData)
+
     return (
         <BarChart
             noOfSections={3}
@@ -30,7 +30,7 @@ export default function StatusBarGraph({ statusNumbers }: any) {
             data={barData}
             yAxisThickness={0}
             xAxisThickness={0}
-            isAnimated={true}
+            // isAnimated={true} - currently causing some rendering problems
             rotateLabel={true}
             labelsExtraHeight={112}
             labelWidth={120}
