@@ -21,7 +21,7 @@ export default function StatusBarGraph({ statusNumbers }: any) {
         })))
     }, [statusNumbers])
 
-    console.log(barData)
+
     return (
         <BarChart
             noOfSections={3}
