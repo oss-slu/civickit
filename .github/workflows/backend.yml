@@ -1,5 +1,5 @@
 name: Backend CI
-
+#
 on:
   push:
     branches: [ main, develop ]
@@ -10,12 +10,13 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    defaults: 
+    defaults:
       run:
         working-directory: backend
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Use Node
         uses: actions/setup-node@v4
@@ -30,3 +31,12 @@ jobs:
 
       - name: Run tests
         run: npm test
+
+  registry:
+    needs: test
+    uses: oss-slu/oss_cicd_automation/.github/workflows/Reusable_Docker.yml@main
+    with:
+      image_name: civickit-backend
+      dockerfile: backend/Dockerfile
+      context: backend
+    secrets: inherit
