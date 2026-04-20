@@ -1,5 +1,5 @@
 //mobile/src/components/StatusBarGraph.tsx
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BarChart, PieChart } from "react-native-gifted-charts"
 import { IssueStatusArray } from "../types/IssueStatusArray";
 import { borderRadius, colors, palette, size, spacing, statusColors, typography } from "../styles/theme";
@@ -17,14 +17,20 @@ const catColors = [
 ]
 
 export default function CategoryPieChart({ categoryNumbers }: any) {
-    let i = 0;
-    const [pieData, setPieData] = useState(
-        IssueCategoryArray.map((category) => ({
+
+    const [pieData, setPieData] = useState(und
+    )
+
+    useEffect(() => {
+        let i = 0;
+        setPieData(IssueCategoryArray.map(category => ({
             value: categoryNumbers[category.toUpperCase().replace(" ", "_")],
             color: catColors[i++],
             text: category
-        }))
-    )
+        })))
+    }, [categoryNumbers])
+
+    console.log(pieData)
 
     const renderLegend = (text: string, color: string) => {
         return (
