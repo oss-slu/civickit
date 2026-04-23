@@ -135,11 +135,10 @@ export default function HomeScreen() {
                         <RefreshIcon size={size.xl} style={{ alignSelf: "center", marginBottom: 2 }} />
                     </IconButton>
 
-                    <IconButton onPress={logout}
+                    {/* <IconButton onPress={logout}
                         style={[styles.button, styles.logoutButton]}>
                         <Text style={styles.logoutText}>Logout</Text>
-                    </IconButton>
-
+                    </IconButton> */}
                 </View>
 
                 <View style={styles.buttonColRight}>
