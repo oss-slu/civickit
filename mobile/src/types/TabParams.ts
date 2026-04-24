@@ -2,7 +2,7 @@
 
 export type TabParams = {
     "Map": {},
-    "Feed": {},
+    "Feed Nav": {},
     "ReportIssue": {},
     "Events": {},
     "Profile": {}
