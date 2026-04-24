@@ -17,12 +17,11 @@ const catColors = [
 ]
 
 export default function CategoryPieChart({ categoryNumbers }: any) {
-
-    const [pieData, setPieData] = useState(und
-    )
+    let i = 0
+    const [pieData, setPieData] = useState<any>([])
 
     useEffect(() => {
-        let i = 0;
+        i = 0;
         setPieData(IssueCategoryArray.map(category => ({
             value: categoryNumbers[category.toUpperCase().replace(" ", "_")],
             color: catColors[i++],
@@ -30,7 +29,6 @@ export default function CategoryPieChart({ categoryNumbers }: any) {
         })))
     }, [categoryNumbers])
 
-    console.log(pieData)
 
     const renderLegend = (text: string, color: string) => {
         return (
@@ -57,8 +55,12 @@ export default function CategoryPieChart({ categoryNumbers }: any) {
             />
             <View style={styles.legend}>
                 {
-                    pieData.map((value: { color: string, text: string }) =>
-                        renderLegend(value.text, value.color)
+                    pieData.map((value: { value: number, color: string, text: string }) => {
+                        // console.log(value)
+                        if (value.value > 0) {
+                            return renderLegend(value.text, value.color)
+                        }
+                    }
                     )
                 }
             </View>

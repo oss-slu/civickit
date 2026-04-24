@@ -99,7 +99,7 @@ export default function IssueCard({ issue, variant = 'compact', onPress, style, 
         {issue.images?.length > 0 && (
           <Image
             source={{ uri: issue.images[0] }}
-            style={styles.thumbnail}
+            style={isExpanded ? { ...styles.thumbnail } : { ...styles.thumbnail, width: size.xxl, height: size.xxl }}
             resizeMode="cover"
           />
         )}
@@ -116,6 +116,7 @@ export default function IssueCard({ issue, variant = 'compact', onPress, style, 
             >
               {issue.title}
             </Text>
+
           </View>
 
           {/* Expanded details */}
@@ -131,6 +132,7 @@ export default function IssueCard({ issue, variant = 'compact', onPress, style, 
 
           {/* Footer row */}
           <View style={styles.footer}>
+
             {/* Status badge */}
             <View
               style={{
@@ -143,12 +145,26 @@ export default function IssueCard({ issue, variant = 'compact', onPress, style, 
               </Text>
             </View>
 
-            {/* Upvotes */}
-            <View style={styles.upvotes}>
-              <UpvoteIcon color={colors.textPrimary} size={typography.sizeLg} />
-              <Text style={styles.upvoteText}>
-                {issue.upvoteCount}
-              </Text>
+
+
+            <View style={{ flexDirection: "row", columnGap: spacing.xs }}>
+              {!isExpanded && (
+                <>
+                  {issue.distance !== undefined && (
+                    <Text style={{ ...styles.distance, textAlign: "left" }}>
+                      {parseFloat(issue.distance).toFixed(1)} km away
+                    </Text>
+                  )}
+                </>
+              )}
+              {/* Upvotes */}
+              <View style={styles.upvotes}>
+                <UpvoteIcon color={colors.textPrimary} size={typography.sizeLg} />
+                <Text style={styles.upvoteText}>
+                  {issue.upvoteCount}
+                </Text>
+              </View>
+
             </View>
           </View>
         </View>
