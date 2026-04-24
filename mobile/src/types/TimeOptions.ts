@@ -1,0 +1,1 @@
+export const timeOptions = ["1 Week", "1 Month", "1 Year", "All Time"]

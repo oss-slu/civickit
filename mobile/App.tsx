@@ -23,6 +23,7 @@ import React from 'react';
 import { LocationProvider } from './src/contexts/LocationContext';
 import { NearbyIssuesProvider } from './src/contexts/NearbyIssuesContext';
 import LandingScreenNav from './src/screens/LandingScreenNav';
+import FeedNav from './src/screens/FeedNav';
 
 const Tab = createBottomTabNavigator<TabParams>();
 
@@ -55,7 +56,7 @@ function MainTabNavigator() {
               ),
               headerShown: false
             }} />
-          <Tab.Screen name="Feed" component={FeedScreen}
+          <Tab.Screen name="Feed Nav" component={FeedNav}
             options={{
               tabBarIcon: () => (
                 <SearchIcon
@@ -64,6 +65,7 @@ function MainTabNavigator() {
                   style={{ ...styles.icon, ...styles.navIcons }}
                 />
               ),
+              headerShown: false
             }} />
 
           <Tab.Screen name="ReportIssue" component={IssueCreationNav}
