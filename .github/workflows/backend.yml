@@ -40,6 +40,6 @@ jobs:
     uses: oss-slu/oss_cicd_automation/.github/workflows/Reusable_Docker.yml@main
     with:
       image_name: civickit-backend
-      dockerfile: backend/Dockerfile
+      dockerfile: Dockerfile
       context: backend
     secrets: inherit
