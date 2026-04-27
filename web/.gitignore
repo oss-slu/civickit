@@ -1,0 +1,13 @@
+node_modules
+dist
+.DS_Store
+*.local
+.env
+.env.local
+.env.*.local
+.env.production
+.output
+.wrangler
+.vinxi
+.tanstack
+routeTree.gen.ts

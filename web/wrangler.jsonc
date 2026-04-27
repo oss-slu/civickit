@@ -1,0 +1,21 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "civickit-web",
+  "compatibility_date": "2025-09-02",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "@tanstack/react-start/server-entry",
+  "assets": {
+    "html_handling": "drop-trailing-slash"
+  },
+  "env": {
+    "production": {
+      "name": "civickit-web-prod",
+      "routes": [
+        {
+          "pattern": "civickit.org",
+          "custom_domain": true
+        }
+      ]
+    }
+  }
+}
