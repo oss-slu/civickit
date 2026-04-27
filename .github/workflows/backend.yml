@@ -34,6 +34,9 @@ jobs:
 
   registry:
     needs: test
+    permissions:
+      contents: read
+      packages: write
     uses: oss-slu/oss_cicd_automation/.github/workflows/Reusable_Docker.yml@main
     with:
       image_name: civickit-backend
