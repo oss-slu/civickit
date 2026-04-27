@@ -21,7 +21,7 @@ type Props = StaticScreenProps<{
     issues: any[];
 }>;
 
-export default function LeaderBoard({ route }: Props) {
+export default function LeaderBoardScreen({ route }: Props) {
     const [sort, setSort] = useState("Upvotes")
     const [isAscending, setIsAscending] = useState(true)
     const [visibleCategories, setVisibleCategories] = useState(IssueCategoryArray)
