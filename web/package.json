@@ -3,10 +3,13 @@
   "private": true,
   "type": "module",
   "pnpm": {
-    "onlyBuiltDependencies": ["esbuild", "workerd"]
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "workerd"
+    ]
   },
   "scripts": {
-    "dev": "portless civickit-web --force vite dev",
+    "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview",
     "deploy": "vite build && wrangler deploy --env production",
@@ -35,6 +38,7 @@
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.33.2",
+    "@cloudflare/workers-types": "^4.20260426.1",
     "@tanstack/eslint-config": "^0.4.0",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/react": "^16.3.2",
@@ -43,7 +47,6 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.2.0",
     "jsdom": "^27.4.0",
-    "portless": "^0.10.3",
     "prettier": "^3.8.1",
     "prettier-plugin-tailwindcss": "^0.7.2",
     "typescript": "^5.9.3",
