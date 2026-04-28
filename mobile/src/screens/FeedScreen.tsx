@@ -7,6 +7,7 @@ import LoadingScreen from "./LoadingScreen";
 import React, { useEffect, useState } from "react";
 import { BarChart, PieChart } from "react-native-gifted-charts"
 import StatusBarGraph from "../components/StatusBarGraph";
+import StatusSummaryCard from "../components/StatusSummaryCard";
 import { IssueStatusArray } from "../types/IssueStatusArray";
 import { IssueCategoryArray } from "../types/IssueCategoryArray";
 import { Issue } from "@civickit/shared";
@@ -264,6 +265,10 @@ export default function FeedScreen() {
 
                     <View style={{ ...styles.sectionContainer }}>
                         <StatusBarGraph statusNumbers={statusNumbers} />
+                    </View>
+                    
+                    <View style={{ ...styles.sectionContainer }}>
+                        <StatusSummaryCard statusNumbers={statusNumbers} />
                     </View>
 
                 </ScrollView>
