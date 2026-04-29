@@ -15,6 +15,7 @@ import { userTemplates, type SeedIssueTemplate, type SeedUserTemplate } from './
 import { uploadImageToCloudinary } from './utils/cloudinary-upload.js';
 import * as path from 'path';
 import * as fs from 'fs';
+import * as crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 
 // Configuration
@@ -125,7 +126,7 @@ async function createIssues(
 ) {
     for (const template of issueTemplates) {
         // Pick a random user as the creator
-        const randomUser = users[Math.floor(Math.random() * users.length)];
+        const randomUser = users[crypto.randomInt(users.length)];
 
         // Upload all images for this issue
         const imageUrls: string[] = [];
