@@ -21,7 +21,6 @@ export default function StatusBarGraph({ statusNumbers }: any) {
         })))
     }, [statusNumbers])
 
-
     return (
         <BarChart
             noOfSections={3}
@@ -30,7 +29,7 @@ export default function StatusBarGraph({ statusNumbers }: any) {
             data={barData}
             yAxisThickness={0}
             xAxisThickness={0}
-            // isAnimated={true} - currently causing some rendering problems
+            // isAnimated={true} //- currently causing some rendering problems
             rotateLabel={true}
             labelsExtraHeight={112}
             labelWidth={120}

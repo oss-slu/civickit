@@ -40,7 +40,6 @@ export default function FeedScreen() {
     const location = useLocation().location
     const navigation = useNavigation<StackNavigationProp<StackParams>>()
 
-
     async function queryFunction({ queryKey }: any) {
         const [radius] = queryKey
         const response = await fetch(

@@ -65,7 +65,7 @@ export default function LeaderBoardScreen({ route }: Props) {
             })
         } else if (sort == "Distance") {
             visibleIssues.sort((a: GetNearbyIssueResponse, b: GetNearbyIssueResponse) => {
-                console.log(a.distance, b.distance, parseFloat(a.distance) - parseFloat(b.distance))
+                // console.log(a.distance, b.distance, parseFloat(a.distance) - parseFloat(b.distance))
                 return (parseFloat(a.distance) - parseFloat(b.distance)) * (isAscending ? -1 : 1)
             })
         }
