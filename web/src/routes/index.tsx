@@ -1,30 +1,28 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { Button } from '@/components/ui/button'
 import { useEffect, useRef, useState } from 'react'
 import {
-  Camera,
-  FileText,
-  Send,
-  MapPin,
-  Phone,
-  Globe,
-  MessageCircle,
-  Mail,
-  Users,
-  Building2,
-  Landmark,
-  Eye,
-  TrendingUp,
-  ShieldCheck,
-  Layers,
-  Check,
-  X,
   ArrowRight,
-  DollarSign,
-  Handshake,
-  FlaskConical,
+  Building2,
+  Camera,
   ChevronDown,
+  DollarSign,
+  Eye,
+  FileText,
+  FlaskConical,
+  Globe,
+  Handshake,
+  Landmark,
+  Layers,
+  Mail,
+  MapPin,
+  MessageCircle,
+  Phone,
+  Send,
+  ShieldCheck,
+  TrendingUp,
+  Users,
 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 const ck = {
   green: '#2A9D8F',
@@ -235,8 +233,8 @@ function LandingPage() {
       <Solution />
       <SharedMap />
       <WhoWeServe />
-      <BusinessModel />
-      <Competitive />
+      {/* <BusinessModel /> */}
+      {/* <Competitive /> */}
       <TheAsk />
       <Footer />
     </div>
@@ -871,269 +869,6 @@ function WhoWeServe() {
             </Reveal>
           ))}
         </div>
-      </div>
-    </section>
-  )
-}
-
-function BusinessModel() {
-  const tiers = [
-    {
-      label: 'FREE',
-      title: 'Residents',
-      features: [
-        'Report issues from your phone',
-        'View the live map',
-        'Follow updates on reports',
-      ],
-      accent: ck.darkGray,
-      border: ck.lightGray,
-    },
-    {
-      label: 'SUBSCRIBE',
-      title: 'Community Orgs',
-      features: [
-        'Analytics dashboard',
-        'Trend reports & insights',
-        'Custom alerts & notifications',
-      ],
-      accent: ck.green,
-      border: ck.green,
-      featured: true,
-    },
-    {
-      label: 'ENTERPRISE',
-      title: 'City of St. Louis',
-      features: [
-        'Full routing dashboard',
-        'Department management',
-        'API access & integrations',
-      ],
-      accent: ck.darkBlue,
-      border: ck.darkBlue,
-    },
-  ]
-
-  return (
-    <section
-      id="model"
-      className="scroll-mt-20 py-28 md:py-36"
-      style={{ backgroundColor: ck.bg }}
-    >
-      <div className="mx-auto max-w-7xl px-8">
-        <Reveal>
-          <p
-            className="text-[13px] font-semibold uppercase tracking-[0.2em]"
-            style={{ color: ck.green }}
-          >
-            Business Model
-          </p>
-        </Reveal>
-        <Reveal delay={0.08}>
-          <h2
-            className="mt-4 text-[clamp(2rem,4vw,3.2rem)] leading-[1.1] font-bold tracking-tight"
-            style={{ fontFamily: "'DM Serif Display', serif" }}
-          >
-            Software as a Service
-          </h2>
-        </Reveal>
-
-        <div className="mt-14 grid gap-5 md:grid-cols-3">
-          {tiers.map((t, i) => (
-            <Reveal key={t.title} delay={0.08 + i * 0.08}>
-              <div
-                className="relative overflow-hidden rounded-2xl border p-7 transition-shadow hover:shadow-md"
-                style={{
-                  borderColor: t.featured ? `${t.border}40` : ck.lightGray,
-                  backgroundColor: ck.surface,
-                }}
-              >
-                {t.featured && (
-                  <div
-                    className="absolute top-0 left-0 h-1 w-full"
-                    style={{ backgroundColor: ck.green }}
-                  />
-                )}
-                <p
-                  className="text-[11px] font-bold uppercase tracking-[0.2em]"
-                  style={{ color: t.accent }}
-                >
-                  {t.label}
-                </p>
-                <h3
-                  className="mt-3 text-2xl font-bold"
-                  style={{ fontFamily: "'DM Serif Display', serif" }}
-                >
-                  {t.title}
-                </h3>
-                <ul className="mt-6 space-y-3">
-                  {t.features.map((f) => (
-                    <li
-                      key={f}
-                      className="flex items-center gap-3 text-sm"
-                      style={{ color: ck.darkGray }}
-                    >
-                      <Check className="h-3.5 w-3.5 shrink-0" style={{ color: ck.medGray }} />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </Reveal>
-          ))}
-        </div>
-
-        <Reveal delay={0.35}>
-          <p className="mt-10 text-sm italic" style={{ color: ck.medGray }}>
-            The city funds the subscription from budgets already allocated for
-            beautification &amp; community improvement.
-          </p>
-        </Reveal>
-      </div>
-    </section>
-  )
-}
-
-function Competitive() {
-  return (
-    <section
-      className="py-28 md:py-36"
-      style={{ backgroundColor: ck.surface }}
-    >
-      <div className="mx-auto max-w-7xl px-8">
-        <Reveal>
-          <h2
-            className="max-w-3xl text-[clamp(2rem,4vw,3.2rem)] leading-[1.1] font-bold tracking-tight"
-            style={{ fontFamily: "'DM Serif Display', serif" }}
-          >
-            The closest competitor stopped.
-            <br />
-            <span style={{ color: ck.green }}>
-              We&apos;re just getting started.
-            </span>
-          </h2>
-        </Reveal>
-
-        <div className="mt-16 grid gap-6 md:grid-cols-2">
-          <Reveal delay={0.08}>
-            <div
-              className="rounded-2xl border p-8"
-              style={{ borderColor: ck.lightGray }}
-            >
-              <p
-                className="text-xs font-bold uppercase tracking-[0.2em]"
-                style={{ color: ck.medGray }}
-              >
-                Competitor
-              </p>
-              <h3
-                className="mt-2 text-2xl font-bold"
-                style={{
-                  fontFamily: "'DM Serif Display', serif",
-                  color: ck.medGray,
-                }}
-              >
-                SeeClickFix
-              </h3>
-              <ul className="mt-8 space-y-4">
-                {[
-                  { ok: true, text: 'Shared map concept, same idea' },
-                  { ok: true, text: 'Was used in St. Louis' },
-                  { ok: false, text: 'Last STL report: ~2013' },
-                  { ok: false, text: 'Platform essentially abandoned' },
-                  { ok: false, text: 'Not maintained or supported' },
-                ].map((item) => (
-                  <li key={item.text} className="flex items-center gap-3">
-                    {item.ok ? (
-                      <div
-                        className="flex h-5 w-5 items-center justify-center rounded-full"
-                        style={{ backgroundColor: `${ck.medGray}15` }}
-                      >
-                        <Check
-                          className="h-3 w-3"
-                          style={{ color: ck.medGray }}
-                        />
-                      </div>
-                    ) : (
-                      <div
-                        className="flex h-5 w-5 items-center justify-center rounded-full"
-                        style={{ backgroundColor: `${ck.red}12` }}
-                      >
-                        <X
-                          className="h-3 w-3"
-                          style={{ color: ck.red }}
-                        />
-                      </div>
-                    )}
-                    <span
-                      className="text-sm"
-                      style={{
-                        color: item.ok ? ck.medGray : ck.red,
-                      }}
-                    >
-                      {item.text}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </Reveal>
-
-          <Reveal delay={0.16}>
-            <div
-              className="rounded-2xl border-2 p-8 shadow-lg"
-              style={{
-                borderColor: `${ck.green}35`,
-                boxShadow: `0 8px 32px ${ck.green}08`,
-              }}
-            >
-              <p
-                className="text-xs font-bold uppercase tracking-[0.2em]"
-                style={{ color: ck.green }}
-              >
-                Our Solution
-              </p>
-              <h3
-                className="mt-2 text-2xl font-bold"
-                style={{ fontFamily: "'DM Serif Display', serif" }}
-              >
-                CivicKit
-              </h3>
-              <ul className="mt-8 space-y-4">
-                {[
-                  'Same shared map concept',
-                  'Built for STL, right now',
-                  'Modern, maintained codebase',
-                  'Full SaaS with city integration',
-                  'Actively developed & supported',
-                ].map((text) => (
-                  <li key={text} className="flex items-center gap-3">
-                    <div
-                      className="flex h-5 w-5 items-center justify-center rounded-full"
-                      style={{ backgroundColor: `${ck.green}15` }}
-                    >
-                      <Check
-                        className="h-3 w-3"
-                        style={{ color: ck.green }}
-                      />
-                    </div>
-                    <span className="text-sm font-medium">{text}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </Reveal>
-        </div>
-
-        <Reveal delay={0.25}>
-          <p
-            className="mt-10 text-[17px] italic"
-            style={{ color: ck.medGray }}
-          >
-            There is a clear, unmet need in St. Louis, and we&apos;re
-            the team filling it.
-          </p>
-        </Reveal>
       </div>
     </section>
   )
