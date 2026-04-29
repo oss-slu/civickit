@@ -27,6 +27,19 @@ Install docker
 6. `npm run dev` (start the backend)
 7. Server runs on http://localhost:3000
 
+### Seeding the database
+*Preview what would be seeded*
+npm run seed:preview
+
+*Seed the database*
+npm run seed:run
+
+*Clean database*
+npm run seed:clean
+
+*Reset (clean + seed)*
+npm run seed:reset
+
 ### Testing Backend API
 1. Seed/create dev user(if needed) `npx prisma studio`
 2. Test APIs by creating an issue
