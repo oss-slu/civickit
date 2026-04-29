@@ -136,11 +136,11 @@ async function createIssues(
 
             if (fs.existsSync(imagePath)) {
                 try {
-                    log('info', `  📤 Uploading ${imageFile}...`);
+                    log('info', ` Uploading ${imageFile}...`);
                     const imageBuffer = fs.readFileSync(imagePath);
                     const imageUrl = await uploadImageToCloudinary(imageBuffer);
                     imageUrls.push(imageUrl);
-                    log('info', `  ✅ Uploaded: ${imageFile}`);
+                    log('info', `   Uploaded: ${imageFile}`);
                 } catch (error) {
                     log('warn', `  Failed to upload ${imageFile}: ${error}`);
                     // Use a placeholder URL if upload fails
@@ -170,7 +170,7 @@ async function createIssues(
             },
         });
 
-        log('info', `  ✅ Created issue: ${issue.title} (${imageUrls.length} images)`);
+        log('info', `  Created issue: ${issue.title} (${imageUrls.length} images)`);
     }
 }
 
