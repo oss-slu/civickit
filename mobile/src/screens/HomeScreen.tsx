@@ -1,5 +1,5 @@
 //mobile/src/screens/HomeScreen.tsx
-import { useContext, useRef, useState } from "react";
+import { useContext, useCallback, useRef, useState } from "react";
 import { LocationContext } from "../types/LocationContext";
 import { useAuth } from '../contexts/AuthContext';
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -20,6 +20,7 @@ import MapView from "react-native-maps";
 
 //mobile/src/screens/HomeScreen.tsx
 export default function HomeScreen() {
+    const [isMinLoading, setIsMinLoading] = useState(false)
     const [refreshing, setRefreshing] = useState(false)
     const [visibleCategories, setVisibleCategories] = useState(IssueCategoryArray)
     const [visibleStatuses, setVisibleStatuses] = useState(IssueStatusArray)
@@ -31,7 +32,7 @@ export default function HomeScreen() {
     const mapRef = useRef<MapView | null>(null);
 
     //fetch issues from database 
-    const { data, isLoading, error, refetch } = useQuery({
+    const { data, isLoading, isFetching, error, refetch } = useQuery({
         queryKey: ['issues', 'nearby'],
         queryFn: async () => {
             console.log("url: ", ENV.apiUrl)
@@ -44,6 +45,18 @@ export default function HomeScreen() {
             return response.json();
         }
     }, queryClient);
+
+    // Guarded refresh handler — prevents spamming while a fetch or animation is in progress
+    const handleRefresh = useCallback(() => {
+        if (!isFetching && !isMinLoading) {
+            setIsMinLoading(true);
+            refetch();
+            // Ensure animation plays for at least 800ms (one full spin)
+            setTimeout(() => {
+                setIsMinLoading(false);
+            }, 800);
+        }
+    }, [isFetching, isMinLoading, refetch]);
 
     //check if still loading
     if (isLoading) {
@@ -116,9 +129,10 @@ export default function HomeScreen() {
                         <StatusIcon size={size.xl} style={{ alignSelf: "center" }} />
                     </FilterCheckList>
 
-                    <IconButton onPress={refetch}
-                        style={styles.button}>
-                        <RefreshIcon size={size.xl} style={{ alignSelf: "center" }} />
+                    <IconButton onPress={handleRefresh}
+                        style={styles.button}
+                        loading={isFetching || isMinLoading}>
+                        <RefreshIcon size={size.xl} style={{ alignSelf: "center", marginBottom: 2 }} />
                     </IconButton>
 
                     {/* <IconButton onPress={logout}
