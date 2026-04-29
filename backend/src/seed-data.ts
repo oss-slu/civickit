@@ -35,8 +35,7 @@ export interface SeedUserTemplate {
     profileImage?: string;
 }
 
-// Sample users for seeding
-export const userTemplates: SeedUserTemplate[] = [
+const baseUserTemplates: SeedUserTemplate[] = [
     {
         email: 'alice@example.com',
         name: 'Alice Johnson',
@@ -62,6 +61,54 @@ export const userTemplates: SeedUserTemplate[] = [
         name: 'Emma Davis',
         password: 'password123',
     },
+];
+
+const generatedUserNames = [
+    'Frank Miller',
+    'Grace Wilson',
+    'Henry Moore',
+    'Isabella Taylor',
+    'Jack Anderson',
+    'Katherine Thomas',
+    'Liam Jackson',
+    'Mia White',
+    'Noah Harris',
+    'Olivia Martin',
+    'Paul Thompson',
+    'Quinn Garcia',
+    'Ruby Martinez',
+    'Samuel Robinson',
+    'Tara Clark',
+    'Uma Rodriguez',
+    'Victor Lewis',
+    'Willow Lee',
+    'Xavier Walker',
+    'Yara Hall',
+    'Zane Allen',
+    'Ava Young',
+    'Benjamin King',
+    'Chloe Wright',
+    'Daniel Scott',
+    'Ella Green',
+    'Finn Baker',
+    'Gianna Adams',
+    'Hudson Nelson',
+    'Ivy Carter',
+    'Julian Mitchell',
+    'Luna Perez',
+    'Miles Roberts',
+    'Nora Turner',
+    'Owen Phillips',
+];
+
+// Sample users for seeding
+export const userTemplates: SeedUserTemplate[] = [
+    ...baseUserTemplates,
+    ...generatedUserNames.map((name) => ({
+        email: `${name.toLowerCase().replace(/\s+/g, '.')}@example.com`,
+        name,
+        password: 'password123',
+    })),
 ];
 
 // Issue templates with real St. Louis location data

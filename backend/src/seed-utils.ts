@@ -170,8 +170,36 @@ async function createIssues(
             },
         });
 
+        await createRandomEndorsements(issue.id, randomUser.id, users);
+
         log('info', `  Created issue: ${issue.title} (${imageUrls.length} images)`);
     }
+}
+
+async function createRandomEndorsements(
+    issueId: string,
+    creatorUserId: string,
+    users: { id: string }[]
+) {
+    const eligibleUsers = users.filter((user) => user.id !== creatorUserId);
+    const maxEndorsements = Math.min(30, eligibleUsers.length);
+
+    if (maxEndorsements === 0) {
+        return;
+    }
+
+    const endorsementCount = crypto.randomInt(1, maxEndorsements + 1);
+    const shuffledUsers = [...eligibleUsers].sort(() => Math.random() - 0.5);
+    const selectedUsers = shuffledUsers.slice(0, endorsementCount);
+
+    await prisma.upvote.createMany({
+        data: selectedUsers.map((user) => ({
+            issueId,
+            userId: user.id,
+        })),
+    });
+
+    log('info', `   Added ${endorsementCount} endorsements`);
 }
 
 /**
@@ -180,6 +208,7 @@ async function createIssues(
 async function printSummary() {
     const userCount = await prisma.user.count();
     const issueCount = await prisma.issue.count();
+    const upvoteCount = await prisma.upvote.count();
 
     // Count by category
     const categoryCounts = await prisma.issue.groupBy({
@@ -196,6 +225,7 @@ async function printSummary() {
     log('info', 'Seed complete', {
         users: userCount,
         issues: issueCount,
+        endorsements: upvoteCount,
         byCategory: Object.fromEntries(categoryCounts.map(c => [c.category, c._count])),
         byStatus: Object.fromEntries(statusCounts.map(s => [s.status, s._count])),
     });
