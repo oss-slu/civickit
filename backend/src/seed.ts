@@ -44,7 +44,7 @@ async function main() {
     const args = process.argv.slice(2);
     const command = args[0];
 
-    console.log('\n🗳️  CivicKit Seed Script\n');
+    console.log('\n CivicKit Seed Script\n');
     console.log('─'.repeat(50));
 
     if (DRY_RUN) {
@@ -57,21 +57,21 @@ async function main() {
             case 'clean':
                 log('info', 'Cleaning database...');
                 await cleanupDatabase();
-                log('info', '✅ Database cleaned successfully');
+                log('info', 'Database cleaned successfully');
                 break;
 
             case 'reset':
                 log('info', 'Resetting database (clean + seed)...');
                 await cleanupDatabase();
                 await seedDatabase(issueTemplates);
-                log('info', '✅ Database reset complete');
+                log('info', 'Database reset complete');
                 break;
 
             case 'run':
             case undefined:
                 log('info', 'Seeding database...');
                 await seedDatabase(issueTemplates);
-                log('info', '✅ Database seeded successfully');
+                log('info', 'Database seeded successfully');
                 break;
 
             case 'help':
