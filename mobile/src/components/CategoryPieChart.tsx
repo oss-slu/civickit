@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
         alignItems: "center"
     },
     centerLabels: {
-        fontSize: typography.sizeLg,
+        fontSize: typography.sizeMd,
         color: colors.textPrimary,
         fontWeight: typography.weightMedium,
     }
