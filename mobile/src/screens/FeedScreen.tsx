@@ -251,10 +251,6 @@ export default function FeedScreen() {
                         />
                     </IconButton>
 
-                    <Text style={{ ...styles.heading }}>
-                        More Stats
-                    </Text>
-
                     <View style={{
                         ...styles.sectionContainer,
                         backgroundColor: colors.background
@@ -262,10 +258,10 @@ export default function FeedScreen() {
                         <CategoryPieChart categoryNumbers={categoryNumbers} />
                     </View>
 
-                    <View style={{ ...styles.sectionContainer }}>
+                    {/* <View style={{ ...styles.sectionContainer }}>
                         <StatusBarGraph statusNumbers={statusNumbers} />
-                    </View>
-                    
+                    </View> */}
+
                     <View style={{ ...styles.sectionContainer }}>
                         <StatusSummaryCard statusNumbers={statusNumbers} />
                     </View>
@@ -279,10 +275,11 @@ export default function FeedScreen() {
 
 const styles = StyleSheet.create({
     heading: {
-        ...globalStyles.heading1,
-        textAlign: "center",
-        marginHorizontal: spacing.md,
-        marginVertical: spacing.sm
+        color: colors.textPrimary,
+        fontSize: typography.sizeLg,
+        fontWeight: typography.weightBold,
+        marginTop: spacing.lg,
+        marginLeft: spacing.md
     },
     leaderboardContainer: {
         margin: spacing.sm,

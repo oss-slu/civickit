@@ -19,18 +19,35 @@ const catColors = [
 export default function CategoryPieChart({ categoryNumbers }: any) {
     let i = 0
     const [pieData, setPieData] = useState<any>([])
+    const [focused, setFocused] = useState<any>()
+    const [total, setTotal] = useState(1)
 
     useEffect(() => {
         i = 0;
         setPieData(IssueCategoryArray.map(category => ({
             value: categoryNumbers[category.toUpperCase().replace(" ", "_")],
             color: catColors[i++],
-            text: category
+            text: categoryNumbers[category.toUpperCase().replace(" ", "_")],
+            category: category
         })))
+
     }, [categoryNumbers])
 
+    useEffect(() => {
+        let localTotal = 0;
+        if (pieData.length != 0) {
+            const values = pieData.map((value: any) => parseInt(value.value))
+            const maxInd = values.indexOf(Math.max(...values))
+            setFocused(pieData[maxInd])
+        }
 
-    const renderLegend = (text: string, color: string) => {
+        pieData.map((item: any) => {
+            localTotal += item.value
+        })
+        setTotal(localTotal)
+    }, [pieData])
+
+    const renderLegend = (category: string, color: string) => {
         return (
             <View style={{ flexDirection: 'row', marginBottom: 12 }} key={i++}>
                 <View
@@ -42,23 +59,42 @@ export default function CategoryPieChart({ categoryNumbers }: any) {
                         backgroundColor: color || 'white',
                     }}
                 />
-                <Text style={{ color: colors.textPrimary, fontSize: typography.sizeMd }}>{text || ''}</Text>
+                <Text style={{ color: colors.textPrimary, fontSize: typography.sizeMd }}>{category || ''}</Text>
             </View>
         );
     };
 
     return (
         <View style={styles.container}>
+            <Text style={styles.title}>Issues by Category</Text>
+
             <PieChart
                 data={pieData}
-                isAnimated={true}
+                donut
+                isAnimated
+                centerLabelComponent={() => {
+                    if (focused != undefined) {
+                        return (
+                            <View style={styles.center}>
+                                <Text style={styles.centerLabels}>{focused.category}</Text>
+                                <Text style={styles.centerLabels}>{focused.value} issues</Text>
+                                <Text style={styles.centerLabels}>{(focused.value / total * 100).toFixed(1)}%</Text>
+                            </View>
+                        )
+                    }
+
+                }}
+                sectionAutoFocus
+                focusOnPress
+                innerRadius={60}
+                onPress={(item: any) => setFocused(item)}
             />
             <View style={styles.legend}>
                 {
-                    pieData.map((value: { value: number, color: string, text: string }) => {
+                    pieData.map((value: { value: number, color: string, text: string, category: string }) => {
                         // console.log(value)
                         if (value.value > 0) {
-                            return renderLegend(value.text, value.color)
+                            return renderLegend(value.category, value.color)
                         }
                     }
                     )
@@ -69,6 +105,13 @@ export default function CategoryPieChart({ categoryNumbers }: any) {
 }
 
 const styles = StyleSheet.create({
+    title: {
+        color: colors.textPrimary,
+        fontSize: typography.sizeLg,
+        fontWeight: typography.weightBold,
+        alignSelf: "flex-start",
+        marginBottom: spacing.md
+    },
     legend: {
         flexDirection: "row",
         flexWrap: "wrap",
@@ -80,6 +123,19 @@ const styles = StyleSheet.create({
     container: {
         justifyContent: "center",
         alignContent: "center",
+        alignItems: "center",
+        width: "100%"
+    },
+    center: {
+        width: "100%",
+        alignContent: "center",
+        justifyContent: "center",
+        textAlign: "center",
         alignItems: "center"
+    },
+    centerLabels: {
+        fontSize: typography.sizeLg,
+        color: colors.textPrimary,
+        fontWeight: typography.weightMedium,
     }
 })

@@ -76,6 +76,7 @@ const styles = StyleSheet.create({
     container: {
         width: "100%",
         rowGap: spacing.md,
+        padding: spacing.xs
     },
     headerRow: {
         flexDirection: "row",
