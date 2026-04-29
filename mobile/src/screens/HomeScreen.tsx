@@ -129,8 +129,6 @@ export default function HomeScreen() {
                         <StatusIcon size={size.xl} style={{ alignSelf: "center" }} />
                     </FilterCheckList>
 
-                </View>
-                <View style={styles.buttonCol}>
                     <IconButton onPress={handleRefresh}
                         style={styles.button}
                         loading={isFetching || isMinLoading}>
@@ -141,6 +139,7 @@ export default function HomeScreen() {
                         style={[styles.button, styles.logoutButton]}>
                         <Text style={styles.logoutText}>Logout</Text>
                     </IconButton>
+
                 </View>
 
                 <View style={styles.buttonColRight}>
