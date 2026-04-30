@@ -16,7 +16,7 @@ import { GetNearbyIssueResponse } from "@civickit/shared";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { StackParams } from "../types/StackParams";
 
-const sortOptions = ["Date Reported", "Date Updated", "Distance", "Upvotes"]
+const sortOptions = ["Date Reported", "Date Updated", "Distance", "Endorsements"]
 type Props = StaticScreenProps<{
     issues: any[];
 }>;
@@ -35,7 +35,7 @@ export default function LeaderBoardScreen({ route }: Props) {
             visibleStatuses.map(i => i.toUpperCase().replace(/ /g, "_")).includes(issue.status)
         )
 
-        if (sort == "Upvotes") {
+        if (sort == "Endorsements") {
             visibleIssues.sort((a: GetNearbyIssueResponse, b: GetNearbyIssueResponse) => {
                 return (a.upvoteCount - b.upvoteCount) * (isAscending ? -1 : 1)
             })

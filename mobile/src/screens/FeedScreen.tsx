@@ -229,7 +229,7 @@ export default function FeedScreen() {
 
 
                     <Text style={{ ...styles.heading }}>
-                        Most Upvoted
+                        Most Endorsed
                     </Text>
 
 
