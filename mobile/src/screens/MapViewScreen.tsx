@@ -17,7 +17,7 @@ import { GetNearbyIssueResponse } from '@civickit/shared';
 import { map } from 'leaflet';
 
 
-export default function MapViewScreen({ issues, refetch, ref }: any) {
+export default function MapViewScreen({ ref, issues, refetch }: any) {
     const navigation = useNavigation<StackNavigationProp<StackParams>>();
     const bottomSheetRef = useRef<BottomSheet>(null);
     const snapPoints = [36, "30%", "80%"]
@@ -89,7 +89,8 @@ export default function MapViewScreen({ issues, refetch, ref }: any) {
                     latitudeDelta: 0.05,
                     longitudeDelta: 0.05,
                 } : undefined}
-            // showsUserLocation
+                showsUserLocation
+                ref={ref}
             >
                 {issues.map((issue: any) =>
                     <Marker

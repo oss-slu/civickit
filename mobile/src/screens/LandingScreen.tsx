@@ -82,6 +82,7 @@ export default function LandingScreen({ children }: any) {
         <View style={{ flex: 1 }}>
 
             <MapViewScreen
+                ref={mapRef}
                 issues={visibleIssues}
                 refetch={refetch}
             />
