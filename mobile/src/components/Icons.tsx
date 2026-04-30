@@ -290,6 +290,16 @@ export function UserIcon(props: IconProps) {
     )
 }
 
+export function RecenterIcon(props: IconProps) {
+    return (
+        <AntDesign name="aim"
+            color={props.color}
+            size={props.size}
+            style={props.style}
+        />
+    )
+}
+
 export function FlipCameraIcon(props: IconProps) {
     return (
         <MaterialIcons name="flip-camera-android"
