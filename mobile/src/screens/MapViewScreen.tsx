@@ -16,7 +16,7 @@ import CalloutPopup from '../components/CalloutPopup';
 import { GetNearbyIssueResponse } from '@civickit/shared';
 
 
-export default function MapViewScreen({ issues, refetch }: any) {
+export default function MapViewScreen({ ref, issues, refetch }: any) {
     const navigation = useNavigation<StackNavigationProp<StackParams>>();
     const bottomSheetRef = useRef<BottomSheet>(null);
     const snapPoints = [36, "30%", "80%"]
@@ -86,6 +86,7 @@ export default function MapViewScreen({ issues, refetch }: any) {
                     longitudeDelta: 0.05,
                 } : undefined}
                 showsUserLocation
+                ref={ref}
             >
                 {issues.map((issue: any) =>
                     <Marker
