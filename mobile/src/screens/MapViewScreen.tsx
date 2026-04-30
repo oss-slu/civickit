@@ -89,8 +89,6 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
                     latitudeDelta: 0.05,
                     longitudeDelta: 0.05,
                 } : undefined}
-                showsUserLocation
-                ref={ref}
             >
                 {issues.map((issue: any) =>
                     <Marker
