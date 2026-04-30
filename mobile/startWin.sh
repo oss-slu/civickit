@@ -3,22 +3,33 @@
 #./startWin.sh [localhost/ip]
 
 if [ $1 == "ip" ]; then
-    IP_LINE=$(ipconfig | findstr IPv4 )
+    IN_WIFI=false
+    IN_IPV4=false
 
-    if [[ "$IP_LINE" =~ [[:digit:]]{1,3}.[[:digit:]]{1,3}.[[:digit:]]{1,3}.[[:digit:]]{1,3} ]]; then
-        IP=${BASH_REMATCH[0]}
+    OUTPUT=$(ipconfig)
+    for line in $OUTPUT;
+    do
+        if [ "$IN_WIFI" = true ]; then
+            if [ "$IN_IPV4" = true ]; then
+                if [[ "$line" =~ [[:digit:]]{1,3}.[[:digit:]]{1,3}.[[:digit:]]{1,3}.[[:digit:]]{1,3} ]]; then
+                    IP=${BASH_REMATCH[0]}
 
-        cd src/config
-        jq -n --arg IP $IP '{"domain":$IP}' > env.local.json
+                    cd src/config
+                    jq -n --arg IP $IP '{"domain":$IP}' > env.local.json
 
-        echo starting with ip address
-        cd ../..
-        npx expo start
-    else 
-        echo no ipv4 found
-    fi
+                    echo starting with ip address
+                    cd ../..
+                    npx expo start
+                    break
+                fi
+            elif [[ "$line" =~ IPv4 ]]; then
+                IN_IPV4=true
+            fi
+        elif [[ "$line" =~ Wi-Fi ]]; then
+            IN_WIFI=true
+        fi
+    done
 
-    
 elif [ $1 == "localhost" ]; then
     LOCALHOST="localhost"
     cd src/config
