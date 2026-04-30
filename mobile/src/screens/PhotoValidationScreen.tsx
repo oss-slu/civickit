@@ -9,7 +9,7 @@ import { Image } from "react-native";
 import { StaticScreenProps, useFocusEffect, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { StackParams } from '../types/StackParams';
-import { ImagesContext } from '../types/FormContexts';
+import { ImagesContext } from '../contexts/FormContexts';
 
 import React from 'react';
 

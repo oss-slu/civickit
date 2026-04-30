@@ -11,7 +11,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { showMessage } from "react-native-flash-message";
 import { StackParams } from '../types/StackParams';
 import { borderRadius, colors, globalStyles, spacing, palette, size, typography } from '../styles';
-import { CameraIcon, PictureIcon, PlusIcon } from '../components/Icons';
+import { CameraIcon, CaretDownIcon, PictureIcon, PlusIcon } from '../components/Icons';
 import { IssueCategoryArray } from '../types/IssueCategoryArray';
 import { extractResolvedLocationMetadata, formatResolvedAddress, ResolvedLocationMetadata } from '../hooks/useResolvedAddress';
 import { useAuth } from '../contexts/AuthContext';
@@ -22,7 +22,7 @@ import IconButton from '../components/IconButton';
 import SelectedImage from '../components/SelectedImage';
 import ModalDropdown from '../components/ModalDropdown';
 import ENV from '../config/env';
-import { ImagesContext, UserLocationContext, AddressContext, TitleContext, CategoryContext, DescriptionContext } from '../types/FormContexts';
+import { ImagesContext, UserLocationContext, AddressContext, TitleContext, CategoryContext, DescriptionContext } from '../contexts/FormContexts';
 
 export default function IssueCreationScreen() {
     const { images, setImages } = useContext(ImagesContext);
@@ -275,7 +275,9 @@ export default function IssueCreationScreen() {
                 <ModalDropdown
                     data={IssueCategoryArray}
                     onDataSelect={handleSetCategory}
-                    defaultText="Choose a category..." />
+                    defaultText="Choose a category"
+                    labelSuffix={<CaretDownIcon color={colors.textContrast} />}
+                    buttonStyle={{ color: colors.textContrast, fontSize: typography.sizeLg }} />
 
                 <TextInput onChangeText={setDescription}
                     value={description}
