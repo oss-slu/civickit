@@ -10,6 +10,7 @@ import { View, Text } from "react-native";
 interface NearbyIssuesContextType {
     data: any;
     isLoading: boolean;
+    isFetching: boolean;
     error: Error | null;
     refetch?: (options?: RefetchOptions | undefined) => Promise<QueryObserverResult<any, Error>>;
 }
@@ -23,7 +24,7 @@ export const NearbyIssuesProvider = ({ children }: any) => {
     const [radius, setRadius] = useState<number>(5)
 
     //fetch issues from database 
-    const { data, isLoading, error, refetch } = useQuery({
+    const { data, isLoading, isFetching, error, refetch } = useQuery({
         queryKey: ['issues', 'nearby'],
         queryFn: async () => {
             console.log("url: ", ENV.apiUrl)
@@ -39,7 +40,7 @@ export const NearbyIssuesProvider = ({ children }: any) => {
     }, queryClient);
 
     return (
-        <NearbyIssuesContext.Provider value={{ data, isLoading, error, refetch }}>
+        <NearbyIssuesContext.Provider value={{ data, isLoading, isFetching, error, refetch }}>
             {children}
         </NearbyIssuesContext.Provider>
     );
