@@ -1,11 +1,11 @@
 //mobile/src/screens/LandingScreen.tsx
-import { useContext, useState } from "react";
+import { useCallback, useContext, useRef, useState } from "react";
 import { useAuth } from '../contexts/AuthContext';
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { userLocation } from "../types/userLocation";
 import { MessageView } from "../components/MessageView";
 import { View, Text, StyleSheet } from 'react-native';
-import { CategoryIcon, RefreshIcon, StatusIcon, WarningIcon } from '../components/Icons';
+import { CategoryIcon, RecenterIcon, RefreshIcon, StatusIcon, WarningIcon } from '../components/Icons';
 import { borderRadius, colors, globalStyles, palette, size, spacing, typography } from '../styles';
 import { IssueCategoryArray } from "../types/IssueCategoryArray";
 import { IssueStatusArray } from "../types/IssueStatusArray";
@@ -16,15 +16,32 @@ import ENV from '../config/env';
 import LoadingScreen from "./LoadingScreen";
 import MapViewScreen from "./MapViewScreen";
 import { useNearbyIssues } from "../contexts/NearbyIssuesContext";
+import MapView from "react-native-maps";
+import { useLocation } from "../contexts/LocationContext";
 
 export default function LandingScreen({ children }: any) {
+    const [isMinLoading, setIsMinLoading] = useState(false)
     const [refreshing, setRefreshing] = useState(false)
     const [visibleCategories, setVisibleCategories] = useState(IssueCategoryArray)
     const [visibleStatuses, setVisibleStatuses] = useState(IssueStatusArray)
 
     //get contexts from above layer(s)
-    const { data, isLoading, error, refetch } = useNearbyIssues()
+    const { data, isLoading, isFetching, error, refetch } = useNearbyIssues()
+    const location = useLocation().location
     const { logout } = useAuth();
+
+    const mapRef = useRef<MapView | null>(null);
+
+    const handleRefresh = useCallback(() => {
+        if (!isFetching && !isMinLoading) {
+            setIsMinLoading(true);
+            refetch;
+            // Ensure animation plays for at least 800ms (one full spin)
+            setTimeout(() => {
+                setIsMinLoading(false);
+            }, 800);
+        }
+    }, [isFetching, isMinLoading, refetch]);
 
 
     //check if still loading
@@ -49,6 +66,18 @@ export default function LandingScreen({ children }: any) {
         visibleCategories.map(i => i.toLowerCase()).includes(issue.category.replace(/_/g, " ").toLowerCase()) &&
         visibleStatuses.map(i => i.toUpperCase().replace(/ /g, "_")).includes(issue.status)
     )
+
+    const recenterMap = () => {
+        if (!location?.latitude || !location?.longitude) return;
+
+        mapRef.current?.animateToRegion({
+            latitude: location.latitude,
+            longitude: location.longitude,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+        });
+    };
+
     return (
         <View style={{ flex: 1 }}>
 
@@ -59,7 +88,7 @@ export default function LandingScreen({ children }: any) {
 
             <View style={styles.overlay}>
 
-                <View style={styles.buttonCol}>
+                <View style={styles.buttonColLeft}>
                     <FilterCheckList
                         data={IssueCategoryArray}
                         buttonStyle={styles.button}
@@ -76,15 +105,18 @@ export default function LandingScreen({ children }: any) {
                         <StatusIcon size={size.xl} style={{ alignSelf: "center" }} />
                     </FilterCheckList>
 
-                </View>
-                <View style={styles.buttonCol}>
-                    <IconButton onPress={refetch}
-                        style={styles.button}>
+                    <IconButton onPress={handleRefresh}
+                        style={styles.button}
+                        loading={isFetching || isMinLoading}>
                         <RefreshIcon size={size.xl} style={{ alignSelf: "center", marginBottom: 2 }} />
                     </IconButton>
-                    <IconButton onPress={logout}
-                        style={[styles.button, styles.logoutButton]}>
-                        <Text style={styles.logoutText}>Logout</Text>
+
+                </View>
+
+                <View style={styles.buttonColRight}>
+                    <IconButton onPress={recenterMap}
+                        style={[styles.button]}>
+                        <RecenterIcon size={size.xl} style={{ alignSelf: "center" }} />
                     </IconButton>
                 </View>
             </View>
@@ -148,11 +180,22 @@ const styles = StyleSheet.create({
     overlay: {
         position: "absolute",
         flexDirection: "row",
-        // justifyContent: "space-between",
+        justifyContent: "space-between",
         alignItems: "flex-start",
         width: "100%",
         margin: spacing.sm,
         columnGap: spacing.sm,
+    },
+    buttonColLeft: {
+        flexDirection: "row",
+        columnGap: spacing.sm,
+        justifyContent: "flex-start",
+    },
+    buttonColRight: {
+        flexDirection: "row",
+        columnGap: spacing.sm,
+        justifyContent: "flex-end",
+        paddingHorizontal: spacing.md,
     },
     buttonCol: {
         flexDirection: "row",
