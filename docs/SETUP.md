@@ -73,6 +73,10 @@ If the mobile is loading but it is failing to fetch, we can proxy the backend vi
 3. in `backend/` run `npm run dev:proxy` which generates a cloudflare public link. Put that link in `env.ts` in as apiUrl
 4. in `mobile/` run `npx expo --tunnel` 
 
-## Web Setup (not created yet)
+## Web Setup (for public-facing site)
 1. `cd web && npm install`
+2. `npm run dev`
+
+## Web Setup (for dev analytics)
+1. `cd web-dev && npm install`
 2. `npm run dev`
