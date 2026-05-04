@@ -237,6 +237,22 @@ export function RightArrowIcon(props: IconProps) {
             style={props.style} />
     )
 }
+export function UpArrowIcon(props: IconProps) {
+    return (
+        <Feather name="arrow-up"
+            color={props.color}
+            size={props.size}
+            style={props.style} />
+    )
+}
+export function DownArrowIcon(props: IconProps) {
+    return (
+        <Feather name="arrow-down"
+            color={props.color}
+            size={props.size}
+            style={props.style} />
+    )
+}
 
 export function PlusIcon(props: IconProps) {
     return (
@@ -332,6 +348,15 @@ export function FlashlightOffIcon(props: IconProps) {
 export function MapIcon(props: IconProps) {
     return (
         <Feather name="map"
+            color={props.color}
+            size={props.size}
+            style={props.style} />
+    )
+}
+
+export function CaretDownIcon(props: IconProps) {
+    return (
+        <AntDesign name="caret-down"
             color={props.color}
             size={props.size}
             style={props.style} />
