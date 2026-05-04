@@ -71,14 +71,6 @@ export default function Problem() {
                                         alt={item.location}
                                         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                                     />
-                                    <div className="absolute top-4 right-4">
-                                        <span
-                                            className="flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold text-white shadow-md"
-                                            style={{ backgroundColor: palette.red }}
-                                        >
-                                            !
-                                        </span>
-                                    </div>
                                 </div>
                                 <div className="p-6">
                                     <p className="text-[15px] font-semibold">{item.location}</p>
