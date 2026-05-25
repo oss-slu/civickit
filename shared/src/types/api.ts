@@ -48,11 +48,7 @@ export interface LoginDTO {
 
 export interface LoginResponse {
     token: string;
-    user: {
-        id: string;
-        email: string;
-        name: string;
-    }
+    user: User
 }
 
 export interface CreateAuthDTO {

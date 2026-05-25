@@ -30,7 +30,9 @@ export class LoginService {
       user: {
         id: String(user.id),
         name: String(user.name),
-        email: String(user.email)
+        email: String(user.email),
+        createdAt: String(user.createdAt),
+        profileImage: String(user.profileImage)
       }
     };
 

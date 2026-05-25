@@ -362,3 +362,21 @@ export function CaretDownIcon(props: IconProps) {
             style={props.style} />
     )
 }
+
+export function SettingsIcon(props: IconProps) {
+    return (
+        <Feather name="settings"
+            color={props.color}
+            size={props.size}
+            style={props.style} />
+    )
+}
+
+export function EditIcon(props: IconProps) {
+    return (
+        <Feather name="edit-2"
+            color={props.color}
+            size={props.size}
+            style={props.style} />
+    )
+}

@@ -11,7 +11,8 @@ export class LoginRepository {
 
     return {
       id: user?.id, email: user?.email,
-      name: user?.name, passwordHash: user?.passwordHash
+      name: user?.name, passwordHash: user?.passwordHash,
+      profileImage: user?.profileImage, createdAt: user?.createdAt
     }
   }
 }

@@ -1,6 +1,7 @@
 //mobile/src/services/AuthService.ts
 import * as SecureStore from 'expo-secure-store';
 import ENV from '../config/env';
+import { User } from '@civickit/shared';
 
 //reusable ket used to store/retrieve JWR token from secure storage
 export const AUTH_TOKEN_KEY = 'AUTH_TOKEN';
@@ -14,7 +15,7 @@ export interface AuthUser {
 //represents what the backend returns after login/register
 export interface AuthResponse {
     token: string;
-    user: AuthUser;
+    user: User;
 }
 
 // Token Storage 

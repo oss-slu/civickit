@@ -23,6 +23,7 @@ import { NearbyIssuesProvider } from './src/contexts/NearbyIssuesContext';
 import LandingScreenNav from './src/screens/Landing/LandingScreenNav';
 import FeedNav from './src/screens/Feed/FeedNav';
 import Button from './src/components/Button';
+import ProfileNav from './src/screens/Profile/ProfileNav';
 
 const Tab = createBottomTabNavigator<TabParams>();
 
@@ -91,7 +92,7 @@ function MainTabNavigator() {
                 />
               ),
             }} />
-          <Tab.Screen name="Profile" component={ProfileScreen}
+          <Tab.Screen name="Profile Nav" component={ProfileNav}
             options={{
               tabBarIcon: () => (
                 <UserIcon
@@ -100,11 +101,7 @@ function MainTabNavigator() {
                   style={{ ...styles.icon, ...styles.navIcons }}
                 />
               ),
-              headerRight: () => (
-                <Button
-                  text="Logout"
-                />
-              )
+              headerShown: false
             }} />
         </Tab.Navigator>
       </NearbyIssuesProvider>

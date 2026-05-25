@@ -19,8 +19,11 @@ export type StackParams = {
         uri: string
     },
     "Feed": {},
-    "Feed Nav": {}
+    "Feed Nav": {},
     "Leaderboard": {
         issues: any[]
-    }
+    },
+    "Profile": {},
+    "Avatar": {},
+    "Settings": {}
 }
