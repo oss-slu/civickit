@@ -1,28 +1,26 @@
-//mobile/src/screens/IssueCreationScreen.tsx
-import * as ImagePicker from 'expo-image-picker';
+// mobile/src/screens/IssueCreation/IssueCreationScreen.tsx
 import * as Location from 'expo-location';
 import React, { useContext, useEffect, useState } from 'react';
-import { userLocation } from '../types/userLocation';
-import { uploadImagesToCloudinary } from '../services/cloudinaryService';
-import { View, StyleSheet, ScrollView, TextInput, Text, FlatList, TouchableOpacity } from 'react-native';
-import { StaticScreenProps, useFocusEffect, useNavigation, } from '@react-navigation/native';
+import { uploadImagesToCloudinary } from '../../services/cloudinaryService';
+import { View, StyleSheet, ScrollView, TextInput, Text, FlatList } from 'react-native';
+import { useNavigation, } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { showMessage } from "react-native-flash-message";
-import { StackParams } from '../types/StackParams';
-import { borderRadius, colors, globalStyles, spacing, palette, size, typography } from '../styles';
-import { CameraIcon, CaretDownIcon, PictureIcon, PlusIcon } from '../components/Icons';
-import { IssueCategoryArray } from '../types/IssueCategoryArray';
-import { extractResolvedLocationMetadata, formatResolvedAddress, ResolvedLocationMetadata } from '../hooks/useResolvedAddress';
-import { useAuth } from '../contexts/AuthContext';
+import { StackParams } from '../../types/StackParams';
+import { borderRadius, colors, globalStyles, spacing, palette, size, typography } from '../../styles';
+import { CaretDownIcon, PictureIcon, PlusIcon } from '../../components/Icons';
+import { IssueCategoryArray } from '../../types/IssueCategoryArray';
+import { extractResolvedLocationMetadata, formatResolvedAddress, ResolvedLocationMetadata } from '../../hooks/useResolvedAddress';
+import { useAuth } from '../../contexts/AuthContext';
 
-import LoadingScreen from './LoadingScreen';
-import Button from '../components/Button';
-import IconButton from '../components/IconButton';
-import SelectedImage from '../components/SelectedImage';
-import ModalDropdown from '../components/ModalDropdown';
-import ENV from '../config/env';
-import { ImagesContext, UserLocationContext, AddressContext, TitleContext, CategoryContext, DescriptionContext } from '../contexts/FormContexts';
+import LoadingScreen from '../Misc/LoadingScreen';
+import Button from '../../components/Button';
+import IconButton from '../../components/IconButton';
+import SelectedImage from '../../components/SelectedImage';
+import ModalDropdown from '../../components/ModalDropdown';
+import ENV from '../../config/env';
+import { ImagesContext, UserLocationContext, AddressContext, TitleContext, CategoryContext, DescriptionContext } from '../../contexts/FormContexts';
 
 export default function IssueCreationScreen() {
     const { images, setImages } = useContext(ImagesContext);

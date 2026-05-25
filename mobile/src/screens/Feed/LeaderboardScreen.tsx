@@ -1,20 +1,18 @@
-//mobile/src/components/LeaderboardScreen.tsx
+// mobile/src/screens/Feed/LeaderboardScreen.tsx
 import { View, Text, FlatList, StyleSheet, ScrollView } from "react-native";
-import { borderRadius, colors, globalStyles, palette, size, spacing, typography } from "../styles";
-import ModalDropdown from "../components/ModalDropdown";
+import { borderRadius, colors, globalStyles, palette, size, spacing, typography } from "../../styles";
+import ModalDropdown from "../../components/ModalDropdown";
 import { useEffect, useState } from "react";
-import { CaretDownIcon, DownArrowIcon, UpArrowIcon } from "../components/Icons";
-import IconButton from "../components/IconButton";
-import { IssueCategoryArray } from "../types/IssueCategoryArray";
-import { useSafeAreaFrame } from "react-native-safe-area-context";
-import { IssueStatusArray } from "../types/IssueStatusArray";
-import FilterCheckList from "../components/FilterCheckList";
-import IssueCard from "../components/IssueCard";
-import { TouchableWithoutFeedback } from "@gorhom/bottom-sheet";
+import { CaretDownIcon, DownArrowIcon, UpArrowIcon } from "../../components/Icons";
+import IconButton from "../../components/IconButton";
+import { IssueCategoryArray } from "../../types/IssueCategoryArray";
+import { IssueStatusArray } from "../../types/IssueStatusArray";
+import FilterCheckList from "../../components/FilterCheckList";
+import IssueCard from "../../components/IssueCard";
 import { StaticScreenProps, useNavigation } from "@react-navigation/native";
 import { GetNearbyIssueResponse } from "@civickit/shared";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { StackParams } from "../types/StackParams";
+import { StackParams } from "../../types/StackParams";
 
 const sortOptions = ["Date Reported", "Date Updated", "Distance", "Endorsements"]
 type Props = StaticScreenProps<{
@@ -22,7 +20,7 @@ type Props = StaticScreenProps<{
 }>;
 
 export default function LeaderBoardScreen({ route }: Props) {
-    const [sort, setSort] = useState("Upvotes")
+    const [sort, setSort] = useState("Endorsements")
     const [isAscending, setIsAscending] = useState(true)
     const [visibleCategories, setVisibleCategories] = useState(IssueCategoryArray)
     const [visibleStatuses, setVisibleSatatuses] = useState(IssueStatusArray)

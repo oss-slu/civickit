@@ -1,23 +1,20 @@
-//mobile/src/screens/LandingScreen.tsx
+// mobile/src/screens/Landing/LandingScreen.tsx
 import { useCallback, useContext, useRef, useState } from "react";
-import { useAuth } from '../contexts/AuthContext';
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { userLocation } from "../types/userLocation";
-import { MessageView } from "../components/MessageView";
+import { useAuth } from '../../contexts/AuthContext';
+import { MessageView } from "../../components/MessageView";
 import { View, Text, StyleSheet } from 'react-native';
-import { CategoryIcon, RecenterIcon, RefreshIcon, StatusIcon, WarningIcon } from '../components/Icons';
-import { borderRadius, colors, globalStyles, palette, size, spacing, typography } from '../styles';
-import { IssueCategoryArray } from "../types/IssueCategoryArray";
-import { IssueStatusArray } from "../types/IssueStatusArray";
+import { CategoryIcon, RecenterIcon, RefreshIcon, StatusIcon, WarningIcon } from '../../components/Icons';
+import { borderRadius, colors, globalStyles, palette, size, spacing, typography } from '../../styles';
+import { IssueCategoryArray } from "../../types/IssueCategoryArray";
+import { IssueStatusArray } from "../../types/IssueStatusArray";
 
-import FilterCheckList from "../components/FilterCheckList";
-import IconButton from "../components/IconButton";
-import ENV from '../config/env';
-import LoadingScreen from "./LoadingScreen";
+import FilterCheckList from "../../components/FilterCheckList";
+import IconButton from "../../components/IconButton";
+import LoadingScreen from "../Misc/LoadingScreen";
 import MapViewScreen from "./MapViewScreen";
-import { useNearbyIssues } from "../contexts/NearbyIssuesContext";
+import { useNearbyIssues } from "../../contexts/NearbyIssuesContext";
 import MapView from "react-native-maps";
-import { useLocation } from "../contexts/LocationContext";
+import { useLocation } from "../../contexts/LocationContext";
 
 export default function LandingScreen({ children }: any) {
     const [isMinLoading, setIsMinLoading] = useState(false)

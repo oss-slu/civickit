@@ -1,7 +1,7 @@
-//mobile/src/screens/LoadingScreen.tsx
+// mobile/src/screens/Misc/LoadingScreen.tsx
 import { View, StyleSheet, Text } from "react-native";
-import { colors, globalStyles, spacing, typography } from "../styles";
-import { LoopingLogoGif } from "../components/Logos";
+import { colors, globalStyles, spacing, typography } from "../../styles";
+import { LoopingLogoGif } from "../../components/Logos";
 import React from "react";
 export default function LoadingScreen() {
 

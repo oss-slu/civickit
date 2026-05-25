@@ -1,16 +1,16 @@
-// mobile/src/screens/IssueDetailScreen.tsx
+// mobile/src/screens/Misc/IssueDetailScreen.tsx
 import React, { useState, useEffect } from 'react';
 import { Platform, Text, ScrollView, FlatList, Image, StyleSheet, View, TouchableOpacity } from 'react-native';
 import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
 import { GetNearbyIssueResponse, Issue } from '@civickit/shared';
 import { format, formatDistanceToNow } from 'date-fns';
-import { CategoryIcon, ClockIcon, LocationPinIcon, TagIcon, WrenchIcon } from '../components/Icons';
-import { borderRadius, colors, globalStyles, palette, size, spacing, typography } from '../styles';
-import { useAuth } from '../contexts/AuthContext';
+import { CategoryIcon, ClockIcon, LocationPinIcon, TagIcon, WrenchIcon } from '../../components/Icons';
+import { borderRadius, colors, globalStyles, palette, size, spacing, typography } from '../../styles';
+import { useAuth } from '../../contexts/AuthContext';
 import { PROVIDER_GOOGLE } from 'react-native-maps/lib/ProviderConstants';
-import { useResolvedAddress, LocationSource } from '../hooks/useResolvedAddress';
-import ENV from '../config/env';
-import Pin from '../components/Pin';
+import { useResolvedAddress, LocationSource } from '../../hooks/useResolvedAddress';
+import ENV from '../../config/env';
+import Pin from '../../components/Pin';
 
 let MapView: any = null;
 let Marker: any = null;

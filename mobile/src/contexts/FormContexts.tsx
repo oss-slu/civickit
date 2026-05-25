@@ -1,4 +1,4 @@
-//mobile/src/types/FormContexts.ts
+//mobile/src/types/FormContexts.tsx
 
 import { createContext } from "react"
 import { userLocation } from "../types/userLocation"

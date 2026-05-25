@@ -1,16 +1,15 @@
-// mobile/src/screens/LandingScreen.tsx
+// mobile/src/screens/IssueCreation/LandingScreen.tsx
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import IssueCreationScreen from './IssueCreationScreen';
-import IssueDetailScreen from './IssueDetailScreen';
-import ErrorScreen from './ErrorScreen';
-import { StackParams } from '../types/StackParams';
-import { colors, typography } from '../styles';
-import IssuePhotoScreen from './CameraScreen';
+import IssueDetailScreen from '../Misc/IssueDetailScreen';
+import ErrorScreen from '../Misc/ErrorScreen';
+import { StackParams } from '../../types/StackParams';
+import { colors, typography } from '../../styles';
 import PhotoValidationScreen from './PhotoValidationScreen';
 import CameraScreen from './CameraScreen';
-import { userLocation } from '../types/userLocation';
-import { createContext, useState } from 'react';
-import { ImagesContext, UserLocationContext, AddressContext, TitleContext, CategoryContext, DescriptionContext } from '../contexts/FormContexts';
+import { userLocation } from '../../types/userLocation';
+import { useState } from 'react';
+import { ImagesContext, UserLocationContext, AddressContext, TitleContext, CategoryContext, DescriptionContext } from '../../contexts/FormContexts';
 
 const Stack = createNativeStackNavigator<StackParams>();
 

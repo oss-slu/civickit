@@ -1,31 +1,28 @@
-//mobile/src/screens/FeedScreen.tsx
-import { MessageView } from "../components/MessageView";
+// mobile/src/screens/Feed/FeedScreen.tsx
+import { MessageView } from "../../components/MessageView";
 import { Dimensions, RefreshControl, ScrollView, Text, StyleSheet, View } from "react-native"
-import { borderRadius, colors, globalStyles, palette, size, spacing, typography } from "../styles";
-import { useNearbyIssues } from "../contexts/NearbyIssuesContext";
-import LoadingScreen from "./LoadingScreen";
+import { borderRadius, colors, globalStyles, size, spacing, typography } from "../../styles";
+import LoadingScreen from "../Misc/LoadingScreen";
 import React, { useEffect, useState } from "react";
-import { BarChart, PieChart } from "react-native-gifted-charts"
-import StatusBarGraph from "../components/StatusBarGraph";
-import StatusSummaryCard from "../components/StatusSummaryCard";
-import { IssueStatusArray } from "../types/IssueStatusArray";
-import { IssueCategoryArray } from "../types/IssueCategoryArray";
+import StatusSummaryCard from "../../components/StatusSummaryCard";
+import { IssueStatusArray } from "../../types/IssueStatusArray";
+import { IssueCategoryArray } from "../../types/IssueCategoryArray";
 import { Issue } from "@civickit/shared";
-import CategoryPieChart from "../components/CategoryPieChart";
-import ModalDropdown from "../components/ModalDropdown";
-import { CaretDownIcon, RefreshIcon, RightArrowIcon } from "../components/Icons";
+import CategoryPieChart from "../../components/CategoryPieChart";
+import ModalDropdown from "../../components/ModalDropdown";
+import { CaretDownIcon, RefreshIcon, RightArrowIcon } from "../../components/Icons";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useLocation } from "../contexts/LocationContext";
-import ENV from '../config/env';
+import { useLocation } from "../../contexts/LocationContext";
+import ENV from '../../config/env';
 import { FlatList } from "react-native-gesture-handler";
 import { GetNearbyIssueResponse } from "@civickit/shared/src/types/api";
-import IconButton from "../components/IconButton";
+import IconButton from "../../components/IconButton";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { StackParams } from "../types/StackParams";
-import { radiusOptions } from "../types/RadiusOptions";
-import { timeOptions } from "../types/TimeOptions";
-import Leaderboard from "../components/Leaderboard";
+import { StackParams } from "../../types/StackParams";
+import { radiusOptions } from "../../types/RadiusOptions";
+import { timeOptions } from "../../types/TimeOptions";
+import Leaderboard from "../../components/Leaderboard";
 
 type record = Record<string, number>;
 

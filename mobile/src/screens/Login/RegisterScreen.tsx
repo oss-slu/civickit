@@ -1,3 +1,4 @@
+// mobile/src/screens/Login/RegisterScreen.tsx
 import React, { useState } from 'react';
 import {
     View,
@@ -12,11 +13,11 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { StackParams } from '../types/StackParams';
-import { registerUser } from '../services/AuthService';
-import { useAuth } from '../contexts/AuthContext';
-import { globalStyles } from '../styles';
-import { colors, spacing, typography, borderRadius } from '../styles/theme';
+import { StackParams } from '../../types/StackParams';
+import { registerUser } from '../../services/AuthService';
+import { useAuth } from '../../contexts/AuthContext';
+import { globalStyles } from '../../styles';
+import { colors, spacing, typography, borderRadius } from '../../styles/theme';
 // Validation
 const isValidEmail = (email: string) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());

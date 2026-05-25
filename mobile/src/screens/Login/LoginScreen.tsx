@@ -1,3 +1,4 @@
+// mobile/src/screens/Login/LoginScreen.tsx
 //import { View, TextInput, Button, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import React, { useState } from 'react';
 import {
@@ -13,11 +14,11 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { StackParams } from '../types/StackParams';
-import { useAuth } from '../contexts/AuthContext';
-import { loginUser } from '../services/AuthService';
-import { colors, spacing, typography, borderRadius } from '../styles/theme';
-import { globalStyles } from '../styles';
+import { StackParams } from '../../types/StackParams';
+import { useAuth } from '../../contexts/AuthContext';
+import { loginUser } from '../../services/AuthService';
+import { colors, spacing, typography, borderRadius } from '../../styles/theme';
+import { globalStyles } from '../../styles';
 
 
 
