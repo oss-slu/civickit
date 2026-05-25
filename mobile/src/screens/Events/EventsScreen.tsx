@@ -1,5 +1,5 @@
 //mobile/src/screens/EventsScreen.tsx
-import { MessageView } from "../components/MessageView";
+import { MessageView } from "../../components/MessageView";
 import { Text } from "react-native"
 
 
