@@ -22,6 +22,7 @@ import { LocationProvider } from './src/contexts/LocationContext';
 import { NearbyIssuesProvider } from './src/contexts/NearbyIssuesContext';
 import LandingScreenNav from './src/screens/Landing/LandingScreenNav';
 import FeedNav from './src/screens/Feed/FeedNav';
+import Button from './src/components/Button';
 
 const Tab = createBottomTabNavigator<TabParams>();
 
@@ -99,6 +100,11 @@ function MainTabNavigator() {
                   style={{ ...styles.icon, ...styles.navIcons }}
                 />
               ),
+              headerRight: () => (
+                <Button
+                  text="Logout"
+                />
+              )
             }} />
         </Tab.Navigator>
       </NearbyIssuesProvider>
