@@ -263,6 +263,10 @@ export default function FeedScreen() {
                         <StatusSummaryCard statusNumbers={statusNumbers} />
                     </View>
 
+                    <View style={{ ...styles.sectionContainer }}>
+                        <StatusSummaryCard statusNumbers={statusNumbers} />
+                    </View>
+
                 </ScrollView>
             } data={undefined} renderItem={undefined}
 
