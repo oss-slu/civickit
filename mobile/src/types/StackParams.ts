@@ -25,5 +25,11 @@ export type StackParams = {
     },
     "Profile": {},
     "Avatar": {},
-    "Settings": {}
+    "Settings": {},
+    "My Issues": {
+        issues: any[]
+    },
+    "My Endorsements": {
+        issues: any[]
+    }
 }

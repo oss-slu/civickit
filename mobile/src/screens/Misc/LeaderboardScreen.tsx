@@ -13,6 +13,7 @@ import { StaticScreenProps, useNavigation } from "@react-navigation/native";
 import { GetNearbyIssueResponse } from "@civickit/shared";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { StackParams } from "../../types/StackParams";
+import ExtendedIssueCard from "../../components/ExtendedIssueCard";
 
 const sortOptions = ["Date Reported", "Date Updated", "Distance", "Endorsements"]
 type Props = StaticScreenProps<{
@@ -133,20 +134,11 @@ export default function LeaderBoardScreen({ route }: Props) {
             style={styles.list}
             contentContainerStyle={styles.listContainer}
             renderItem={({ item }) => {
-                const createdAt = new Date(item.createdAt)
-                const updatedAt = new Date(item.updatedAt)
                 return (
-                    <View style={styles.card}>
-                        <IssueCard
-                            issue={item}
-                            animated={false}
-                            onPress={() => { navigation.navigate("Issue Details", { issue: item }) }}
-                        />
-                        <View style={styles.subtitleRow}>
-                            <Text style={styles.subtitle}>Reported {createdAt.getMonth() + 1}/{createdAt.getDate()}/{createdAt.getFullYear()}</Text>
-                            <Text style={styles.subtitle}>Last Updated {updatedAt.getMonth() + 1}/{updatedAt.getDate()}/{updatedAt.getFullYear()}</Text>
-                        </View>
-                    </View>
+                    <ExtendedIssueCard
+                        issue={item}
+                        onPress={() => { navigation.navigate("Issue Details", { issue: item }) }}
+                    />
                 )
             }}
             stickyHeaderIndices={[0]}

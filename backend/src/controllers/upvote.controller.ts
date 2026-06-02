@@ -52,4 +52,6 @@ export class UpvoteController {
       next(error);
     }
   }
+
+
 }

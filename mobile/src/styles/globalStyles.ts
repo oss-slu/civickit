@@ -51,6 +51,14 @@ export const globalStyles = StyleSheet.create({
         textAlign: "center",
     },
 
+    outlinedButton: {
+        backgroundColor: colors.background,
+        color: colors.textSecondary,
+        fontSize: typography.sizeLg,
+        borderWidth: 4,
+        borderColor: colors.backgroundSecondary
+    },
+
     disabledbutton: {
         fontSize: typography.sizeMd,
         color: colors.textMuted,

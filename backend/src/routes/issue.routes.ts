@@ -10,6 +10,8 @@ const upvoteController = new UpvoteController();
 
 router.post('/', authMiddleware, issueController.createIssue);
 router.get('/nearby', issueController.getNearbyIssues);
+router.get('/user', issueController.getIssuesByUser);
+router.get('/userUpvotes', issueController.getIssuesByUserUpvotes);
 router.get('/:id', issueController.getIssueById);
 
 // upvote functionality

@@ -3,7 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StackParams } from '../../types/StackParams';
 import { colors, typography } from '../../styles';
 import FeedScreen from './FeedScreen';
-import LeaderBoardScreen from './LeaderboardScreen';
+import LeaderBoardScreen from '../Misc/LeaderboardScreen';
 import IssueDetailScreen from '../Misc/IssueDetailScreen';
 import ErrorScreen from '../Misc/ErrorScreen';
 

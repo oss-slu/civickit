@@ -40,7 +40,7 @@ export class IssueService {
 
       })
     );
-
+    console.log(issuesWithUpvoteCounts)
     return issuesWithUpvoteCounts;
   }
 
@@ -56,6 +56,45 @@ export class IssueService {
       ...issue,
       upvoteCount,
     };
+  }
+
+  async getIssuesByUser(id: string) {
+    const issues = await this.issueRepository.findByUser(id);
+
+    const issuesWithUpvoteCounts = await Promise.all(
+      issues.map(async (issue) => {
+
+        const upvoteCount = await this.upvoteRepository.countUpvotes(issue.id);
+
+        return {
+          ...issue,
+          upvoteCount,
+        };
+
+      })
+    );
+
+    return issuesWithUpvoteCounts;
+  }
+
+  async getIssuesByUserUpvotes(id: string) {
+    const upvotes = await this.upvoteRepository.findByUser(id);
+    const issues = await Promise.all(upvotes.map(async (upvote) => { return this.issueRepository.findById(upvote.issueId) }))
+    const issuesWithUpvoteCounts = await Promise.all(
+      issues.map(async (issue) => {
+
+        const upvoteCount = await this.upvoteRepository.countUpvotes(issue!.id);
+
+        return {
+          ...issue,
+          upvoteCount,
+        };
+
+      })
+    );
+
+    return issuesWithUpvoteCounts;
+
   }
 
   // update status tag
