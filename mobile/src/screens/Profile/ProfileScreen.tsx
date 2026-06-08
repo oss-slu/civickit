@@ -89,7 +89,8 @@ export default function ProfileScreen() {
         <ScrollView contentContainerStyle={[styles.container]}
             refreshControl={<RefreshControl
                 refreshing={refreshing}
-                onRefresh={refetchQueries} />}>
+                onRefresh={refetchQueries} />}
+        >
             <IconButton style={{ ...styles.button, flexDirection: "row", columnGap: spacing.sm, alignSelf: "flex-end" }}
                 onPress={() => navigation.navigate("Settings", {})}>
                 <SettingsIcon color={styles.button.color} size={styles.button.fontSize} />
@@ -99,16 +100,16 @@ export default function ProfileScreen() {
             <View style={styles.profilePicContainer}>
                 {user?.profileImage != null ?
                     <Image
-                        source={require("../../../assets/ProfilePlaceholder.png")}
+                        source={require("../../../assets/avatars/greenAvatar.png")}
                         style={styles.profilePic} /> :
                     <TrashIcon />}
                 {/* Replace trashcan with User image once implemented */}
-                <View style={styles.editButton}>
+                {/* <View style={styles.editButton}>
                     <IconButton
-                        onPress={() => navigation.navigate("Avatar", {})} style={{ height: size.xxl, ...globalStyles.shadow }}>
+                        onPress={() => navigation.navigate("Avatar", { user: user })} style={{ height: size.xxl, ...globalStyles.shadow }}>
                         <EditIcon color={colors.textContrast} size={typography.sizeXl} />
                     </IconButton>
-                </View>
+                </View> */}
             </View>
 
             <Text style={globalStyles.heading1}>{user?.name}</Text>
@@ -125,7 +126,12 @@ export default function ProfileScreen() {
                             flexDirection: "row",
                             columnGap: spacing.xs,
                         }}
-                            onPress={() => { navigation.navigate("My Issues", { issues: issuesQuery.data.issues }) }}
+                            onPress={() => {
+                                navigation.navigate("My Issues", {
+                                    issues: issuesQuery.data.issues, endorsementsOption: true,
+                                    dateReportedOption: true, dateUpdatedOption: true, distanceOption: false,
+                                })
+                            }}
                         >
                             <Text style={{ fontSize: globalStyles.outlinedButton.fontSize, color: globalStyles.outlinedButton.color }}>My Issues</Text>
                             <RightArrowIcon
@@ -144,7 +150,12 @@ export default function ProfileScreen() {
                             flexDirection: "row",
                             columnGap: spacing.xs,
                         }}
-                            onPress={() => { navigation.navigate("My Endorsements", { issues: upvotesQuery.data.issues }) }}
+                            onPress={() => {
+                                navigation.navigate("My Endorsements", {
+                                    issues: upvotesQuery.data.issues, endorsementsOption: true,
+                                    dateReportedOption: true, dateUpdatedOption: true, distanceOption: false,
+                                })
+                            }}
                         >
                             <Text style={{ fontSize: globalStyles.outlinedButton.fontSize, color: globalStyles.outlinedButton.color }}>My Endorsements</Text>
                             <RightArrowIcon
@@ -155,8 +166,9 @@ export default function ProfileScreen() {
                     </View>
                 }
                 <View style={styles.statRow}>
-                    <Text style={styles.statsText}>Events Attended: Coming Soon</Text>
-                    <IconButton style={{
+                    <Text style={styles.statsText}>Events Attended:</Text>
+                    <Text style={styles.statsText}>Coming Soon</Text>
+                    {/* <IconButton style={{
                         ...globalStyles.outlinedButton,
                         flexDirection: "row",
                         columnGap: spacing.xs,
@@ -167,7 +179,7 @@ export default function ProfileScreen() {
                             color={globalStyles.outlinedButton.color}
                             size={typography.sizeXl}
                         />
-                    </IconButton>
+                    </IconButton> */}
                 </View>
             </View>
 

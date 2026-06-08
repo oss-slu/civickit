@@ -380,3 +380,12 @@ export function EditIcon(props: IconProps) {
             style={props.style} />
     )
 }
+
+export function CheckMarkCircleIcon(props: IconProps) {
+    return (
+        <AntDesign name="check-circle"
+            color={props.color}
+            size={props.size}
+            style={props.style} />
+    )
+}

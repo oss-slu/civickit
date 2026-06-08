@@ -40,7 +40,6 @@ export class IssueService {
 
       })
     );
-    console.log(issuesWithUpvoteCounts)
     return issuesWithUpvoteCounts;
   }
 

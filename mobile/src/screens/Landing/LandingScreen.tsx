@@ -30,9 +30,12 @@ export default function LandingScreen({ children }: any) {
     const mapRef = useRef<MapView | null>(null);
 
     const handleRefresh = useCallback(() => {
+        console.log("refresh")
         if (!isFetching && !isMinLoading) {
             setIsMinLoading(true);
-            refetch;
+            if (refetch != undefined) {
+                refetch();
+            }
             // Ensure animation plays for at least 800ms (one full spin)
             setTimeout(() => {
                 setIsMinLoading(false);

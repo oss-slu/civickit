@@ -112,6 +112,7 @@ function MainTabNavigator() {
 function AppNavigator() {
   const { isLoggedIn, isLoading } = useAuth();
   if (isLoading) return null; //or splash screen
+  console.log(isLoggedIn)
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ animation: 'slide_from_right' }}>

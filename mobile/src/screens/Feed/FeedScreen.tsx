@@ -175,98 +175,83 @@ export default function FeedScreen() {
     }
 
     return (
-        <FlatList
-            ListHeaderComponent={
-                <ScrollView
-                    style={{ ...globalStyles.container }}
-                    refreshControl={<RefreshControl
-                        refreshing={refreshing}
-                        onRefresh={refetch} />}
-                >
 
-                    <View style={styles.buttonRow}>
+        <ScrollView
+            style={{ ...globalStyles.container }}
+            refreshControl={<RefreshControl
+                refreshing={refreshing}
+                onRefresh={refetch} />}
+        >
 
-                        <View style={styles.buttonSection}>
-                            <Text style={styles.headerText}>Within</Text>
-                            <ModalDropdown
-                                data={radiusOptions}
-                                onDataSelect={handleRadiusChange}
-                                defaultText={radius}
-                                buttonStyle={styles.modalButton}
-                                labelSuffix={<CaretDownIcon />} />
-                        </View>
+            <View style={styles.buttonRow}>
 
-                        <View style={styles.buttonSection}>
-                            {time != "All Time" && <Text style={styles.headerText}>In the last</Text>}
-                            <ModalDropdown
-                                data={timeOptions}
-                                onDataSelect={setTime}
-                                defaultText={time}
-                                labelSuffix={<CaretDownIcon />}
-                                buttonStyle={styles.modalButton} />
-                        </View>
+                <View style={styles.buttonSection}>
+                    <Text style={styles.headerText}>Within</Text>
+                    <ModalDropdown
+                        data={radiusOptions}
+                        onDataSelect={handleRadiusChange}
+                        defaultText={radius}
+                        buttonStyle={styles.modalButton}
+                        labelSuffix={<CaretDownIcon />} />
+                </View>
 
-
-                    </View>
-
-                    <IconButton style={{
-                        ...styles.modalButton,
-                        width: size.xxl * 1.25,
-                        alignSelf: "flex-end",
-                        position: "absolute",
-                        top: spacing.xxl + 8
-                    }}
-                        onPress={refetch}
-                    >
-                        <RefreshIcon
-                            color={colors.textPrimary}
-                            size={typography.sizeXl}
-                        />
-                    </IconButton>
+                <View style={styles.buttonSection}>
+                    {time != "All Time" && <Text style={styles.headerText}>In the last</Text>}
+                    <ModalDropdown
+                        data={timeOptions}
+                        onDataSelect={setTime}
+                        defaultText={time}
+                        labelSuffix={<CaretDownIcon />}
+                        buttonStyle={styles.modalButton} />
+                </View>
+            </View>
 
 
-                    <Text style={{ ...styles.heading }}>
-                        Most Endorsed
-                    </Text>
+
+            <Text style={{ ...styles.heading }}>
+                Most Endorsed
+            </Text>
 
 
-                    <View style={{ ...styles.leaderboardContainer }}>
-                        <Leaderboard issues={filteredData} />
-                    </View>
+            <View style={{ ...styles.leaderboardContainer }}>
+                <Leaderboard issues={filteredData} />
+            </View>
 
-                    <IconButton style={{
-                        ...styles.modalButton,
-                        flexDirection: "row",
-                        columnGap: spacing.xs,
-                    }}
-                        onPress={() => { navigation.navigate("Leaderboard", { issues: filteredData }) }}
-                    >
-                        <Text style={{ fontSize: typography.sizeLg, ...styles.buttonText }}>More</Text>
-                        <RightArrowIcon
-                            color={colors.textSecondary}
-                            size={typography.sizeXl}
-                        />
-                    </IconButton>
+            <IconButton style={{
+                ...styles.modalButton,
+                flexDirection: "row",
+                columnGap: spacing.xs,
+            }}
+                onPress={() => {
+                    navigation.navigate("Leaderboard", {
+                        issues: filteredData, endorsementsOption: true,
+                        dateReportedOption: true, dateUpdatedOption: true, distanceOption: true,
+                    })
+                }}
+            >
+                <Text style={{ fontSize: typography.sizeLg, ...styles.buttonText }}>More</Text>
+                <RightArrowIcon
+                    color={colors.textSecondary}
+                    size={typography.sizeXl}
+                />
+            </IconButton>
 
-                    <View style={{
-                        ...styles.sectionContainer,
-                        backgroundColor: colors.background
-                    }}>
-                        <CategoryPieChart categoryNumbers={categoryNumbers} />
-                    </View>
+            <View style={{
+                ...styles.sectionContainer,
+                backgroundColor: colors.background
+            }}>
+                <CategoryPieChart categoryNumbers={categoryNumbers} />
+            </View>
 
-                    {/* <View style={{ ...styles.sectionContainer }}>
+            {/* <View style={{ ...styles.sectionContainer }}>
                         <StatusBarGraph statusNumbers={statusNumbers} />
                     </View> */}
 
-                    <View style={{ ...styles.sectionContainer }}>
-                        <StatusSummaryCard statusNumbers={statusNumbers} />
-                    </View>
+            <View style={{ ...styles.sectionContainer }}>
+                <StatusSummaryCard statusNumbers={statusNumbers} />
+            </View>
 
-                </ScrollView>
-            } data={undefined} renderItem={undefined}
-
-        />
+        </ScrollView>
     )
 }
 
@@ -275,7 +260,6 @@ const styles = StyleSheet.create({
         color: colors.textPrimary,
         fontSize: typography.sizeLg,
         fontWeight: typography.weightBold,
-        marginTop: spacing.lg,
         marginLeft: spacing.md
     },
     leaderboardContainer: {
@@ -288,7 +272,7 @@ const styles = StyleSheet.create({
         padding: spacing.sm,
         justifyContent: "center",
         alignItems: "center",
-        alignContent: "center"
+        alignContent: "center",
     },
     buttonRow: {
         flexDirection: "row",

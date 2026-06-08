@@ -1,5 +1,5 @@
 // mobile/src/screens/Feed/LeaderboardScreen.tsx
-import { View, Text, FlatList, StyleSheet, ScrollView } from "react-native";
+import { View, Text, FlatList, StyleSheet, ScrollView, RefreshControl } from "react-native";
 import { borderRadius, colors, globalStyles, palette, size, spacing, typography } from "../../styles";
 import ModalDropdown from "../../components/ModalDropdown";
 import { useEffect, useState } from "react";
@@ -15,18 +15,46 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import { StackParams } from "../../types/StackParams";
 import ExtendedIssueCard from "../../components/ExtendedIssueCard";
 
-const sortOptions = ["Date Reported", "Date Updated", "Distance", "Endorsements"]
 type Props = StaticScreenProps<{
     issues: any[];
+    endorsementsOption?: boolean;
+    dateReportedOption?: boolean;
+    dateUpdatedOption?: boolean;
+    distanceOption?: boolean;
 }>;
 
 export default function LeaderBoardScreen({ route }: Props) {
-    const [sort, setSort] = useState("Endorsements")
+    const [sort, setSort] = useState("")
     const [isAscending, setIsAscending] = useState(true)
     const [visibleCategories, setVisibleCategories] = useState(IssueCategoryArray)
     const [visibleStatuses, setVisibleSatatuses] = useState(IssueStatusArray)
     const [issues, setIssues] = useState(route.params.issues)
+    const [sortOptions, setSortOptions] = useState<string[]>([])
+    const [refreshing, setRefreshing] = useState(false)
     const navigation = useNavigation<StackNavigationProp<StackParams>>()
+
+    useEffect(() => {
+        let arr = []
+        if (route.params.endorsementsOption) {
+            arr.push("Endorsements")
+        }
+        if (route.params.dateReportedOption) {
+            arr.push("Date Reported")
+        }
+        if (route.params.dateUpdatedOption) {
+            arr.push("Date Updated")
+        }
+        if (route.params.distanceOption) {
+            arr.push("Distance")
+        }
+
+        setSortOptions(arr)
+        if (arr.length > 0) {
+            setSort(arr[0])
+        }
+
+
+    }, [])
 
     useEffect(() => {
         const visibleIssues = route.params.issues.filter((issue: any) =>
@@ -74,29 +102,32 @@ export default function LeaderBoardScreen({ route }: Props) {
 
     return (
         <FlatList
+
             ListHeaderComponent={
                 <View>
 
                     <View style={styles.buttonRow}>
-                        <View style={styles.outlinedButton}>
-                            <ModalDropdown
-                                data={sortOptions}
-                                onDataSelect={setSort}
-                                defaultText={sort}
-                                buttonStyle={styles.modalButton}
-                                labelSuffix={<CaretDownIcon />} />
+                        {sortOptions.length > 0 &&
+                            <View style={styles.outlinedButton}>
+                                <ModalDropdown
+                                    data={sortOptions}
+                                    onDataSelect={setSort}
+                                    defaultText={sort}
+                                    buttonStyle={styles.modalButton}
+                                    labelSuffix={<CaretDownIcon />} />
 
-                            <IconButton style={{ ...styles.modalButton, width: typography.sizeXl }}
-                                onPress={() => setIsAscending(!isAscending)}>
-                                {isAscending ?
-                                    <UpArrowIcon size={typography.sizeXl}
-                                        color={colors.textSecondary}
-                                        style={{ width: typography.sizeXl }} /> :
-                                    <DownArrowIcon size={typography.sizeXl}
-                                        color={colors.textSecondary}
-                                        style={{ width: typography.sizeXl }} />}
-                            </IconButton>
-                        </View>
+                                <IconButton style={{ ...styles.modalButton, width: typography.sizeXl }}
+                                    onPress={() => setIsAscending(!isAscending)}>
+                                    {isAscending ?
+                                        <UpArrowIcon size={typography.sizeXl}
+                                            color={colors.textSecondary}
+                                            style={{ width: typography.sizeXl }} /> :
+                                        <DownArrowIcon size={typography.sizeXl}
+                                            color={colors.textSecondary}
+                                            style={{ width: typography.sizeXl }} />}
+                                </IconButton>
+                            </View>
+                        }
                         <FilterCheckList
                             data={IssueCategoryArray}
                             setSelectedValues={setVisibleCategories}

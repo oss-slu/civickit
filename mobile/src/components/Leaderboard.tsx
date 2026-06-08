@@ -9,21 +9,18 @@ import { StackParams } from "../types/StackParams";
 export default function Leaderboard({ issues }: any) {
 
     const navigation = useNavigation<StackNavigationProp<StackParams>>()
+    const issueComps = issues.slice(0, 5).map((issue: any, index: any) =>
+        <IssueCard
+            issue={issue}
+            onPress={() => { navigation.navigate("Issue Details", { issue: issue }) }}
+            key={index}
+        />
+    )
 
     return (
-        <FlatList
-            data={issues.slice(0, 5)}
-            style={styles.list}
-            contentContainerStyle={styles.listContainer}
-            renderItem={({ item }) => {
-                return (
-                    <IssueCard
-                        issue={item}
-                        onPress={() => { navigation.navigate("Issue Details", { issue: item }) }}
-                    />
-                )
-            }}
-        />
+        <View style={styles.list}>
+            {issueComps}
+        </View>
 
     )
 }
@@ -33,38 +30,5 @@ const styles = StyleSheet.create({
         rowGap: spacing.xs,
         marginHorizontal: spacing.xs,
     },
-    listContainer: {
-        rowGap: spacing.sm
-    },
-    buttonRow: {
-        flexDirection: "row",
-        width: "100%",
-        justifyContent: "space-evenly",
-        paddingBottom: spacing.sm,
-        backgroundColor: colors.background,
-    },
-    modalButton: {
-        backgroundColor: colors.background,
-        color: colors.textSecondary,
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
-        columnGap: spacing.xs
-    },
-    outlinedButton: {
-        borderWidth: 4,
-        borderColor: colors.backgroundSecondary,
-        borderRadius: borderRadius.lg,
-        flexDirection: "row",
-        backgroundColor: colors.background,
-        color: colors.textSecondary,
-    },
-    columnRowText: {
-        color: colors.textPrimary,
-    },
-    rowContainer: {
-        flexDirection: "row",
-        backgroundColor: colors.backgroundSecondary,
-    }
 
 })
