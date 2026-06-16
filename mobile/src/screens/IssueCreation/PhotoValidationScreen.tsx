@@ -1,15 +1,13 @@
-import * as ImagePicker from 'expo-image-picker';
-import { useContext, useEffect, useRef, useState } from 'react';
-import { Dimensions, StyleSheet, Text, TouchableOpacity, View, } from 'react-native';
-import { CameraView, CameraType, useCameraPermissions, CameraPictureOptions } from 'expo-camera';
-import { MessageView } from '../components/MessageView';
-import Button from '../components/Button';
-import { borderRadius, colors, globalStyles, palette, size, spacing, typography } from '../styles';
+// mobile/src/screens/IssueScreation/PhotoValidationScreen.tsx
+import { useContext } from 'react';
+import { Dimensions, StyleSheet, View, } from 'react-native';
+import Button from '../../components/Button';
+import { borderRadius, colors, globalStyles, palette, spacing, typography } from '../../styles';
 import { Image } from "react-native";
-import { StaticScreenProps, useFocusEffect, useNavigation } from '@react-navigation/native';
+import { StaticScreenProps, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { StackParams } from '../types/StackParams';
-import { ImagesContext } from '../contexts/FormContexts';
+import { StackParams } from '../../types/StackParams';
+import { ImagesContext } from '../../contexts/FormContexts';
 
 import React from 'react';
 

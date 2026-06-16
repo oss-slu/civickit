@@ -1,20 +1,18 @@
-//mobile/src/screens/MapViewScreen.tsx
+// mobile/src/screens/Landing/MapViewScreen.tsx
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { useContext, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { View, Animated, useAnimatedValue } from 'react-native';
 import { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import { StackParams } from '../types/StackParams';
-import { useLocation } from '../contexts/LocationContext';
-import { userLocation } from '../types/userLocation';
-import Pin from '../components/Pin';
-import { colors, globalStyles, palette, size } from '../styles';
+import { StackParams } from '../../types/StackParams';
+import { useLocation } from '../../contexts/LocationContext';
+import Pin from '../../components/Pin';
+import { colors, palette, size } from '../../styles';
 import MapView from "react-native-maps"
 import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet';
 import IssueListScreen from './IssueListScreen';
-import CalloutPopup from '../components/CalloutPopup';
+import CalloutPopup from '../../components/CalloutPopup';
 import { GetNearbyIssueResponse } from '@civickit/shared';
-import { map } from 'leaflet';
 
 
 export default function MapViewScreen({ ref, issues, refetch }: any) {

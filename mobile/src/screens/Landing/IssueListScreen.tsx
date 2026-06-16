@@ -1,14 +1,14 @@
-// mobile/src/screens/IssueListScreen.tsx
+// mobile/src/screens/Landing/IssueListScreen.tsx
 import { View, RefreshControl } from 'react-native';
 import { useState } from 'react';
 import React from 'react';
-import IssueCard from '../components/IssueCard';
-import { MessageView } from '../components/MessageView';
+import IssueCard from '../../components/IssueCard';
+import { MessageView } from '../../components/MessageView';
 import { useNavigation } from '@react-navigation/native';
-import { StackParams } from '../types/StackParams';
+import { StackParams } from '../../types/StackParams';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { globalStyles, spacing } from '../styles';
-import { BottomSheetFlatList, BottomSheetScrollView, BottomSheetView } from '@gorhom/bottom-sheet';
+import { globalStyles, spacing } from '../../styles';
+import { BottomSheetFlatList } from '@gorhom/bottom-sheet';
 
 export default function IssueListScreen({ issues, refetch, style }: any) {
   const [refreshing, setRefreshing] = useState(false)

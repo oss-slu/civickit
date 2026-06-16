@@ -1,16 +1,17 @@
+// mobile/src/screens/IssueScreation/CameraScreen.tsx
 import * as ImagePicker from 'expo-image-picker';
-import { useContext, useEffect, useRef, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View, } from 'react-native';
-import { CameraView, CameraType, useCameraPermissions, Camera, FlashMode } from 'expo-camera';
-import { MessageView } from '../components/MessageView';
-import Button from '../components/Button';
-import { borderRadius, colors, palette, size, spacing, typography } from '../styles';
+import { useContext, useRef, useState } from 'react';
+import { StyleSheet, View, } from 'react-native';
+import { CameraView, CameraType, useCameraPermissions, FlashMode } from 'expo-camera';
+import { MessageView } from '../../components/MessageView';
+import Button from '../../components/Button';
+import { borderRadius, colors, palette, size, spacing, typography } from '../../styles';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { StackParams } from '../types/StackParams';
-import { FlashlightOffIcon, FlashlightOnIcon, FlipCameraIcon, LightingFillIcon, LightingOutlineIcon, PictureIcon } from '../components/Icons';
-import IconButton from '../components/IconButton';
-import { ImagesContext } from '../contexts/FormContexts';
+import { StackParams } from '../../types/StackParams';
+import { FlashlightOffIcon, FlashlightOnIcon, FlipCameraIcon, LightingFillIcon, LightingOutlineIcon, PictureIcon } from '../../components/Icons';
+import IconButton from '../../components/IconButton';
+import { ImagesContext } from '../../contexts/FormContexts';
 
 
 export default function CameraScreen() {

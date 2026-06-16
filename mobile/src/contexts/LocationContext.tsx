@@ -1,10 +1,9 @@
-// mobile/src/types/LocationContext.ts
+// mobile/src/types/LocationContext.tsx
 import { Children, createContext, useContext, useEffect, useState } from "react";
 import { userLocation } from "../types/userLocation";
 import { Alert } from "react-native";
 import * as Location from 'expo-location'
-import LoadingScreen from "../screens/LoadingScreen";
-import ErrorScreen from "../screens/ErrorScreen";
+import LoadingScreen from "../screens/Misc/LoadingScreen";
 import { MessageView } from "../components/MessageView";
 
 interface LocationContextType {

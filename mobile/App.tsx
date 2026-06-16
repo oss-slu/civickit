@@ -12,18 +12,16 @@ import { View, StyleSheet } from 'react-native';
 import { CalendarIcon, MapIcon, PlusIcon, SearchIcon, UserIcon } from './src/components/Icons';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import FlashMessage from 'react-native-flash-message';
-import LandingScreen from './src/screens/LandingScreen';
-import FeedScreen from './src/screens/FeedScreen';
-import EventsScreen from './src/screens/EventsScreen';
-import ProfileScreen from './src/screens/ProfileScreen';
-import LoginScreen from './src/screens/LoginScreen';
-import RegisterScreen from './src/screens/RegisterScreen';
-import IssueCreationNav from './src/screens/IssueCreationNav';
+import EventsScreen from './src/screens/Events/EventsScreen';
+import ProfileScreen from './src/screens/Profile/ProfileScreen';
+import LoginScreen from './src/screens/Login/LoginScreen';
+import RegisterScreen from './src/screens/Login/RegisterScreen';
+import IssueCreationNav from './src/screens/IssueCreation/IssueCreationNav';
 import React from 'react';
 import { LocationProvider } from './src/contexts/LocationContext';
 import { NearbyIssuesProvider } from './src/contexts/NearbyIssuesContext';
-import LandingScreenNav from './src/screens/LandingScreenNav';
-import FeedNav from './src/screens/FeedNav';
+import LandingScreenNav from './src/screens/Landing/LandingScreenNav';
+import FeedNav from './src/screens/Feed/FeedNav';
 
 const Tab = createBottomTabNavigator<TabParams>();
 

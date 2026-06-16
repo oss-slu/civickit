@@ -1,10 +1,10 @@
 //mobile/src/screens/ProfileScreen.tsx
-import IconButton from "../components/IconButton";
-import { MessageView } from "../components/MessageView";
+import IconButton from "../../components/IconButton";
+import { MessageView } from "../../components/MessageView";
 import { Text, View, StyleSheet, TouchableOpacity } from "react-native"
 import { useContext, useRef, useState } from "react";
-import { palette, colors, globalStyles, size, spacing, typography } from "../styles";
-import { useAuth } from "../contexts/AuthContext";
+import { palette, colors, globalStyles, size, spacing, typography } from "../../styles";
+import { useAuth } from "../../contexts/AuthContext";
 import { FullWindowOverlay } from "react-native-screens";
 
 

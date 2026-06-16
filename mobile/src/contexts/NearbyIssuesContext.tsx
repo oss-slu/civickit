@@ -1,10 +1,10 @@
-// mobile/src/contexts/NearbyIssuesContext.ts
+// mobile/src/contexts/NearbyIssuesContext.tsx
 import { QueryObserverResult, RefetchOptions, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createContext, useContext, useState } from "react";
 import { useLocation } from "./LocationContext";
 import { userLocation } from "../types/userLocation";
 import ENV from '../config/env';
-import LoadingScreen from "../screens/LoadingScreen";
+import LoadingScreen from "../screens/Misc/LoadingScreen";
 import { View, Text } from "react-native";
 
 interface NearbyIssuesContextType {
