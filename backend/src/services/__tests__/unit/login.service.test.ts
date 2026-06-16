@@ -43,7 +43,7 @@ describe('LoginService', () => {
         email: 'test@example.com',
         name: 'Test User',
         passwordHash: 'hashedPassword',
-        profileImage: null,
+        profileImage: '',
         createdAt: date,
         updatedAt: date
     });
@@ -79,8 +79,8 @@ describe('LoginService', () => {
                 id: '1',
                 name: 'Test User',
                 email: 'test@example.com',
-                createdAt: date,
-                profileImage: null
+                createdAt: date.toString(),
+                profileImage: ''
             },
         });
     });
