@@ -1,21 +1,25 @@
 //mobile/src/contexts/AuthContext.tsx
-import React, {createContext, useContext, useEffect, useState} from 'react';
-import {getToken, saveToken, deleteToken} from '../services/AuthService';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { getToken, saveToken, deleteToken } from '../services/AuthService';
+import { User } from '@civickit/shared';
 
 interface AuthContextType {
     isLoggedIn: boolean;
     isLoading: boolean;
-    authToken: string | null;
     login: (token: string) => Promise<void>;
     logout: () => Promise<void>;
+    setUser: (user: User) => void;
+    authToken: string | null;
+    user: User | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider = ({children}: {children: React.ReactNode}) => {
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [authToken, setAuthToken] = useState<string | null>(null);
+    const [user, setUser] = useState<User | null>(null);
 
     // On mount, check for token to determine if user is logged in
     useEffect(() => {
@@ -24,11 +28,11 @@ export const AuthProvider = ({children}: {children: React.ReactNode}) => {
             setAuthToken(token);
             setIsLoggedIn(!!token);
             setIsLoading(false);
-        }) ();
+        })();
     }, []); //no dependencies bc it runs once on mount to check for token
 
     //login store token + update state
-    const login = async (token:string) => {
+    const login = async (token: string) => {
         await saveToken(token);
         setAuthToken(token);
         setIsLoggedIn(true);
@@ -41,7 +45,7 @@ export const AuthProvider = ({children}: {children: React.ReactNode}) => {
     };
 
     return (
-        <AuthContext.Provider value={{ isLoggedIn, isLoading, authToken, login, logout }}>
+        <AuthContext.Provider value={{ isLoggedIn, isLoading, authToken, login, logout, setUser, user }}>
             {children}
         </AuthContext.Provider>
     );
@@ -49,7 +53,7 @@ export const AuthProvider = ({children}: {children: React.ReactNode}) => {
 
 export const useAuth = () => {
     const context = useContext(AuthContext);
-    if( !context) {
+    if (!context) {
         throw new Error('useAuth must be used within an AuthProvider');
     }
     return context;

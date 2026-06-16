@@ -37,14 +37,15 @@ describe('LoginService', () => {
         process.env.JWT_SECRET = 'test-secret';
     });
 
+    const date = new Date();
     const mockUser = () => ({
         id: '1',
         email: 'test@example.com',
         name: 'Test User',
         passwordHash: 'hashedPassword',
-        profileImage: null,
-        createdAt: new Date(),
-        updatedAt: new Date()
+        profileImage: '',
+        createdAt: date,
+        updatedAt: date
     });
 
     it('should login successfully and return token + user', async () => {
@@ -78,6 +79,8 @@ describe('LoginService', () => {
                 id: '1',
                 name: 'Test User',
                 email: 'test@example.com',
+                createdAt: date.toString(),
+                profileImage: ''
             },
         });
     });

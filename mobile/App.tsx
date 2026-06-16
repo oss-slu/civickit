@@ -22,6 +22,8 @@ import { LocationProvider } from './src/contexts/LocationContext';
 import { NearbyIssuesProvider } from './src/contexts/NearbyIssuesContext';
 import LandingScreenNav from './src/screens/Landing/LandingScreenNav';
 import FeedNav from './src/screens/Feed/FeedNav';
+import Button from './src/components/Button';
+import ProfileNav from './src/screens/Profile/ProfileNav';
 
 const Tab = createBottomTabNavigator<TabParams>();
 
@@ -90,7 +92,7 @@ function MainTabNavigator() {
                 />
               ),
             }} />
-          <Tab.Screen name="Profile" component={ProfileScreen}
+          <Tab.Screen name="Profile Nav" component={ProfileNav}
             options={{
               tabBarIcon: () => (
                 <UserIcon
@@ -99,6 +101,7 @@ function MainTabNavigator() {
                   style={{ ...styles.icon, ...styles.navIcons }}
                 />
               ),
+              headerShown: false
             }} />
         </Tab.Navigator>
       </NearbyIssuesProvider>
@@ -109,6 +112,7 @@ function MainTabNavigator() {
 function AppNavigator() {
   const { isLoggedIn, isLoading } = useAuth();
   if (isLoading) return null; //or splash screen
+  console.log(isLoggedIn)
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ animation: 'slide_from_right' }}>

@@ -56,6 +56,25 @@ export class IssueController {
     }
   }
 
+  async getIssuesByUser(req: Request, res: Response, next: NextFunction) {
+    try {
+      const issues = await issueService.getIssuesByUser(String(req.query.id));
+      res.json({ issues });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getIssuesByUserUpvotes(req: Request, res: Response, next: NextFunction) {
+    try {
+      const issues = await issueService.getIssuesByUserUpvotes(String(req.query.id));
+      res.json({ issues });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+
   // update issue status
   async updateStatus(req: Request, res: Response, next: NextFunction) {
     try {

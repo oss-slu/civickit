@@ -22,6 +22,7 @@ export const palette = {
     ckVeryDarkGray: "#1a1a1a",
     ckDarkGray: "#6B7280",
     ckMediumGray: "#9CA3AF",
+    ckLightMediumGray: "#b4bece",
     ckLightGray: "#E5E7EB",
 
 }

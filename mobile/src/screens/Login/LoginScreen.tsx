@@ -65,6 +65,7 @@ export default function LoginScreen() {
     };
 
     const { login } = useAuth();
+    const { setUser } = useAuth();
 
     //Submit
     const handleLogin = async () => {
@@ -72,7 +73,8 @@ export default function LoginScreen() {
 
         try {
             setIsLoading(true);
-            const { token } = await loginUser(email.trim(), password);
+            const { token, user } = await loginUser(email.trim(), password);
+            setUser(user)
             await login(token);
         } catch (error: any) {
             setServerError(error.message);

@@ -41,4 +41,12 @@ export class UpvoteRepository {
 
     return !!upvote;
   }
+
+  async findByUser(id: string) {
+    return prisma.upvote.findMany({
+      where: { userId: id },
+    });
+  }
+
 }
+

@@ -91,7 +91,42 @@ export class IssueRepository {
     });
   }
 
-  // update issue status
+  async findByUser(id: string) {
+    return prisma.issue.findMany({
+      where: { userId: id },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            profileImage: true,
+          },
+        },
+        comments: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                profileImage: true,
+              },
+            },
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+        },
+        _count: {
+          select: {
+            upvotes: true,
+            comments: true,
+          },
+        },
+      },
+    });
+  }
+
+  // update issue statuss
   async updateStatus(id: string, data: Partial<{ status: IssueStatus }>) {
     return prisma.issue.update({
       where: { id },
