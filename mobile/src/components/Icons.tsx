@@ -1,5 +1,5 @@
 // mobile/src/components/Icons.tsx
-//icons sourced from https://icons.expo.fyi/Index
+// icons sourced from https://icons.expo.fyi/Index
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Entypo from "@expo/vector-icons/Entypo";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
