@@ -36,13 +36,12 @@ const IssueDetailScreen = () => {
   const [hasEndorsed, setHasEndorsed] = useState(false);
   const [upvoteCount, setUpvoteCount] = useState(issue.upvoteCount ?? 0);
   const [loading, setLoading] = useState(false);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   const navigation = useNavigation();
   const { authToken } = useAuth();
 
   const locationSources: LocationSource[] = [
-    // Future: unshift an EXIF source here when image EXIF extraction is implemented
-    // e.g. { latitude: exifCoords.lat, longitude: exifCoords.lng, priority: 'exif' }
     { latitude: issue.latitude, longitude: issue.longitude, priority: 'gps' },
   ];
   const resolvedAddress = useResolvedAddress(locationSources);
@@ -122,16 +121,35 @@ const IssueDetailScreen = () => {
         </View>
 
         {/* Image Gallery */}
-        <FlatList
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          data={issue.images}
-          keyExtractor={(_, idx) => idx.toString()}
-          renderItem={({ item }) => (
-            <Image source={{ uri: item }} style={[styles.image, { width: imageWidth, height: imageHeight }]} />
+        <View style={[styles.imageGallery, { width: imageWidth, height: imageHeight }]}>
+          <FlatList
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            data={issue.images}
+            keyExtractor={(_, idx) => idx.toString()}
+            onMomentumScrollEnd={(event) => {
+              const nextIndex = Math.round(event.nativeEvent.contentOffset.x / imageWidth);
+              setActiveImageIndex(nextIndex);
+            }}
+            renderItem={({ item }) => (
+              <Image source={{ uri: item }} style={[styles.image, { width: imageWidth, height: imageHeight }]} />
+            )}
+          />
+          {issue.images.length > 1 && (
+            <View style={styles.imageDots}>
+              {issue.images.map((_, index) => (
+                <View
+                  key={index}
+                  style={[
+                    styles.imageDot,
+                    index === activeImageIndex ? styles.imageDotActive : styles.imageDotInactive
+                  ]}
+                />
+              ))}
+            </View>
           )}
-        />
+        </View>
 
         {/* Info Card */}
         <View style={styles.infoCard}>
@@ -369,10 +387,41 @@ const styles = StyleSheet.create({
   },
 
   image: {
-    marginBottom: spacing.md,
     borderRadius: borderRadius.md,
     backgroundColor: palette.ckLightGray,
     resizeMode: 'cover',
+  },
+
+  imageGallery: {
+    marginBottom: spacing.md,
+  },
+
+  imageDots: {
+    position: 'absolute',
+    bottom: spacing.sm,
+    alignSelf: 'center',
+    flexDirection: 'row',
+    gap: spacing.xs,
+    backgroundColor: 'rgba(17, 24, 39, 0.35)',
+    borderRadius: borderRadius.full,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+  },
+
+  imageDot: {
+    width: spacing.sm,
+    height: spacing.sm,
+    borderRadius: borderRadius.full,
+  },
+
+  imageDotActive: {
+    backgroundColor: colors.textContrast,
+    opacity: 0.95,
+  },
+
+  imageDotInactive: {
+    backgroundColor: colors.textContrast,
+    opacity: 0.45,
   },
 
   description: {
