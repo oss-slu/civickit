@@ -1,6 +1,6 @@
 // mobile/src/screens/Misc/IssueDetailScreen.tsx
 import React, { useState, useEffect } from 'react';
-import { Platform, Text, ScrollView, FlatList, Image, StyleSheet, View, TouchableOpacity } from 'react-native';
+import { Platform, Text, ScrollView, FlatList, Image, StyleSheet, View, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
 import { GetNearbyIssueResponse, Issue } from '@civickit/shared';
 import { format, formatDistanceToNow } from 'date-fns';
@@ -29,6 +29,9 @@ type IssueDetailRouteProp = RouteProp<
 const IssueDetailScreen = () => {
   const route = useRoute<IssueDetailRouteProp>();
   const { issue } = route.params;
+  const { width } = useWindowDimensions();
+  const imageWidth = width - spacing.md * 2;
+  const imageHeight = imageWidth * 1.25;
 
   const [hasEndorsed, setHasEndorsed] = useState(false);
   const [upvoteCount, setUpvoteCount] = useState(issue.upvoteCount ?? 0);
@@ -43,6 +46,7 @@ const IssueDetailScreen = () => {
     { latitude: issue.latitude, longitude: issue.longitude, priority: 'gps' },
   ];
   const resolvedAddress = useResolvedAddress(locationSources);
+  const formatSource = (source?: string) => source === 'exif' ? 'Photo metadata' : 'Device GPS';
 
   useEffect(() => {
     const fetchUpvoteState = async () => {
@@ -117,6 +121,18 @@ const IssueDetailScreen = () => {
           </View>
         </View>
 
+        {/* Image Gallery */}
+        <FlatList
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          data={issue.images}
+          keyExtractor={(_, idx) => idx.toString()}
+          renderItem={({ item }) => (
+            <Image source={{ uri: item }} style={[styles.image, { width: imageWidth, height: imageHeight }]} />
+          )}
+        />
+
         {/* Info Card */}
         <View style={styles.infoCard}>
 
@@ -125,9 +141,27 @@ const IssueDetailScreen = () => {
             <ClockIcon color={colors.textPrimary}
               size={typography.sizeLg}
               style={styles.icon} />
-            <Text style={styles.infoRowText}>
-              {format(new Date(issue.createdAt), 'PPP p')}
-            </Text>
+            <View style={styles.infoTextColumn}>
+              <Text style={styles.infoRowLabel}>Report submitted</Text>
+              <Text style={styles.infoRowText}>
+                {format(new Date(issue.createdAt), 'PPP p')}
+              </Text>
+            </View>
+          </View>
+          <View style={styles.divider} />
+
+          {/* Photo Date/Time */}
+          <View style={styles.infoRow}>
+            <ClockIcon color={colors.textPrimary}
+              size={typography.sizeLg}
+              style={styles.icon} />
+            <View style={styles.infoTextColumn}>
+              <Text style={styles.infoRowLabel}>Photo taken</Text>
+              <Text style={styles.infoRowText}>
+                {format(new Date(issue.photoTakenAt ?? issue.createdAt), 'PPP p')}
+              </Text>
+              <Text style={styles.infoRowMeta}>Source: {formatSource(issue.photoTakenAtSource)}</Text>
+            </View>
           </View>
           <View style={styles.divider} />
 
@@ -136,9 +170,13 @@ const IssueDetailScreen = () => {
             <LocationPinIcon color={colors.textPrimary}
               size={typography.sizeLg}
               style={styles.icon} />
-            <Text style={styles.infoRowText}>
-              {resolvedAddress}
-            </Text>
+            <View style={styles.infoTextColumn}>
+              <Text style={styles.infoRowLabel}>Location</Text>
+              <Text style={styles.infoRowText}>
+                {resolvedAddress}
+              </Text>
+              <Text style={styles.infoRowMeta}>Source: {formatSource(issue.locationSource)}</Text>
+            </View>
           </View>
 
           <View style={styles.divider} />
@@ -148,9 +186,12 @@ const IssueDetailScreen = () => {
             <TagIcon color={colors.textPrimary}
               size={typography.sizeLg}
               style={styles.icon} />
-            <Text style={styles.infoRowText}>
-              {issue.status}
-            </Text>
+            <View style={styles.infoTextColumn}>
+              <Text style={styles.infoRowLabel}>Status</Text>
+              <Text style={styles.infoRowText}>
+                {issue.status}
+              </Text>
+            </View>
           </View>
 
           <View style={styles.divider} />
@@ -162,23 +203,15 @@ const IssueDetailScreen = () => {
               size={typography.sizeLg}
               style={styles.icon}
             />
-            <Text style={styles.infoRowText}>
-              {category}
-            </Text>
+            <View style={styles.infoTextColumn}>
+              <Text style={styles.infoRowLabel}>Category</Text>
+              <Text style={styles.infoRowText}>
+                {category}
+              </Text>
+            </View>
           </View>
 
         </View>
-
-        {/* Image Gallery */}
-        <FlatList
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          data={issue.images}
-          keyExtractor={(_, idx) => idx.toString()}
-          renderItem={({ item }) => (
-            <Image source={{ uri: item }} style={styles.image} />
-          )}
-        />
 
         {/* Description */}
         <Text style={styles.description}>{issue.description}</Text>
@@ -284,6 +317,23 @@ const styles = StyleSheet.create({
     //textTransform: 'capitalize' causes region to lowercase, and Pm to act weird, need to fix categories without doing this line because now tags is all lowercase
   },
 
+  infoRowLabel: {
+    fontSize: typography.sizeSm,
+    fontWeight: typography.weightBold,
+    color: colors.textPrimary,
+  },
+
+  infoRowMeta: {
+    fontSize: typography.sizeSm,
+    color: colors.textMuted,
+    marginTop: spacing.xs,
+  },
+
+  infoTextColumn: {
+    flex: 1,
+    gap: spacing.xs,
+  },
+
   infoRow: {
     flex: 1,
     flexDirection: "row",
@@ -292,7 +342,7 @@ const styles = StyleSheet.create({
   },
 
   icon: {
-    alignSelf: "center"
+    marginTop: spacing.xs
   },
 
   divider: {
@@ -319,11 +369,10 @@ const styles = StyleSheet.create({
   },
 
   image: {
-    width: 300,
-    height: 200,
-    marginRight: spacing.sm,
     marginBottom: spacing.md,
     borderRadius: borderRadius.md,
+    backgroundColor: palette.ckLightGray,
+    resizeMode: 'cover',
   },
 
   description: {

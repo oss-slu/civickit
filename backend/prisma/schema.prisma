@@ -75,6 +75,9 @@ model Issue {
   // Metadata
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
+  locationSource String     @default("device")
+  photoTakenAt DateTime?
+  photoTakenAtSource String @default("device")
   
   // Relationships
   userId      String

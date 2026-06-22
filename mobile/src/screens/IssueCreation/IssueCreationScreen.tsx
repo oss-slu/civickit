@@ -13,6 +13,7 @@ import { CaretDownIcon, PictureIcon, PlusIcon } from '../../components/Icons';
 import { IssueCategoryArray } from '../../types/IssueCategoryArray';
 import { extractResolvedLocationMetadata, formatResolvedAddress, ResolvedLocationMetadata } from '../../hooks/useResolvedAddress';
 import { useAuth } from '../../contexts/AuthContext';
+import { resolvePhotoMetadata } from '../../utils/photoMetadata';
 
 import LoadingScreen from '../Misc/LoadingScreen';
 import Button from '../../components/Button';
@@ -20,16 +21,21 @@ import IconButton from '../../components/IconButton';
 import SelectedImage from '../../components/SelectedImage';
 import ModalDropdown from '../../components/ModalDropdown';
 import ENV from '../../config/env';
-import { ImagesContext, UserLocationContext, AddressContext, TitleContext, CategoryContext, DescriptionContext } from '../../contexts/FormContexts';
+import { ImagesContext, PhotoMetadataContext, UserLocationContext, AddressContext, TitleContext, CategoryContext, DescriptionContext } from '../../contexts/FormContexts';
+import { userLocation } from '../../types/userLocation';
+import { PhotoMetadataSource } from '../../utils/photoMetadata';
 
 export default function IssueCreationScreen() {
     const { images, setImages } = useContext(ImagesContext);
+    const { photoMetadata, setPhotoMetadata } = useContext(PhotoMetadataContext);
     const { location, setLocation } = useContext(UserLocationContext);
     const { address, setAddress } = useContext(AddressContext);
     const { title, setTitle } = useContext(TitleContext);
     const { category, setCategory } = useContext(CategoryContext);
     const { description, setDescription } = useContext(DescriptionContext);
     const [locationMetadata, setLocationMetadata] = useState<ResolvedLocationMetadata>({});
+    const [deviceLocation, setDeviceLocation] = useState<userLocation | null>(null);
+    const [locationSource, setLocationSource] = useState<PhotoMetadataSource | null>(null);
     const [submitAllowed, setSubmitAllowed] = useState<boolean>(false)
 
     const [isLoading, setIsLoading] = useState(false)
@@ -45,11 +51,25 @@ export default function IssueCreationScreen() {
                 return;
             }
             const loc = await Location.getCurrentPositionAsync({});
-            setLocation({ latitude: loc.coords.latitude, longitude: loc.coords.longitude });
+            setDeviceLocation({ latitude: loc.coords.latitude, longitude: loc.coords.longitude });
+        })();
+    }, []);
 
+    useEffect(() => {
+        if (!deviceLocation) return;
+
+        const fallbackTakenAt = new Date().toISOString();
+        const resolved = resolvePhotoMetadata(photoMetadata, { ...deviceLocation, takenAt: fallbackTakenAt });
+
+        setLocation({ latitude: resolved.latitude, longitude: resolved.longitude });
+        setLocationSource(resolved.locationSource);
+        setLocationMetadata({});
+        setAddress(resolved.locationSource === 'exif' ? 'Detecting photo location...' : 'Detecting phone location...');
+
+        (async () => {
             const geocode = await Location.reverseGeocodeAsync({
-                latitude: loc.coords.latitude,
-                longitude: loc.coords.longitude,
+                latitude: resolved.latitude,
+                longitude: resolved.longitude,
             });
 
             //reverseGeocodeAsync does not work on web, will return []
@@ -61,12 +81,16 @@ export default function IssueCreationScreen() {
                 setLocationMetadata(extractResolvedLocationMetadata(geocode[0]));
             }
         })();
-    }, []);
+    }, [deviceLocation, photoMetadata]);
 
     const onImageDeletePressed = (image: any) => {
+        const imageIndex = images.indexOf(image);
         setImages(
             images.filter(i => i != image)
         )
+        if (imageIndex >= 0) {
+            setPhotoMetadata(photoMetadata.filter((_, index) => index !== imageIndex))
+        }
     }
 
     const handleSetCategory = (issueCategory: any) => {
@@ -79,7 +103,7 @@ export default function IssueCreationScreen() {
         description.length > 0 &&
         category != null &&
         images.length > 0 &&
-        address != "Detecting location..."
+        !address.startsWith("Detecting ")
     ) {
         setSubmitAllowed(true)
     } else if (submitAllowed && (
@@ -87,7 +111,7 @@ export default function IssueCreationScreen() {
         description.length == 0 ||
         category == null ||
         images.length == 0 ||
-        address == "Detecting location...")) {
+        address.startsWith("Detecting "))) {
         setSubmitAllowed(false)
     }
 
@@ -100,7 +124,10 @@ export default function IssueCreationScreen() {
 
     const handleCancel = () => {
         setImages([])
+        setPhotoMetadata([])
         setLocation(null)
+        setDeviceLocation(null)
+        setLocationSource(null)
         setAddress('Detecting location...')
         setTitle("")
         setCategory(null)
@@ -116,8 +143,15 @@ export default function IssueCreationScreen() {
             formData.append('title', title);
             formData.append('description', description);
             formData.append('category', category!);
-            formData.append('latitude', location!.latitude.toString());
-            formData.append('longitude', location!.longitude.toString());
+            const fallbackLocation = deviceLocation ?? location!;
+            const resolvedPhotoMetadata = resolvePhotoMetadata(photoMetadata, {
+                latitude: fallbackLocation.latitude,
+                longitude: fallbackLocation.longitude,
+                takenAt: new Date().toISOString(),
+            });
+
+            formData.append('latitude', resolvedPhotoMetadata.latitude.toString());
+            formData.append('longitude', resolvedPhotoMetadata.longitude.toString());
             formData.append('address', address);
             images.forEach(uri => {
                 formData.append('images', { uri: uri, type: 'image/jpeg', name: 'photo.jpg' } as unknown as File);
@@ -161,12 +195,15 @@ export default function IssueCreationScreen() {
                 title,
                 description,
                 category: category!,
-                latitude: location!.latitude,
-                longitude: location!.longitude,
+                latitude: resolvedPhotoMetadata.latitude,
+                longitude: resolvedPhotoMetadata.longitude,
                 address,
                 district: locationMetadata.district,
                 subregion: locationMetadata.subregion,
                 name: locationMetadata.name,
+                locationSource: resolvedPhotoMetadata.locationSource,
+                photoTakenAt: resolvedPhotoMetadata.photoTakenAt,
+                photoTakenAtSource: resolvedPhotoMetadata.photoTakenAtSource,
                 images: imageUrls
             };
 
@@ -198,7 +235,10 @@ export default function IssueCreationScreen() {
             });
             const issue = await response.json();
             setImages([])
+            setPhotoMetadata([])
             setLocation(null)
+            setDeviceLocation(null)
+            setLocationSource(null)
             setAddress('Detecting location...')
             setTitle("")
             setCategory(null)
@@ -221,6 +261,8 @@ export default function IssueCreationScreen() {
         }
 
     };
+
+    const locationSourceLabel = locationSource === 'exif' ? 'From photo EXIF' : 'From phone GPS';
 
 
     return (
@@ -267,7 +309,11 @@ export default function IssueCreationScreen() {
                 </View>
 
                 <View style={styles.addressContainer}>
+                    <Text style={styles.locationLabel}>Location</Text>
                     <Text style={styles.addressText}>{address}</Text>
+                    {locationSource && (
+                        <Text style={styles.locationSourceText}>{locationSourceLabel}</Text>
+                    )}
                 </View>
 
                 <ModalDropdown
@@ -375,10 +421,18 @@ const styles = StyleSheet.create({
         color: colors.textPrimary,
         fontSize: typography.sizeLg
     },
+    locationLabel: {
+        color: colors.textSecondary,
+        fontSize: typography.sizeSm,
+        fontWeight: typography.weightBold,
+        textTransform: "uppercase"
+    },
+    locationSourceText: {
+        color: colors.textSecondary,
+        fontSize: typography.sizeSm
+    },
     addressContainer: {
         paddingHorizontal: spacing.xs,
-        flexDirection: "row",
-        alignItems: "center",
         gap: spacing.xs
     }
 });

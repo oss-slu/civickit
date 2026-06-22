@@ -8,7 +8,7 @@ import { IssueService } from '../../issue.service';
 import { IssueRepository } from '../../../repositories/issue.repository';
 import { UpvoteRepository } from '../../../repositories/upvote.repository';
 import { describe, beforeEach, vi, it, expect, Mocked } from 'vitest';
-import { CreateIssueDTO } from '@civickit/shared';
+import { CreateIssueDTO, extractPhotoMetadataFromExif, resolvePhotoMetadata } from '@civickit/shared';
 import { mock } from 'node:test';
 
 // Mock the repository, not integration test
@@ -83,6 +83,25 @@ describe('IssueService', () => {
       expect(mockIssueRepository.create).toHaveBeenCalledTimes(1);
     });
 
+    it('should pass photo metadata through when creating an issue', async () => {
+      const input = makeInput({
+        latitude: 38.64,
+        longitude: -90.22,
+        locationSource: 'exif',
+        photoTakenAt: '2026-06-18T14:30:00.000Z',
+        photoTakenAtSource: 'exif',
+      });
+
+      mockIssueRepository.create.mockResolvedValue({ id: 'test-id', ...input } as any);
+
+      await issueService.createIssue(input, 'user-123');
+
+      expect(mockIssueRepository.create).toHaveBeenCalledWith({
+        ...input,
+        userId: 'user-123',
+      });
+    });
+
     it('should throw error if title is too short', async () => {
       await expect(
         issueService.createIssue(
@@ -118,6 +137,47 @@ describe('IssueService', () => {
         )
       ).rejects.toThrow('Latitude and longitude are required');
       expect(mockIssueRepository.create).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('photo metadata helpers', () => {
+    it('should prefer EXIF location and timestamp over phone fallback', () => {
+      const exifMetadata = extractPhotoMetadataFromExif({
+        GPSLatitude: 38.64,
+        GPSLongitude: 90.22,
+        GPSLongitudeRef: 'W',
+        DateTimeOriginal: '2026:06:18 14:30:00',
+      });
+
+      const resolved = resolvePhotoMetadata([exifMetadata], {
+        latitude: 38.627,
+        longitude: -90.1994,
+        takenAt: '2026-06-19T15:00:00.000Z',
+      });
+
+      expect(resolved).toMatchObject({
+        latitude: 38.64,
+        longitude: -90.22,
+        locationSource: 'exif',
+        photoTakenAtSource: 'exif',
+      });
+      expect(resolved.photoTakenAt).toBe(new Date('2026-06-18 14:30:00').toISOString());
+    });
+
+    it('should fall back to phone location and time when EXIF is missing', () => {
+      const resolved = resolvePhotoMetadata([extractPhotoMetadataFromExif({})], {
+        latitude: 38.627,
+        longitude: -90.1994,
+        takenAt: '2026-06-19T15:00:00.000Z',
+      });
+
+      expect(resolved).toEqual({
+        latitude: 38.627,
+        longitude: -90.1994,
+        locationSource: 'device',
+        photoTakenAt: '2026-06-19T15:00:00.000Z',
+        photoTakenAtSource: 'device',
+      });
     });
   });
 

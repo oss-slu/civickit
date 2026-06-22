@@ -1,5 +1,6 @@
 // shared/src/types/api.ts
 import { IssueCategory, IssueStatus } from "../enums/issue";
+import { PhotoMetadataSource } from "../utils/photoMetadata";
 import { User } from "./user";
 
 export interface ApiResponse<T> {
@@ -20,6 +21,9 @@ export interface CreateIssueDTO {
     subregion?: string;
     name?: string;
     images?: string[];
+    locationSource?: PhotoMetadataSource;
+    photoTakenAt?: string;
+    photoTakenAtSource?: PhotoMetadataSource;
 }
 
 export interface GetNearbyIssueResponse {
@@ -35,6 +39,9 @@ export interface GetNearbyIssueResponse {
     images: string[];
     id: string;
     createdAt: string;
+    locationSource?: PhotoMetadataSource;
+    photoTakenAt?: string;
+    photoTakenAtSource?: PhotoMetadataSource;
     status: IssueStatus;
     distance: string
     upvoteCount: number
