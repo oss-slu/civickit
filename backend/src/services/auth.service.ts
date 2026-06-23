@@ -5,6 +5,7 @@ import { AuthRepository } from "../repositories/auth.repository";
 import { CreateAuthDTO } from "@civickit/shared";
 import { SafeUser } from '../types/auth.types'
 import { z } from 'zod';
+import { AppError } from "../utils/errors";
 
 export class AuthService {
   constructor(private authRepository: AuthRepository) { }
@@ -15,18 +16,18 @@ export class AuthService {
     // Validate email format
     const emailSchema = z.email();
     if (!emailSchema.safeParse(email).success) {
-      throw { status: 400, message: "Invalid email format" };
+      throw new AppError("Invalid email format", 400);
     }
 
     // Validate password length
     if (password.length < 8) {
-      throw { status: 400, message: "Password too short (min 8 characters)" };
+      throw new AppError("Password too short (min 8 characters)", 400);
     }
 
     // Check for existing user
     const existingUser = await this.authRepository.findByEmail(email);
     if (existingUser) {
-      throw { status: 409, message: "Email already exists" };
+      throw new AppError("Email already exists", 409);
     }
 
     // Hash password

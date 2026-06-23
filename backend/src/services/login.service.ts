@@ -5,20 +5,23 @@ import jwt from "jsonwebtoken";
 import { LoginRepository } from '../repositories/login.repository';
 import { LoginDTO, LoginResponse } from "@civickit/shared";
 import "dotenv/config";
+import { AppError } from "../utils/errors";
 
 export class LoginService {
   constructor(private loginRepository: LoginRepository) { }
 
-  async login(credentials: LoginDTO): Promise<LoginResponse> {
+  async login(credentials: LoginDTO): Promise<LoginResponse | AppError> {
     const user = await this.loginRepository.findByEmail(credentials.email);
-    if (!user) {
-      throw { status: 401, message: 'Email not found' };
+
+    if (user == null) {
+      //TODO: fix to throw AppError
+      throw new AppError('Email not found', 401);
     }
 
     //compare user entered pw with pw hash from repo
     const match = await bcrypt.compare(credentials.password, String(user.passwordHash))
     if (!match) {
-      throw { status: 401, message: 'Password and email do not match' };
+      throw new AppError('Password and email do not match', 401);
     }
 
     //generate token with user id

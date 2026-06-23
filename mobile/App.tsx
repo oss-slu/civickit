@@ -110,13 +110,16 @@ function MainTabNavigator() {
 }
 
 function AppNavigator() {
-  const { isLoggedIn, isLoading } = useAuth();
+  const { user, isLoading, authToken, login } = useAuth();
   if (isLoading) return null; //or splash screen
-  console.log(isLoggedIn)
+  console.log(authToken)
+  if (authToken != undefined) {
+    login(authToken)
+  }
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ animation: 'slide_from_right' }}>
-        {isLoggedIn ? (
+        {user != null ? (
           <>
             <Stack.Screen
               name="Main"
@@ -131,7 +134,7 @@ function AppNavigator() {
           </>
         )}
       </Stack.Navigator>
-      {isLoggedIn && <FlashMessage position="top" style={{ paddingTop: 32 }} />}
+      {user != null && <FlashMessage position="top" style={{ paddingTop: 32 }} />}
     </NavigationContainer>
   )
 }
