@@ -8,7 +8,6 @@ import { CategoryIcon, ClockIcon, LocationPinIcon, TagIcon, WrenchIcon } from '.
 import { borderRadius, colors, globalStyles, palette, size, spacing, typography } from '../../styles';
 import { useAuth } from '../../contexts/AuthContext';
 import { PROVIDER_GOOGLE } from 'react-native-maps/lib/ProviderConstants';
-import { useResolvedAddress, LocationSource } from '../../hooks/useResolvedAddress';
 import ENV from '../../config/env';
 import Pin from '../../components/Pin';
 
@@ -41,10 +40,7 @@ const IssueDetailScreen = () => {
   const navigation = useNavigation();
   const { authToken } = useAuth();
 
-  const locationSources: LocationSource[] = [
-    { latitude: issue.latitude, longitude: issue.longitude, priority: 'gps' },
-  ];
-  const resolvedAddress = useResolvedAddress(locationSources);
+  const resolvedAddress = issue.address || 'No address available';
   const formatSource = (source?: string) => source === 'exif' ? 'Photo metadata' : 'Device GPS';
 
   useEffect(() => {
