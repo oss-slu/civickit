@@ -18,6 +18,7 @@ export class LoginController {
       const user = await loginService.login(loginDTO);
       res.status(200).json(user);
     } catch (error: any) {
+      res.status(error.statusCode);
       next(error);
     }
   }
