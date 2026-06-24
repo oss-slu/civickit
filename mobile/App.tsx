@@ -112,8 +112,6 @@ function MainTabNavigator() {
 
 function AppNavigator() {
   const { isLoggedIn, isLoading } = useAuth();
-  console.log("logged in", isLoggedIn)
-  console.log("loading", isLoading)
 
   if (isLoading) return <LoadingScreen />
   return (
