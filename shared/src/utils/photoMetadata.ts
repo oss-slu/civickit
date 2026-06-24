@@ -34,6 +34,16 @@ const parseDate = (value: unknown): string | undefined => {
     return Number.isNaN(date.getTime()) ? undefined : date.toISOString();
 };
 
+const isUsableCoordinate = (latitude?: number, longitude?: number): latitude is number => (
+    latitude !== undefined &&
+    longitude !== undefined &&
+    latitude >= -90 &&
+    latitude <= 90 &&
+    longitude >= -180 &&
+    longitude <= 180 &&
+    !(latitude === 0 && longitude === 0)
+);
+
 export function extractPhotoMetadataFromExif(exif?: Record<string, unknown> | null): PhotoMetadata {
     if (!exif) return {};
 
@@ -42,9 +52,13 @@ export function extractPhotoMetadataFromExif(exif?: Record<string, unknown> | nu
     const latitudeRef = typeof exif.GPSLatitudeRef === 'string' ? exif.GPSLatitudeRef : '';
     const longitudeRef = typeof exif.GPSLongitudeRef === 'string' ? exif.GPSLongitudeRef : '';
 
+    const resolvedLatitude = latitude === undefined ? undefined : latitudeRef.toUpperCase() === 'S' ? -Math.abs(latitude) : latitude;
+    const resolvedLongitude = longitude === undefined ? undefined : longitudeRef.toUpperCase() === 'W' ? -Math.abs(longitude) : longitude;
+    const hasUsableLocation = isUsableCoordinate(resolvedLatitude, resolvedLongitude);
+
     return {
-        latitude: latitude === undefined ? undefined : latitudeRef.toUpperCase() === 'S' ? -Math.abs(latitude) : latitude,
-        longitude: longitude === undefined ? undefined : longitudeRef.toUpperCase() === 'W' ? -Math.abs(longitude) : longitude,
+        latitude: hasUsableLocation ? resolvedLatitude : undefined,
+        longitude: hasUsableLocation ? resolvedLongitude : undefined,
         takenAt: parseDate(exif.DateTimeOriginal ?? exif.DateTimeDigitized ?? exif.DateTime ?? exif.timestamp),
     };
 }
@@ -54,7 +68,7 @@ export function resolvePhotoMetadata(
     fallback: { latitude: number; longitude: number; takenAt: string }
 ): ResolvedPhotoMetadata {
     const locationMetadata = photoMetadata.find(
-        metadata => metadata.latitude !== undefined && metadata.longitude !== undefined
+        metadata => isUsableCoordinate(metadata.latitude, metadata.longitude)
     );
     const timestampMetadata = photoMetadata.find(metadata => metadata.takenAt !== undefined);
 
