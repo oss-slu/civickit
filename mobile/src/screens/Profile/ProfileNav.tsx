@@ -5,22 +5,12 @@ import ProfileScreen from './ProfileScreen';
 import ErrorScreen from '../Misc/ErrorScreen';
 import AvatarScreen from './AvatarScreen';
 import SettingsScreen from './SettingsScreen';
-import IconButton from '../../components/IconButton';
 import { Text, View, StyleSheet } from 'react-native';
-import { SettingsIcon } from '../../components/Icons';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../contexts/AuthContext';
 import { palette, colors, globalStyles, size, spacing, typography, borderRadius } from "../../styles";
 import Button from '../../components/Button';
 import IssueDetailScreen from '../Misc/IssueDetailScreen';
 import LeaderBoardScreen from '../Misc/LeaderboardScreen';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import ENV from "../../config/env";
-import LoadingScreen from '../Misc/LoadingScreen';
-import { MessageView } from '../../components/MessageView';
-import { useEffect, useState } from 'react';
-
 const Stack = createNativeStackNavigator<StackParams>();
 
 export default function ProfileNav() {
