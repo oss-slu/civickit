@@ -24,10 +24,8 @@ import { useEffect, useState } from 'react';
 const Stack = createNativeStackNavigator<StackParams>();
 
 export default function ProfileNav() {
-    const { authToken, user, setUser } = useAuth();
+    const { user } = useAuth();
     const { logout } = useAuth();
-    const queryClient = useQueryClient()
-    const [refreshing, setRefreshing] = useState(true)
 
 
     if (user == null) {
