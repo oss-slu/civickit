@@ -5,6 +5,7 @@ import { AuthRepository } from "../repositories/auth.repository";
 import { CreateAuthDTO } from "@civickit/shared";
 import { SafeUser } from '../types/auth.types'
 import { z } from 'zod';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 import { AppError } from "../utils/errors";
 
 export class AuthService {
@@ -43,5 +44,25 @@ export class AuthService {
     // Remove passwordHash before returning
     const { passwordHash: _, ...safeUser } = newUser;
     return safeUser;
+  }
+
+  async getUserByToken(token: string) {
+    const secret = String(process.env.JWT_SECRET)
+    if (secret == undefined) {
+      throw new AppError("JWT secret not configured", 500);
+    }
+    try {
+      const tokenResponse = jwt.verify(token, secret) as JwtPayload
+      const id = tokenResponse.userId
+
+      const user = await this.authRepository.findById(id);
+      if (!user) {
+        throw new AppError('User not found', 404);
+      }
+      return user
+    } catch (error) {
+      throw new AppError("Invalid token", 401)
+    }
+
   }
 }

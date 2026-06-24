@@ -19,4 +19,21 @@ export class AuthRepository {
       data,
     });
   }
+
+  async findById(id: string) {
+
+    const user = await prisma.user.findUnique({
+      where: { id }
+    });
+
+    if (user != null) {
+      return {
+        id: user?.id, email: user?.email,
+        name: user?.name, passwordHash: user?.passwordHash,
+        profileImage: user?.profileImage, createdAt: user?.createdAt
+      }
+    }
+
+    return null
+  }
 }

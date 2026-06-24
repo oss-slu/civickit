@@ -2,6 +2,8 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { getToken, saveToken, deleteToken } from '../services/AuthService';
 import { User } from '@civickit/shared';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import ENV from "../config/env";
 
 interface AuthContextType {
     isLoggedIn: boolean;
@@ -20,16 +22,34 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [authToken, setAuthToken] = useState<string | null>(null);
     const [user, setUser] = useState<User | null>(null);
+    const queryClient = useQueryClient()
 
     // On mount, check for token to determine if user is logged in
     useEffect(() => {
         (async () => {
             const token = await getToken();
             setAuthToken(token);
-            setIsLoggedIn(!!token);
-            setIsLoading(false);
         })();
     }, []); //no dependencies bc it runs once on mount to check for token
+
+
+    const { data, error, refetch } = useQuery({
+        queryKey: ['user'],
+        queryFn: async () => {
+            const response = await fetch(
+                ENV.apiUrl + '/auth/user?token=' +
+                authToken
+            );
+            if (!response.ok) {
+                if (response.status == 401 || response.status == 404) {
+                    throw new Error('Invalid Token');
+                } else {
+                    throw new Error("Failed to Fetch")
+                }
+            }
+            return response.json()
+        },
+    }, queryClient);
 
     //login store token + update state
     const login = async (token: string) => {
@@ -41,8 +61,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const logout = async () => {
         await deleteToken();
         setAuthToken(null);
+        setUser(null)
         setIsLoggedIn(false);
     };
+
+    if (error != null && isLoading == true) {
+        logout()
+
+        console.log(error)
+        setIsLoading(false)
+    }
+
+    if (data != null && isLoading == true) {
+        setUser(data)
+        setIsLoggedIn(true)
+        setIsLoading(false)
+
+    }
+
+
 
     return (
         <AuthContext.Provider value={{ isLoggedIn, isLoading, authToken, login, logout, setUser, user }}>

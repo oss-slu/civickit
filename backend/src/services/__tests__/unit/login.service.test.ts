@@ -5,6 +5,7 @@ import { LoginRepository } from '../../../repositories/login.repository';
 import { describe, beforeEach, vi, it, expect, Mocked, Mock } from 'vitest';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { AppError } from '../../../utils/errors';
 
 // mock repository
 vi.mock('../../../src/repositories/login.repository');
@@ -93,10 +94,10 @@ describe('LoginService', () => {
                 email: 'notfound@example.com',
                 password: 'password123',
             })
-        ).rejects.toEqual({
-            status: 401,
-            message: 'Email not found',
-        });
+        ).rejects.toEqual(new AppError(
+            'Email not found',
+            401
+        ))
     });
 
     it('should throw error if password does not match', async () => {
@@ -110,9 +111,7 @@ describe('LoginService', () => {
                 email: 'test@example.com',
                 password: 'wrongpassword',
             })
-        ).rejects.toEqual({
-            status: 401,
-            message: 'Password and email do not match',
-        });
+        ).rejects.toEqual(
+            new AppError("Password and email do not match", 401));
     });
 });

@@ -15,14 +15,20 @@ import { palette, colors, globalStyles, size, spacing, typography, borderRadius 
 import Button from '../../components/Button';
 import IssueDetailScreen from '../Misc/IssueDetailScreen';
 import LeaderBoardScreen from '../Misc/LeaderboardScreen';
-
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import ENV from "../../config/env";
+import LoadingScreen from '../Misc/LoadingScreen';
+import { MessageView } from '../../components/MessageView';
+import { useEffect, useState } from 'react';
 
 const Stack = createNativeStackNavigator<StackParams>();
 
 export default function ProfileNav() {
-    const { user } = useAuth();
-    const navigation = useNavigation<StackNavigationProp<StackParams>>();
+    const { authToken, user, setUser } = useAuth();
     const { logout } = useAuth();
+    const queryClient = useQueryClient()
+    const [refreshing, setRefreshing] = useState(true)
+
 
     if (user == null) {
         return (
