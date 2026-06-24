@@ -179,6 +179,25 @@ describe('IssueService', () => {
         photoTakenAtSource: 'device',
       });
     });
+
+    it('should reject 0,0 EXIF coordinates and fall back to phone location', () => {
+      const resolved = resolvePhotoMetadata([extractPhotoMetadataFromExif({
+        GPSLatitude: 0,
+        GPSLongitude: 0,
+        DateTimeOriginal: '2026:06:18 14:30:00',
+      })], {
+        latitude: 38.627,
+        longitude: -90.1994,
+        takenAt: '2026-06-19T15:00:00.000Z',
+      });
+
+      expect(resolved).toMatchObject({
+        latitude: 38.627,
+        longitude: -90.1994,
+        locationSource: 'device',
+        photoTakenAtSource: 'exif',
+      });
+    });
   });
 
   describe('getIssueById', () => {
