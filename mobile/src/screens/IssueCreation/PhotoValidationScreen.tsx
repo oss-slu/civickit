@@ -7,7 +7,7 @@ import { Image } from "react-native";
 import { StaticScreenProps, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { StackParams } from '../../types/StackParams';
-import { ImagesContext } from '../../contexts/FormContexts';
+import { FormStartedContext, ImagesContext } from '../../contexts/FormContexts';
 
 import React from 'react';
 
@@ -18,13 +18,18 @@ type Props = StaticScreenProps<{
 export default function PhotoValidationScreen({ route }: Props) {
     const uri = route.params.uri
     const { images, setImages } = useContext(ImagesContext);
+    const { formStarted, setFormStarted } = useContext(FormStartedContext)
     const navigation = useNavigation<StackNavigationProp<StackParams>>()
     const windowWidth = Dimensions.get('window').width;
 
 
     const onOK = () => {
         setImages([...images, uri])
-        navigation.replace("Report An Issue", {})
+        if (!formStarted) {
+            navigation.replace("DuplicateCheck", {})
+        } else {
+            navigation.replace("Report An Issue", {})
+        }
     }
 
     return (

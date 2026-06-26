@@ -45,5 +45,6 @@ export type StackParams = {
         dateReportedOption?: boolean
         dateUpdatedOption?: boolean
         distanceOption?: boolean
-    }
+    },
+    "DuplicateCheck": {}
 }

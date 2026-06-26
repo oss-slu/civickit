@@ -20,7 +20,7 @@ import IconButton from '../../components/IconButton';
 import SelectedImage from '../../components/SelectedImage';
 import ModalDropdown from '../../components/ModalDropdown';
 import ENV from '../../config/env';
-import { ImagesContext, UserLocationContext, AddressContext, TitleContext, CategoryContext, DescriptionContext } from '../../contexts/FormContexts';
+import { ImagesContext, UserLocationContext, AddressContext, TitleContext, CategoryContext, DescriptionContext, FormStartedContext } from '../../contexts/FormContexts';
 
 export default function IssueCreationScreen() {
     const { images, setImages } = useContext(ImagesContext);
@@ -29,6 +29,7 @@ export default function IssueCreationScreen() {
     const { title, setTitle } = useContext(TitleContext);
     const { category, setCategory } = useContext(CategoryContext);
     const { description, setDescription } = useContext(DescriptionContext);
+    const { formStarted, setFormStarted } = useContext(FormStartedContext)
     const [locationMetadata, setLocationMetadata] = useState<ResolvedLocationMetadata>({});
     const [submitAllowed, setSubmitAllowed] = useState<boolean>(false)
 
@@ -62,6 +63,10 @@ export default function IssueCreationScreen() {
             }
         })();
     }, []);
+
+    useEffect(() => {
+        setFormStarted(true)
+    }, [])
 
     const onImageDeletePressed = (image: any) => {
         setImages(
@@ -105,7 +110,7 @@ export default function IssueCreationScreen() {
         setTitle("")
         setCategory(null)
         setDescription("")
-
+        setFormStarted(false)
 
         navigation.popTo("Camera", {})
     }

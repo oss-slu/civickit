@@ -11,7 +11,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { StackParams } from '../../types/StackParams';
 import { FlashlightOffIcon, FlashlightOnIcon, FlipCameraIcon, LightingFillIcon, LightingOutlineIcon, PictureIcon } from '../../components/Icons';
 import IconButton from '../../components/IconButton';
-import { ImagesContext } from '../../contexts/FormContexts';
+import { FormStartedContext, ImagesContext } from '../../contexts/FormContexts';
 
 
 export default function CameraScreen() {
@@ -20,6 +20,7 @@ export default function CameraScreen() {
     const [flashOn, setFlashOn] = useState<FlashMode>('off')
     const [enableTorch, setEnableTorch] = useState<boolean>(false)
     const [permissions, requestPermission] = useCameraPermissions();
+    const { formStarted, setFormStarted } = useContext(FormStartedContext)
     const ref = useRef<CameraView>(null);
 
     const navigation = useNavigation<StackNavigationProp<StackParams>>()
@@ -48,8 +49,6 @@ export default function CameraScreen() {
         setFlashOn(current => (current === 'off' ? 'on' : 'off'))
     }
 
-
-
     const takePicture = async () => {
 
         const photo = await ref.current?.takePictureAsync({ shutterSound: false });
@@ -72,7 +71,11 @@ export default function CameraScreen() {
                 const resultList = results.assets.map(r => r.uri)
 
                 setImages([...images, ...resultList]);
-                navigation.replace("Report An Issue", {})
+                if (!formStarted) {
+                    navigation.replace("DuplicateCheck", {})
+                } else {
+                    navigation.replace("Report An Issue", {})
+                }
             }
         }
 
