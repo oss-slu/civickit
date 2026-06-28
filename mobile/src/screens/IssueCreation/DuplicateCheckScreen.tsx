@@ -45,42 +45,49 @@ export default function DuplicateCheckScreen() {
         navigation.popTo("Camera", {})
     }
 
-    return (
-        <View style={{ height: "100%" }}>
-            <FlatList
-                data={issues}
-                style={{ margin: spacing.sm }}
-                contentContainerStyle={{ gap: spacing.sm }}
-                keyExtractor={(item, index) => index.toString()}
-                refreshControl={<RefreshControl
-                    refreshing={refreshing}
-                    onRefresh={refetch} />}
-                renderItem={({ item, index }) => (
-                    <View style={styles.container}>
-                        <IssueCard issue={item}
-                            onPress={() => navigation.navigate('Issue Details', { issue: item })}
-                            animated={false} />
-                        <IconButton style={styles.button}
-                            onPress={() => navigation.navigate('Issue Details', { issue: item })}>
-                            <RightArrowIcon size={typography.sizeXxl} color={colors.textPrimary} />
-                        </IconButton>
-                    </View>
-                )}
-            />
-            <View style={styles.buttonRow}>
+    console.log(issues)
+    if (issues.length > 0) {
+        return (
+            <View style={{ height: "100%" }}>
+                <FlatList
+                    data={issues}
+                    style={{ margin: spacing.sm }}
+                    contentContainerStyle={{ gap: spacing.sm }}
+                    keyExtractor={(item, index) => index.toString()}
+                    refreshControl={<RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={refetch} />}
+                    renderItem={({ item, index }) => (
+                        <View style={styles.container}>
+                            <IssueCard issue={item}
+                                onPress={() => navigation.navigate('Issue Details', { issue: item })}
+                                animated={false} />
+                            <IconButton style={styles.button}
+                                onPress={() => navigation.navigate('Issue Details', { issue: item })}>
+                                <RightArrowIcon size={typography.sizeXxl} color={colors.textPrimary} />
+                            </IconButton>
+                        </View>
+                    )}
+                />
+                <View style={styles.buttonRow}>
 
-                <Button onPress={handleCancel}
-                    style={{ ...styles.submitButton, backgroundColor: palette.ckRed }}
-                    text="Cancel">
-                </Button>
+                    <Button onPress={handleCancel}
+                        style={{ ...styles.submitButton, backgroundColor: palette.ckRed }}
+                        text="Cancel">
+                    </Button>
 
-                <Button onPress={() => navigation.replace('Report An Issue', {})}
-                    style={styles.submitButton}
-                    text="Continue">
-                </Button>
+                    <Button onPress={() => navigation.replace('Report An Issue', {})}
+                        style={styles.submitButton}
+                        text="Continue">
+                    </Button>
+                </View>
             </View>
-        </View>
-    )
+        )
+    } else {
+        navigation.replace('Report An Issue', {})
+    }
+
+
 
 }
 
