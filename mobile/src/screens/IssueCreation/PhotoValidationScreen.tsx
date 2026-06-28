@@ -10,6 +10,7 @@ import { StackParams } from '../../types/StackParams';
 import { FormStartedContext, ImagesContext } from '../../contexts/FormContexts';
 
 import React from 'react';
+import { useNearbyIssues } from '../../contexts/NearbyIssuesContext';
 
 type Props = StaticScreenProps<{
     uri: string;
@@ -20,12 +21,12 @@ export default function PhotoValidationScreen({ route }: Props) {
     const { images, setImages } = useContext(ImagesContext);
     const { formStarted, setFormStarted } = useContext(FormStartedContext)
     const navigation = useNavigation<StackNavigationProp<StackParams>>()
-    const windowWidth = Dimensions.get('window').width;
+    const { data } = useNearbyIssues()
 
 
     const onOK = () => {
         setImages([...images, uri])
-        if (!formStarted) {
+        if (!formStarted && data.issues.filter((i: any) => i.distance <= 15.24).length > 0) {
             navigation.replace("DuplicateCheck", {})
         } else {
             navigation.replace("Report An Issue", {})

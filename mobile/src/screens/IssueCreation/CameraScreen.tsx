@@ -12,6 +12,8 @@ import { StackParams } from '../../types/StackParams';
 import { FlashlightOffIcon, FlashlightOnIcon, FlipCameraIcon, LightingFillIcon, LightingOutlineIcon, PictureIcon } from '../../components/Icons';
 import IconButton from '../../components/IconButton';
 import { FormStartedContext, ImagesContext } from '../../contexts/FormContexts';
+import { useNearbyIssues } from '../../contexts/NearbyIssuesContext';
+import LoadingScreen from '../Misc/LoadingScreen';
 
 
 export default function CameraScreen() {
@@ -21,6 +23,8 @@ export default function CameraScreen() {
     const [enableTorch, setEnableTorch] = useState<boolean>(false)
     const [permissions, requestPermission] = useCameraPermissions();
     const { formStarted, setFormStarted } = useContext(FormStartedContext)
+
+    const { data, isLoading, error } = useNearbyIssues()
     const ref = useRef<CameraView>(null);
 
     const navigation = useNavigation<StackNavigationProp<StackParams>>()
@@ -37,6 +41,17 @@ export default function CameraScreen() {
                 <Button onPress={requestPermission}>
                     Grant Permission
                 </Button>
+            </MessageView>
+        )
+    }
+
+    if (isLoading) {
+        return <LoadingScreen />
+    }
+    if (error != null) {
+        return (
+            <MessageView>
+                {error}
             </MessageView>
         )
     }
@@ -58,6 +73,7 @@ export default function CameraScreen() {
 
     };
 
+
     const pickImage = async () => {
 
         if (images.length < 5) {
@@ -71,7 +87,7 @@ export default function CameraScreen() {
                 const resultList = results.assets.map(r => r.uri)
 
                 setImages([...images, ...resultList]);
-                if (!formStarted) {
+                if (!formStarted && data.issues.filter((i: any) => i.distance <= 15.24).length > 0) {
                     navigation.replace("DuplicateCheck", {})
                 } else {
                     navigation.replace("Report An Issue", {})

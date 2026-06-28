@@ -17,7 +17,7 @@ import { AddressContext, CategoryContext, DescriptionContext, FormStartedContext
 //mobile/src/screens/DuplicateCheckScreen.tsx
 export default function DuplicateCheckScreen() {
 
-    const { data, isLoading, error, refetch } = useNearbyIssues()
+    const { data, refetch } = useNearbyIssues()
     const [issues, setIssues] = useState(data.issues.filter((i: any) => i.distance <= 15.24)) //within 50ft
     const navigation = useNavigation<StackNavigationProp<StackParams>>();
     const [refreshing, setRefreshing] = useState(false)
@@ -28,64 +28,49 @@ export default function DuplicateCheckScreen() {
         setIssues(data.issues.filter((i: any) => i.distance <= 15.24))
     }, [data])
 
-    if (isLoading) {
-        return <LoadingScreen />
-    }
-    if (error != null) {
-        return (
-            <MessageView>
-                {error}
-            </MessageView>
-        )
-    }
-
     const handleCancel = () => {
         setImages([])
         setFormStarted(false)
         navigation.popTo("Camera", {})
     }
 
-    console.log(issues)
-    if (issues.length > 0) {
-        return (
-            <View style={{ height: "100%" }}>
-                <FlatList
-                    data={issues}
-                    style={{ margin: spacing.sm }}
-                    contentContainerStyle={{ gap: spacing.sm }}
-                    keyExtractor={(item, index) => index.toString()}
-                    refreshControl={<RefreshControl
-                        refreshing={refreshing}
-                        onRefresh={refetch} />}
-                    renderItem={({ item, index }) => (
-                        <View style={styles.container}>
-                            <IssueCard issue={item}
-                                onPress={() => navigation.navigate('Issue Details', { issue: item })}
-                                animated={false} />
-                            <IconButton style={styles.button}
-                                onPress={() => navigation.navigate('Issue Details', { issue: item })}>
-                                <RightArrowIcon size={typography.sizeXxl} color={colors.textPrimary} />
-                            </IconButton>
-                        </View>
-                    )}
-                />
-                <View style={styles.buttonRow}>
+    return (
+        <View style={{ height: "100%" }}>
+            <FlatList
+                data={issues}
+                style={{ margin: spacing.sm }}
+                contentContainerStyle={{ gap: spacing.sm }}
+                keyExtractor={(item, index) => index.toString()}
+                refreshControl={<RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={refetch} />}
+                renderItem={({ item, index }) => (
+                    <View style={styles.container}>
+                        <IssueCard issue={item}
+                            onPress={() => navigation.navigate('Issue Details', { issue: item })}
+                            animated={false} />
+                        <IconButton style={styles.button}
+                            onPress={() => navigation.navigate('Issue Details', { issue: item })}>
+                            <RightArrowIcon size={typography.sizeXxl} color={colors.textPrimary} />
+                        </IconButton>
+                    </View>
+                )}
+            />
+            <View style={styles.buttonRow}>
 
-                    <Button onPress={handleCancel}
-                        style={{ ...styles.submitButton, backgroundColor: palette.ckRed }}
-                        text="Cancel">
-                    </Button>
+                <Button onPress={handleCancel}
+                    style={{ ...styles.submitButton, backgroundColor: palette.ckRed }}
+                    text="Cancel">
+                </Button>
 
-                    <Button onPress={() => navigation.replace('Report An Issue', {})}
-                        style={styles.submitButton}
-                        text="Continue">
-                    </Button>
-                </View>
+                <Button onPress={() => navigation.replace('Report An Issue', {})}
+                    style={styles.submitButton}
+                    text="Continue">
+                </Button>
             </View>
-        )
-    } else {
-        navigation.replace('Report An Issue', {})
-    }
+        </View>
+    )
+
 
 
 
