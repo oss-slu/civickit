@@ -1,6 +1,6 @@
 // mobile/src/screens/Misc/IssueDetailScreen.tsx
 import React, { useState, useEffect } from 'react';
-import { Platform, Text, ScrollView, FlatList, Image, StyleSheet, View, TouchableOpacity } from 'react-native';
+import { Platform, Text, ScrollView, FlatList, Image, StyleSheet, View, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
 import { GetNearbyIssueResponse, Issue } from '@civickit/shared';
 import { format, formatDistanceToNow } from 'date-fns';
@@ -8,7 +8,6 @@ import { CategoryIcon, ClockIcon, LocationPinIcon, TagIcon, WrenchIcon } from '.
 import { borderRadius, colors, globalStyles, palette, size, spacing, typography } from '../../styles';
 import { useAuth } from '../../contexts/AuthContext';
 import { PROVIDER_GOOGLE } from 'react-native-maps/lib/ProviderConstants';
-import { useResolvedAddress, LocationSource } from '../../hooks/useResolvedAddress';
 import ENV from '../../config/env';
 import Pin from '../../components/Pin';
 
@@ -29,20 +28,20 @@ type IssueDetailRouteProp = RouteProp<
 const IssueDetailScreen = () => {
   const route = useRoute<IssueDetailRouteProp>();
   const { issue } = route.params;
+  const { width } = useWindowDimensions();
+  const imageWidth = width - spacing.md * 2;
+  const imageHeight = imageWidth * 1.25;
 
   const [hasEndorsed, setHasEndorsed] = useState(false);
   const [upvoteCount, setUpvoteCount] = useState(issue.upvoteCount ?? 0);
   const [loading, setLoading] = useState(false);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   const navigation = useNavigation();
   const { authToken } = useAuth();
 
-  const locationSources: LocationSource[] = [
-    // Future: unshift an EXIF source here when image EXIF extraction is implemented
-    // e.g. { latitude: exifCoords.lat, longitude: exifCoords.lng, priority: 'exif' }
-    { latitude: issue.latitude, longitude: issue.longitude, priority: 'gps' },
-  ];
-  const resolvedAddress = useResolvedAddress(locationSources);
+  const resolvedAddress = issue.address || 'No address available';
+  const formatSource = (source?: string) => source === 'exif' ? 'Photo metadata' : 'Device GPS';
 
   useEffect(() => {
     const fetchUpvoteState = async () => {
@@ -117,6 +116,37 @@ const IssueDetailScreen = () => {
           </View>
         </View>
 
+        {/* Image Gallery */}
+        <View style={[styles.imageGallery, { width: imageWidth, height: imageHeight }]}>
+          <FlatList
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            data={issue.images}
+            keyExtractor={(_, idx) => idx.toString()}
+            onMomentumScrollEnd={(event) => {
+              const nextIndex = Math.round(event.nativeEvent.contentOffset.x / imageWidth);
+              setActiveImageIndex(nextIndex);
+            }}
+            renderItem={({ item }) => (
+              <Image source={{ uri: item }} style={[styles.image, { width: imageWidth, height: imageHeight }]} />
+            )}
+          />
+          {issue.images.length > 1 && (
+            <View style={styles.imageDots}>
+              {issue.images.map((_, index) => (
+                <View
+                  key={index}
+                  style={[
+                    styles.imageDot,
+                    index === activeImageIndex ? styles.imageDotActive : styles.imageDotInactive
+                  ]}
+                />
+              ))}
+            </View>
+          )}
+        </View>
+
         {/* Info Card */}
         <View style={styles.infoCard}>
 
@@ -125,9 +155,27 @@ const IssueDetailScreen = () => {
             <ClockIcon color={colors.textPrimary}
               size={typography.sizeLg}
               style={styles.icon} />
-            <Text style={styles.infoRowText}>
-              {format(new Date(issue.createdAt), 'PPP p')}
-            </Text>
+            <View style={styles.infoTextColumn}>
+              <Text style={styles.infoRowLabel}>Report submitted</Text>
+              <Text style={styles.infoRowText}>
+                {format(new Date(issue.createdAt), 'PPP p')}
+              </Text>
+            </View>
+          </View>
+          <View style={styles.divider} />
+
+          {/* Photo Date/Time */}
+          <View style={styles.infoRow}>
+            <ClockIcon color={colors.textPrimary}
+              size={typography.sizeLg}
+              style={styles.icon} />
+            <View style={styles.infoTextColumn}>
+              <Text style={styles.infoRowLabel}>Photo taken</Text>
+              <Text style={styles.infoRowText}>
+                {format(new Date(issue.photoTakenAt ?? issue.createdAt), 'PPP p')}
+              </Text>
+              <Text style={styles.infoRowMeta}>Source: {formatSource(issue.photoTakenAtSource)}</Text>
+            </View>
           </View>
           <View style={styles.divider} />
 
@@ -136,9 +184,13 @@ const IssueDetailScreen = () => {
             <LocationPinIcon color={colors.textPrimary}
               size={typography.sizeLg}
               style={styles.icon} />
-            <Text style={styles.infoRowText}>
-              {resolvedAddress}
-            </Text>
+            <View style={styles.infoTextColumn}>
+              <Text style={styles.infoRowLabel}>Location</Text>
+              <Text style={styles.infoRowText}>
+                {resolvedAddress}
+              </Text>
+              <Text style={styles.infoRowMeta}>Source: {formatSource(issue.locationSource)}</Text>
+            </View>
           </View>
 
           <View style={styles.divider} />
@@ -148,9 +200,12 @@ const IssueDetailScreen = () => {
             <TagIcon color={colors.textPrimary}
               size={typography.sizeLg}
               style={styles.icon} />
-            <Text style={styles.infoRowText}>
-              {issue.status}
-            </Text>
+            <View style={styles.infoTextColumn}>
+              <Text style={styles.infoRowLabel}>Status</Text>
+              <Text style={styles.infoRowText}>
+                {issue.status}
+              </Text>
+            </View>
           </View>
 
           <View style={styles.divider} />
@@ -162,23 +217,15 @@ const IssueDetailScreen = () => {
               size={typography.sizeLg}
               style={styles.icon}
             />
-            <Text style={styles.infoRowText}>
-              {category}
-            </Text>
+            <View style={styles.infoTextColumn}>
+              <Text style={styles.infoRowLabel}>Category</Text>
+              <Text style={styles.infoRowText}>
+                {category}
+              </Text>
+            </View>
           </View>
 
         </View>
-
-        {/* Image Gallery */}
-        <FlatList
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          data={issue.images}
-          keyExtractor={(_, idx) => idx.toString()}
-          renderItem={({ item }) => (
-            <Image source={{ uri: item }} style={styles.image} />
-          )}
-        />
 
         {/* Description */}
         <Text style={styles.description}>{issue.description}</Text>
@@ -284,6 +331,23 @@ const styles = StyleSheet.create({
     //textTransform: 'capitalize' causes region to lowercase, and Pm to act weird, need to fix categories without doing this line because now tags is all lowercase
   },
 
+  infoRowLabel: {
+    fontSize: typography.sizeSm,
+    fontWeight: typography.weightBold,
+    color: colors.textPrimary,
+  },
+
+  infoRowMeta: {
+    fontSize: typography.sizeSm,
+    color: colors.textMuted,
+    marginTop: spacing.xs,
+  },
+
+  infoTextColumn: {
+    flex: 1,
+    gap: spacing.xs,
+  },
+
   infoRow: {
     flex: 1,
     flexDirection: "row",
@@ -292,7 +356,7 @@ const styles = StyleSheet.create({
   },
 
   icon: {
-    alignSelf: "center"
+    marginTop: spacing.xs
   },
 
   divider: {
@@ -319,11 +383,41 @@ const styles = StyleSheet.create({
   },
 
   image: {
-    width: 300,
-    height: 200,
-    marginRight: spacing.sm,
-    marginBottom: spacing.md,
     borderRadius: borderRadius.md,
+    backgroundColor: palette.ckLightGray,
+    resizeMode: 'cover',
+  },
+
+  imageGallery: {
+    marginBottom: spacing.md,
+  },
+
+  imageDots: {
+    position: 'absolute',
+    bottom: spacing.sm,
+    alignSelf: 'center',
+    flexDirection: 'row',
+    gap: spacing.xs,
+    backgroundColor: 'rgba(17, 24, 39, 0.35)',
+    borderRadius: borderRadius.full,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+  },
+
+  imageDot: {
+    width: spacing.sm,
+    height: spacing.sm,
+    borderRadius: borderRadius.full,
+  },
+
+  imageDotActive: {
+    backgroundColor: colors.textContrast,
+    opacity: 0.95,
+  },
+
+  imageDotInactive: {
+    backgroundColor: colors.textContrast,
+    opacity: 0.45,
   },
 
   description: {

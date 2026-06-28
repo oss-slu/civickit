@@ -1,5 +1,6 @@
 // shared/src/types/issue.ts
 import { IssueCategory, IssueStatus } from "../enums/issue";
+import { PhotoMetadataSource } from "../utils/photoMetadata";
 import { User } from "./user";
 
 export interface Issue {
@@ -18,6 +19,9 @@ export interface Issue {
     cityRefNumber?: string;
     upvoteCount: number;
     createdAt: string;         // ISO string (not Date — safe for JSON)
+    locationSource?: PhotoMetadataSource;
+    photoTakenAt?: string;
+    photoTakenAtSource?: PhotoMetadataSource;
     author: Pick<User, 'id' | 'name' | 'profileImage'>;
 }
 

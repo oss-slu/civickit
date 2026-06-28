@@ -9,13 +9,15 @@ import PhotoValidationScreen from './PhotoValidationScreen';
 import CameraScreen from './CameraScreen';
 import { userLocation } from '../../types/userLocation';
 import { useState } from 'react';
-import { ImagesContext, UserLocationContext, AddressContext, TitleContext, CategoryContext, DescriptionContext } from '../../contexts/FormContexts';
+import { ImagesContext, PhotoMetadataContext, UserLocationContext, AddressContext, TitleContext, CategoryContext, DescriptionContext } from '../../contexts/FormContexts';
+import type { PhotoMetadata } from '../../utils/photoMetadata';
 
 const Stack = createNativeStackNavigator<StackParams>();
 
 export default function IssueCreationNav() {
 
     const [images, setImages] = useState<string[]>([]);
+    const [photoMetadata, setPhotoMetadata] = useState<PhotoMetadata[]>([]);
     const [location, setLocation] = useState<userLocation | null>(null);
     const [address, setAddress] = useState<string>('Detecting location...');
     const [title, setTitle] = useState<string>("");
@@ -25,6 +27,7 @@ export default function IssueCreationNav() {
     return (
         <ContextWrapper
             images={images} setImages={setImages}
+            photoMetadata={photoMetadata} setPhotoMetadata={setPhotoMetadata}
             location={location} setLocation={setLocation}
             address={address} setAddress={setAddress}
             title={title} setTitle={setTitle}
@@ -66,6 +69,7 @@ export default function IssueCreationNav() {
 
 function ContextWrapper({
     images, setImages,
+    photoMetadata, setPhotoMetadata,
     location, setLocation,
     address, setAddress,
     title, setTitle,
@@ -74,17 +78,19 @@ function ContextWrapper({
     children }: any) {
     return (
         <ImagesContext.Provider value={{ images, setImages }}>
-            <UserLocationContext.Provider value={{ location, setLocation }}>
-                <AddressContext.Provider value={{ address, setAddress }}>
-                    <TitleContext.Provider value={{ title, setTitle }}>
-                        <CategoryContext.Provider value={{ category, setCategory }}>
-                            <DescriptionContext.Provider value={{ description, setDescription }}>
-                                {children}
-                            </DescriptionContext.Provider>
-                        </CategoryContext.Provider>
-                    </TitleContext.Provider>
-                </AddressContext.Provider>
-            </UserLocationContext.Provider>
+            <PhotoMetadataContext.Provider value={{ photoMetadata, setPhotoMetadata }}>
+                <UserLocationContext.Provider value={{ location, setLocation }}>
+                    <AddressContext.Provider value={{ address, setAddress }}>
+                        <TitleContext.Provider value={{ title, setTitle }}>
+                            <CategoryContext.Provider value={{ category, setCategory }}>
+                                <DescriptionContext.Provider value={{ description, setDescription }}>
+                                    {children}
+                                </DescriptionContext.Provider>
+                            </CategoryContext.Provider>
+                        </TitleContext.Provider>
+                    </AddressContext.Provider>
+                </UserLocationContext.Provider>
+            </PhotoMetadataContext.Provider>
         </ImagesContext.Provider>
     )
 }
