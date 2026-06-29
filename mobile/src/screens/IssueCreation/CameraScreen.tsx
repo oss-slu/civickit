@@ -11,7 +11,9 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { StackParams } from '../../types/StackParams';
 import { FlashlightOffIcon, FlashlightOnIcon, FlipCameraIcon, LightingFillIcon, LightingOutlineIcon, PictureIcon } from '../../components/Icons';
 import IconButton from '../../components/IconButton';
-import { ImagesContext, PhotoMetadataContext } from '../../contexts/FormContexts';
+import { FormStartedContext, ImagesContext, PhotoMetadataContext } from '../../contexts/FormContexts';
+import { useNearbyIssues } from '../../contexts/NearbyIssuesContext';
+import LoadingScreen from '../Misc/LoadingScreen';
 import { extractPhotoMetadataFromExif } from '../../utils/photoMetadata';
 
 
@@ -22,6 +24,9 @@ export default function CameraScreen() {
     const [flashOn, setFlashOn] = useState<FlashMode>('off')
     const [enableTorch, setEnableTorch] = useState<boolean>(false)
     const [permissions, requestPermission] = useCameraPermissions();
+    const { formStarted, setFormStarted } = useContext(FormStartedContext)
+
+    const { data, isLoading, error } = useNearbyIssues()
     const ref = useRef<CameraView>(null);
 
     const navigation = useNavigation<StackNavigationProp<StackParams>>()
@@ -42,6 +47,17 @@ export default function CameraScreen() {
         )
     }
 
+    if (isLoading) {
+        return <LoadingScreen />
+    }
+    if (error != null) {
+        return (
+            <MessageView>
+                {error}
+            </MessageView>
+        )
+    }
+
     const toggleCameraFacing = () => {
         setFacing(current => (current === 'back' ? 'front' : 'back'))
     }
@@ -49,8 +65,6 @@ export default function CameraScreen() {
     const toggleFlash = () => {
         setFlashOn(current => (current === 'off' ? 'on' : 'off'))
     }
-
-
 
     const takePicture = async () => {
 
@@ -63,6 +77,8 @@ export default function CameraScreen() {
         }
 
     };
+
+
 
     const pickImage = async () => {
 
@@ -77,10 +93,14 @@ export default function CameraScreen() {
             if (!results.canceled) {
                 const resultList = results.assets.map(r => r.uri)
                 const metadataList = results.assets.map(r => extractPhotoMetadataFromExif(r.exif))
-
-                setImages([...images, ...resultList]);
                 setPhotoMetadata([...photoMetadata, ...metadataList]);
-                navigation.replace("Report An Issue", {})
+                setImages([...images, ...resultList]);
+                if (!formStarted && data.issues.filter((i: any) => i.distance <= 15.24).length > 0) {
+                    navigation.replace("DuplicateCheck", {})
+                } else {
+                    navigation.replace("Report An Issue", {})
+                }
+
             }
         }
 

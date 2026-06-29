@@ -7,10 +7,12 @@ import { Image } from "react-native";
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { StackParams } from '../../types/StackParams';
-import { ImagesContext, PhotoMetadataContext } from '../../contexts/FormContexts';
+import { FormStartedContext, ImagesContext } from '../../contexts/FormContexts';
+import { PhotoMetadataContext } from '../../contexts/FormContexts';
 import type { PhotoMetadata } from '../../utils/photoMetadata';
 
 import React from 'react';
+import { useNearbyIssues } from '../../contexts/NearbyIssuesContext';
 
 type Props = {
     route: {
@@ -25,15 +27,21 @@ export default function PhotoValidationScreen({ route }: Props) {
     const uri = route.params.uri
     const metadata = route.params.metadata ?? {};
     const { images, setImages } = useContext(ImagesContext);
+    const { formStarted, setFormStarted } = useContext(FormStartedContext)
     const { photoMetadata, setPhotoMetadata } = useContext(PhotoMetadataContext);
     const navigation = useNavigation<StackNavigationProp<StackParams>>()
-    const windowWidth = Dimensions.get('window').width;
+    const { data } = useNearbyIssues()
 
 
     const onOK = () => {
         setImages([...images, uri])
         setPhotoMetadata([...photoMetadata, metadata])
-        navigation.replace("Report An Issue", {})
+        if (!formStarted && data.issues.filter((i: any) => i.distance <= 15.24).length > 0) {
+            navigation.replace("DuplicateCheck", {})
+        } else {
+            navigation.replace("Report An Issue", {})
+        }
+
     }
 
     return (

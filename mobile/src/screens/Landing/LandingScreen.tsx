@@ -25,7 +25,6 @@ export default function LandingScreen({ children }: any) {
     //get contexts from above layer(s)
     const { data, isLoading, isFetching, error, refetch } = useNearbyIssues()
     const location = useLocation().location
-    const { logout } = useAuth();
 
     const mapRef = useRef<MapView | null>(null);
 

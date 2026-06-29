@@ -11,3 +11,4 @@ export const AddressContext = createContext({ address: 'Detecting location...', 
 export const TitleContext = createContext({ title: "", setTitle: (title: string) => { } })
 export const CategoryContext = createContext({ category: null, setCategory: (category: any) => { } })
 export const DescriptionContext = createContext({ description: "", setDescription: (description: string) => { } })
+export const FormStartedContext = createContext({ formStarted: false, setFormStarted: (formStarted: boolean) => { } })

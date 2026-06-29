@@ -21,7 +21,7 @@ import IconButton from '../../components/IconButton';
 import SelectedImage from '../../components/SelectedImage';
 import ModalDropdown from '../../components/ModalDropdown';
 import ENV from '../../config/env';
-import { ImagesContext, PhotoMetadataContext, UserLocationContext, AddressContext, TitleContext, CategoryContext, DescriptionContext } from '../../contexts/FormContexts';
+import { ImagesContext, PhotoMetadataContext, UserLocationContext, AddressContext, TitleContext, CategoryContext, DescriptionContext, FormStartedContext } from '../../contexts/FormContexts';
 import { userLocation } from '../../types/userLocation';
 import { PhotoMetadataSource } from '../../utils/photoMetadata';
 
@@ -33,6 +33,7 @@ export default function IssueCreationScreen() {
     const { title, setTitle } = useContext(TitleContext);
     const { category, setCategory } = useContext(CategoryContext);
     const { description, setDescription } = useContext(DescriptionContext);
+    const { formStarted, setFormStarted } = useContext(FormStartedContext)
     const [locationMetadata, setLocationMetadata] = useState<ResolvedLocationMetadata>({});
     const [deviceLocation, setDeviceLocation] = useState<userLocation | null>(null);
     const [locationSource, setLocationSource] = useState<PhotoMetadataSource | null>(null);
@@ -83,6 +84,10 @@ export default function IssueCreationScreen() {
         })();
     }, [deviceLocation, photoMetadata]);
 
+    useEffect(() => {
+        setFormStarted(true)
+    }, [])
+
     const onImageDeletePressed = (image: any) => {
         const imageIndex = images.indexOf(image);
         setImages(
@@ -132,7 +137,7 @@ export default function IssueCreationScreen() {
         setTitle("")
         setCategory(null)
         setDescription("")
-
+        setFormStarted(false)
 
         navigation.popTo("Camera", {})
     }

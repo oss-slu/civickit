@@ -9,7 +9,8 @@ import PhotoValidationScreen from './PhotoValidationScreen';
 import CameraScreen from './CameraScreen';
 import { userLocation } from '../../types/userLocation';
 import { useState } from 'react';
-import { ImagesContext, PhotoMetadataContext, UserLocationContext, AddressContext, TitleContext, CategoryContext, DescriptionContext } from '../../contexts/FormContexts';
+import DuplicateCheckScreen from './DuplicateCheckScreen';
+import { ImagesContext, PhotoMetadataContext, UserLocationContext, AddressContext, TitleContext, CategoryContext, DescriptionContext, FormStartedContext } from '../../contexts/FormContexts';
 import type { PhotoMetadata } from '../../utils/photoMetadata';
 
 const Stack = createNativeStackNavigator<StackParams>();
@@ -23,6 +24,7 @@ export default function IssueCreationNav() {
     const [title, setTitle] = useState<string>("");
     const [category, setCategory] = useState<"POTHOLE" | "STREETLIGHT" | "GRAFFITI" | "ILLEGAL_DUMPING" | "BROKEN_SIDEWALK" | "TRAFFIC_SIGNAL" | "OTHER">();
     const [description, setDescription] = useState<string>("");
+    const [formStarted, setFormStarted] = useState(false)
 
     return (
         <ContextWrapper
@@ -33,6 +35,7 @@ export default function IssueCreationNav() {
             title={title} setTitle={setTitle}
             category={category} setCategory={setCategory}
             description={description} setDescription={setDescription}
+            formStarted={formStarted} setFormStarted={setFormStarted}
         >
             <Stack.Navigator screenOptions={{
                 headerStyle: {
@@ -48,7 +51,8 @@ export default function IssueCreationNav() {
             >
                 <Stack.Screen name="Camera" component={CameraScreen}
                     options={{
-                        headerShown: true
+                        headerShown: true,
+                        headerTitle: "Report An Issue"
                     }} />
                 <Stack.Screen name="Issue Details" component={IssueDetailScreen} />
                 <Stack.Screen name="Photo Validation" component={PhotoValidationScreen}
@@ -58,6 +62,10 @@ export default function IssueCreationNav() {
                 <Stack.Screen name="Report An Issue" component={IssueCreationScreen}
                     options={{
                         headerBackVisible: false
+                    }} />
+                <Stack.Screen name="DuplicateCheck" component={DuplicateCheckScreen}
+                    options={{
+                        headerTitle: "Has this already been reported?"
                     }} />
 
                 <Stack.Screen name="Error" component={ErrorScreen} />
@@ -75,21 +83,25 @@ function ContextWrapper({
     title, setTitle,
     category, setCategory,
     description, setDescription,
-    children }: any) {
+    formStarted, setFormStarted,
+    children, }: any) {
     return (
+      
         <ImagesContext.Provider value={{ images, setImages }}>
-            <PhotoMetadataContext.Provider value={{ photoMetadata, setPhotoMetadata }}>
-                <UserLocationContext.Provider value={{ location, setLocation }}>
-                    <AddressContext.Provider value={{ address, setAddress }}>
-                        <TitleContext.Provider value={{ title, setTitle }}>
-                            <CategoryContext.Provider value={{ category, setCategory }}>
-                                <DescriptionContext.Provider value={{ description, setDescription }}>
+        <PhotoMetadataContext.Provider value={{ photoMetadata, setPhotoMetadata }}>
+            <UserLocationContext.Provider value={{ location, setLocation }}>
+                <AddressContext.Provider value={{ address, setAddress }}>
+                    <TitleContext.Provider value={{ title, setTitle }}>
+                        <CategoryContext.Provider value={{ category, setCategory }}>
+                            <DescriptionContext.Provider value={{ description, setDescription }}>
+                                <FormStartedContext.Provider value={{ formStarted, setFormStarted }}>
                                     {children}
-                                </DescriptionContext.Provider>
-                            </CategoryContext.Provider>
-                        </TitleContext.Provider>
-                    </AddressContext.Provider>
-                </UserLocationContext.Provider>
+                                </FormStartedContext.Provider>
+                            </DescriptionContext.Provider>
+                        </CategoryContext.Provider>
+                    </TitleContext.Provider>
+                </AddressContext.Provider>
+            </UserLocationContext.Provider>
             </PhotoMetadataContext.Provider>
         </ImagesContext.Provider>
     )
