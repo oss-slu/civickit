@@ -11,9 +11,10 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { StackParams } from '../../types/StackParams';
 import { FlashlightOffIcon, FlashlightOnIcon, FlipCameraIcon, LightingFillIcon, LightingOutlineIcon, PictureIcon } from '../../components/Icons';
 import IconButton from '../../components/IconButton';
-import { FormStartedContext, ImagesContext } from '../../contexts/FormContexts';
+import { FormStartedContext, ImagesContext, PhotoMetadataContext } from '../../contexts/FormContexts';
 import { useNearbyIssues } from '../../contexts/NearbyIssuesContext';
 import LoadingScreen from '../Misc/LoadingScreen';
+import { extractPhotoMetadataFromExif } from '../../utils/photoMetadata';
 
 
 export default function CameraScreen() {
@@ -78,6 +79,7 @@ export default function CameraScreen() {
     };
 
 
+
     const pickImage = async () => {
 
         if (images.length < 5) {
@@ -98,7 +100,7 @@ export default function CameraScreen() {
                 } else {
                     navigation.replace("Report An Issue", {})
                 }
-                
+
             }
         }
 

@@ -41,7 +41,7 @@ export default function PhotoValidationScreen({ route }: Props) {
         } else {
             navigation.replace("Report An Issue", {})
         }
-       
+
     }
 
     return (
