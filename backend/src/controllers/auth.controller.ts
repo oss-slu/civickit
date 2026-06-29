@@ -6,6 +6,7 @@ import { AuthRepository } from "../repositories/auth.repository";
 import { LoginService } from "../services/login.service";
 import { LoginRepository } from "../repositories/login.repository";
 import { CreateAuthDTO } from "@civickit/shared";
+import { AppError } from "../utils/errors";
 
 const authRepository = new AuthRepository();
 const authService = new AuthService(authRepository);
@@ -19,6 +20,15 @@ export class AuthController {
       await authService.registerUser({ email, password, name });
       const loginResponse = await loginService.login({ email, password }); //lets the user login immediately after registering, instead of having to call the login endpoint separately
       return res.status(201).json(loginResponse);
+    } catch (error: any) {
+      next(error);
+    }
+  }
+
+  async getUserByToken(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await authService.getUserByToken(String(req.query.token));
+      res.json(user);
     } catch (error: any) {
       next(error);
     }

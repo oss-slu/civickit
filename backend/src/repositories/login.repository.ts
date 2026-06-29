@@ -9,10 +9,14 @@ export class LoginRepository {
       where: { email }
     });
 
-    return {
-      id: user?.id, email: user?.email,
-      name: user?.name, passwordHash: user?.passwordHash,
-      profileImage: user?.profileImage, createdAt: user?.createdAt
+    if (user != null) {
+      return {
+        id: user?.id, email: user?.email,
+        name: user?.name, passwordHash: user?.passwordHash,
+        profileImage: user?.profileImage, createdAt: user?.createdAt
+      }
     }
+
+    return null
   }
 }

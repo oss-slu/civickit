@@ -23,7 +23,7 @@ export const errorHandler = (
     console.error(`Time: ${new Date().toISOString()}`);
     console.error(`Method: ${req.method}`);
     console.error(`Path: ${req.originalUrl}`);
-    console.error(err.stack);
+    console.error(err.message);
     console.error('--- ERROR END ---');
 
     // Send safe response to client

@@ -21,7 +21,6 @@ export default function AvatarScreen({ route }: Props) {
     const [submitAllowed, setSubmitAllowed] = useState<boolean>(false)
 
     const user = route.params.user
-    console.log(user)
 
     const handleCancel = () => {
 
