@@ -27,7 +27,6 @@ export default function ProfileScreen() {
     }
 
     const navigation = useNavigation<StackNavigationProp<StackParams>>();
-
     const issuesQuery = useQuery({
         queryKey: ['issues', 'user'],
         queryFn: async () => {
@@ -98,18 +97,11 @@ export default function ProfileScreen() {
             </IconButton>
 
             <View style={styles.profilePicContainer}>
-                {user?.profileImage != null ?
-                    <Image
-                        source={require("../../../assets/avatars/greenAvatar.png")}
-                        style={styles.profilePic} /> :
-                    <TrashIcon />}
-                {/* Replace trashcan with User image once implemented */}
-                {/* <View style={styles.editButton}>
-                    <IconButton
-                        onPress={() => navigation.navigate("Avatar", { user: user })} style={{ height: size.xxl, ...globalStyles.shadow }}>
-                        <EditIcon color={colors.textContrast} size={typography.sizeXl} />
-                    </IconButton>
-                </View> */}
+
+                <Image
+                    source={require("../../../assets/avatars/greenAvatar.png")}
+                    style={styles.profilePic} />
+
             </View>
 
             <Text style={globalStyles.heading1}>{user?.name}</Text>

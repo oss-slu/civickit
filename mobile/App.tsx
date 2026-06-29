@@ -24,6 +24,7 @@ import LandingScreenNav from './src/screens/Landing/LandingScreenNav';
 import FeedNav from './src/screens/Feed/FeedNav';
 import Button from './src/components/Button';
 import ProfileNav from './src/screens/Profile/ProfileNav';
+import LoadingScreen from './src/screens/Misc/LoadingScreen';
 
 const Tab = createBottomTabNavigator<TabParams>();
 
@@ -111,8 +112,8 @@ function MainTabNavigator() {
 
 function AppNavigator() {
   const { isLoggedIn, isLoading } = useAuth();
-  if (isLoading) return null; //or splash screen
-  console.log(isLoggedIn)
+
+  if (isLoading) return <LoadingScreen />
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ animation: 'slide_from_right' }}>

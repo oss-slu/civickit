@@ -9,14 +9,16 @@ import PhotoValidationScreen from './PhotoValidationScreen';
 import CameraScreen from './CameraScreen';
 import { userLocation } from '../../types/userLocation';
 import { useState } from 'react';
-import { ImagesContext, UserLocationContext, AddressContext, TitleContext, CategoryContext, DescriptionContext, FormStartedContext } from '../../contexts/FormContexts';
 import DuplicateCheckScreen from './DuplicateCheckScreen';
+import { ImagesContext, PhotoMetadataContext, UserLocationContext, AddressContext, TitleContext, CategoryContext, DescriptionContext, FormStartedContext } from '../../contexts/FormContexts';
+import type { PhotoMetadata } from '../../utils/photoMetadata';
 
 const Stack = createNativeStackNavigator<StackParams>();
 
 export default function IssueCreationNav() {
 
     const [images, setImages] = useState<string[]>([]);
+    const [photoMetadata, setPhotoMetadata] = useState<PhotoMetadata[]>([]);
     const [location, setLocation] = useState<userLocation | null>(null);
     const [address, setAddress] = useState<string>('Detecting location...');
     const [title, setTitle] = useState<string>("");
@@ -27,6 +29,7 @@ export default function IssueCreationNav() {
     return (
         <ContextWrapper
             images={images} setImages={setImages}
+            photoMetadata={photoMetadata} setPhotoMetadata={setPhotoMetadata}
             location={location} setLocation={setLocation}
             address={address} setAddress={setAddress}
             title={title} setTitle={setTitle}
@@ -74,6 +77,7 @@ export default function IssueCreationNav() {
 
 function ContextWrapper({
     images, setImages,
+    photoMetadata, setPhotoMetadata,
     location, setLocation,
     address, setAddress,
     title, setTitle,
@@ -82,7 +86,9 @@ function ContextWrapper({
     formStarted, setFormStarted,
     children, }: any) {
     return (
+      
         <ImagesContext.Provider value={{ images, setImages }}>
+        <PhotoMetadataContext.Provider value={{ photoMetadata, setPhotoMetadata }}>
             <UserLocationContext.Provider value={{ location, setLocation }}>
                 <AddressContext.Provider value={{ address, setAddress }}>
                     <TitleContext.Provider value={{ title, setTitle }}>
@@ -96,6 +102,7 @@ function ContextWrapper({
                     </TitleContext.Provider>
                 </AddressContext.Provider>
             </UserLocationContext.Provider>
+            </PhotoMetadataContext.Provider>
         </ImagesContext.Provider>
     )
 }

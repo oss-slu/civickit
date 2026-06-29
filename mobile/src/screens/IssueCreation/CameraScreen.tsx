@@ -18,6 +18,7 @@ import LoadingScreen from '../Misc/LoadingScreen';
 
 export default function CameraScreen() {
     const { images, setImages } = useContext(ImagesContext);
+    const { photoMetadata, setPhotoMetadata } = useContext(PhotoMetadataContext);
     const [facing, setFacing] = useState<CameraType>('back');
     const [flashOn, setFlashOn] = useState<FlashMode>('off')
     const [enableTorch, setEnableTorch] = useState<boolean>(false)
@@ -66,9 +67,12 @@ export default function CameraScreen() {
 
     const takePicture = async () => {
 
-        const photo = await ref.current?.takePictureAsync({ shutterSound: false });
+        const photo = await ref.current?.takePictureAsync({ shutterSound: false, exif: true });
         if (photo?.uri) {
-            navigation.replace("Photo Validation", { uri: photo.uri })
+            navigation.replace("Photo Validation", {
+                uri: photo.uri,
+                metadata: extractPhotoMetadataFromExif(photo.exif)
+            })
         }
 
     };
@@ -80,18 +84,21 @@ export default function CameraScreen() {
             const results = await ImagePicker.launchImageLibraryAsync({
                 mediaTypes: ['images'],
                 quality: 0.8,
+                exif: true,
                 allowsMultipleSelection: true,
                 selectionLimit: 5 - images.length
             })
             if (!results.canceled) {
                 const resultList = results.assets.map(r => r.uri)
-
+                const metadataList = results.assets.map(r => extractPhotoMetadataFromExif(r.exif))
+                setPhotoMetadata([...photoMetadata, ...metadataList]);
                 setImages([...images, ...resultList]);
                 if (!formStarted && data.issues.filter((i: any) => i.distance <= 15.24).length > 0) {
                     navigation.replace("DuplicateCheck", {})
                 } else {
                     navigation.replace("Report An Issue", {})
                 }
+                
             }
         }
 

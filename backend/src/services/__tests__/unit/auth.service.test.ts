@@ -4,6 +4,7 @@ import { AuthService } from '../../auth.service';
 import { AuthRepository } from '../../../repositories/auth.repository';
 import { describe, beforeEach, vi, it, expect, Mocked } from 'vitest';
 import bcrypt from 'bcryptjs';
+import { AppError } from '../../../utils/errors';
 
 // mock repository
 vi.mock('../../../src/repositories/auth.repository');
@@ -68,10 +69,8 @@ describe('AuthService', () => {
                 password: 'password123',
                 name: 'Test',
             })
-        ).rejects.toEqual({
-            status: 400,
-            message: 'Invalid email format',
-        });
+        ).rejects.toEqual(
+            new AppError("Invalid email format", 400));
     });
 
     it('should throw error for short password', async () => {
@@ -81,10 +80,8 @@ describe('AuthService', () => {
                 password: 'short',
                 name: 'Test',
             })
-        ).rejects.toEqual({
-            status: 400,
-            message: 'Password too short (min 8 characters)',
-        });
+        ).rejects.toEqual(
+            new AppError('Password too short (min 8 characters)', 400));
     });
 
     it('should throw error if email already exists', async () => {
@@ -104,9 +101,7 @@ describe('AuthService', () => {
                 password: 'password123',
                 name: 'Test',
             })
-        ).rejects.toEqual({
-            status: 409,
-            message: 'Email already exists',
-        });
+        ).rejects.toEqual(
+            new AppError("Email already exists", 409));
     });
 });

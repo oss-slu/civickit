@@ -34,7 +34,7 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
 
     //Verify Token
     const secret = String(process.env.JWT_SECRET)
-    if (!secret) {
+    if (secret == undefined) {
       return res.status(500).json({ error: 'JWT secret not configured' });
     }
 

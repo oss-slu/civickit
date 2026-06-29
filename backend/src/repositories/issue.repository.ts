@@ -17,6 +17,9 @@ export class IssueRepository {
         subregion: data.subregion,
         name: data.name,
         images: data.images,
+        locationSource: data.locationSource,
+        photoTakenAt: data.photoTakenAt,
+        photoTakenAtSource: data.photoTakenAtSource,
         userId: data.userId,
       },
       include: {

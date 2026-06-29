@@ -30,3 +30,11 @@ export {
 export {
     User,
 } from './types/user'
+
+export {
+    PhotoMetadata,
+    PhotoMetadataSource,
+    ResolvedPhotoMetadata,
+    extractPhotoMetadataFromExif,
+    resolvePhotoMetadata
+} from './utils/photoMetadata'
