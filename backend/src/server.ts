@@ -23,22 +23,6 @@ const PORT = Number(process.env.PORT) || 3000;
 
 //BetterAuth
 app.all("/api/better-auth/auth/{*any}", toNodeHandler(auth));
-const data = await auth.api.signInEmail({
-  body: {
-    email: "john.doe@example.com", // required
-    password: "password1234", // required
-  },
-});
-
-console.log(data)
-
-// const data = await auth.api.signUpEmail({
-//   body: {
-//     name: "John Doe", // required
-//     email: "john.doe@example.com", // required
-//     password: "password1234", // required
-//   },
-// });
 
 // Middleware
 const corsOptions = {
