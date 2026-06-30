@@ -255,6 +255,7 @@ export default function IssueCreationScreen() {
             setTitle("")
             setCategory(null)
             setDescription("")
+            setFormStarted(false)
             navigation.replace("Camera", {})
             navigation.navigate('Issue Details', { issue: issue });
 

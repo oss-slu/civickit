@@ -10,8 +10,8 @@ import { RightArrowIcon } from "../../components/Icons";
 import Button from "../../components/Button";
 import { StackParams } from "../../types/StackParams";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { useNavigation } from "@react-navigation/native";
-import { useContext, useEffect, useState } from "react";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { AddressContext, CategoryContext, DescriptionContext, FormStartedContext, ImagesContext, TitleContext, UserLocationContext } from "../../contexts/FormContexts";
 
 //mobile/src/screens/DuplicateCheckScreen.tsx
@@ -27,6 +27,14 @@ export default function DuplicateCheckScreen() {
     useEffect(() => {
         setIssues(data.issues.filter((i: any) => i.distance <= 15.24))
     }, [data])
+
+    useFocusEffect(
+        useCallback(() => {
+            if (refetch != null) {
+                refetch()
+            }
+        }, [])
+    )
 
     const handleCancel = () => {
         setImages([])
