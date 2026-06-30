@@ -3,7 +3,7 @@ import { MessageView } from "../../components/MessageView";
 import { Dimensions, RefreshControl, ScrollView, Text, StyleSheet, View } from "react-native"
 import { borderRadius, colors, globalStyles, size, spacing, typography } from "../../styles";
 import LoadingScreen from "../Misc/LoadingScreen";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import StatusSummaryCard from "../../components/StatusSummaryCard";
 import { IssueStatusArray } from "../../types/IssueStatusArray";
 import { IssueCategoryArray } from "../../types/IssueCategoryArray";
@@ -17,7 +17,7 @@ import ENV from '../../config/env';
 import { FlatList } from "react-native-gesture-handler";
 import { GetNearbyIssueResponse } from "@civickit/shared/src/types/api";
 import IconButton from "../../components/IconButton";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { StackParams } from "../../types/StackParams";
 import { radiusOptions } from "../../types/RadiusOptions";
@@ -53,6 +53,14 @@ export default function FeedScreen() {
         queryKey: [radius],
         queryFn: queryFunction
     }, queryClient);
+
+    useFocusEffect(
+        useCallback(() => {
+            refetch()
+
+
+        }, [])
+    )
 
 
     useEffect(() => {

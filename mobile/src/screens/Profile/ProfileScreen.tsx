@@ -2,12 +2,12 @@
 import IconButton from "../../components/IconButton";
 import { MessageView } from "../../components/MessageView";
 import { Text, View, StyleSheet, TouchableOpacity, ScrollView, RefreshControl } from "react-native"
-import { useContext, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { palette, colors, globalStyles, size, spacing, typography, borderRadius } from "../../styles";
 import { useAuth } from "../../contexts/AuthContext";
 import { EditIcon, RightArrowIcon, SettingsIcon, TrashIcon, UserIcon } from "../../components/Icons";
 import Button from "../../components/Button";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { StackParams } from "../../types/StackParams";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { Image } from "expo-image";
@@ -15,7 +15,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import ENV from '../../config/env';
 import LoadingScreen from "../Misc/LoadingScreen";
 
-export default function ProfileScreen() {
+export default function ProfileScreen({ route }: any) {
     const { logout } = useAuth();
     const { user } = useAuth();
     const queryClient = useQueryClient()
@@ -55,6 +55,18 @@ export default function ProfileScreen() {
         }
     }, queryClient);
 
+    const refetchQueries = () => {
+        issuesQuery.refetch()
+        upvotesQuery.refetch()
+    }
+
+
+    useFocusEffect(
+        useCallback(() => {
+            refetchQueries()
+        }, [])
+    )
+
     if (issuesQuery.isLoading || upvotesQuery.isLoading) {
         return <LoadingScreen />
     }
@@ -79,10 +91,7 @@ export default function ProfileScreen() {
         )
     }
 
-    const refetchQueries = () => {
-        issuesQuery.refetch()
-        upvotesQuery.refetch()
-    }
+
 
     return (
         <ScrollView contentContainerStyle={[styles.container]}
