@@ -15,6 +15,7 @@ import MapViewScreen from "./MapViewScreen";
 import { useNearbyIssues } from "../../contexts/NearbyIssuesContext";
 import MapView from "react-native-maps";
 import { useLocation } from "../../contexts/LocationContext";
+import { useFocusEffect } from "@react-navigation/native";
 
 export default function LandingScreen({ children }: any) {
     const [isMinLoading, setIsMinLoading] = useState(false)
@@ -41,6 +42,15 @@ export default function LandingScreen({ children }: any) {
             }, 800);
         }
     }, [isFetching, isMinLoading, refetch]);
+
+    useFocusEffect(
+        useCallback(() => {
+            if (refetch != null) {
+                refetch()
+            }
+
+        }, [])
+    )
 
 
     //check if still loading

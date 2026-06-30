@@ -1,9 +1,9 @@
 // mobile/src/screens/IssueCreation/IssueCreationScreen.tsx
 import * as Location from 'expo-location';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { uploadImagesToCloudinary } from '../../services/cloudinaryService';
 import { View, StyleSheet, ScrollView, TextInput, Text, FlatList } from 'react-native';
-import { useNavigation, } from '@react-navigation/native';
+import { useFocusEffect, useNavigation, } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { showMessage } from "react-native-flash-message";
@@ -24,6 +24,7 @@ import ENV from '../../config/env';
 import { ImagesContext, PhotoMetadataContext, UserLocationContext, AddressContext, TitleContext, CategoryContext, DescriptionContext, FormStartedContext } from '../../contexts/FormContexts';
 import { userLocation } from '../../types/userLocation';
 import { PhotoMetadataSource } from '../../utils/photoMetadata';
+import { useNearbyIssues } from '../../contexts/NearbyIssuesContext';
 
 export default function IssueCreationScreen() {
     const { images, setImages } = useContext(ImagesContext);
@@ -34,12 +35,13 @@ export default function IssueCreationScreen() {
     const { category, setCategory } = useContext(CategoryContext);
     const { description, setDescription } = useContext(DescriptionContext);
     const { formStarted, setFormStarted } = useContext(FormStartedContext)
+    const { refetch, isLoading, error } = useNearbyIssues();
     const [locationMetadata, setLocationMetadata] = useState<ResolvedLocationMetadata>({});
     const [deviceLocation, setDeviceLocation] = useState<userLocation | null>(null);
     const [locationSource, setLocationSource] = useState<PhotoMetadataSource | null>(null);
     const [submitAllowed, setSubmitAllowed] = useState<boolean>(false)
 
-    const [isLoading, setIsLoading] = useState(false)
+    const [isLoadingLocal, setIsLoading] = useState(false)
     const navigation = useNavigation<StackNavigationProp<StackParams>>()
     const { authToken } = useAuth();
 
@@ -84,9 +86,14 @@ export default function IssueCreationScreen() {
         })();
     }, [deviceLocation, photoMetadata]);
 
-    useEffect(() => {
-        setFormStarted(true)
-    }, [])
+    useFocusEffect(
+        useCallback(() => {
+            if (refetch != null) {
+                refetch()
+            }
+            setFormStarted(true)
+        }, [])
+    )
 
     const onImageDeletePressed = (image: any) => {
         const imageIndex = images.indexOf(image);
@@ -121,7 +128,7 @@ export default function IssueCreationScreen() {
     }
 
     //display loading if needed after submit
-    if (isLoading) {
+    if (isLoadingLocal) {
         return (
             <LoadingScreen />
         )
