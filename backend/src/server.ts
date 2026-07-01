@@ -30,13 +30,13 @@ app.all("/api/better-auth/auth/{*any}", toNodeHandler(auth));
 //     password: "password1234", // required
 //   },
 // });
-const data = await auth.api.signInEmail({
-  body: {
-    email: "john.doe1@example.com", // required
-    password: "password1234", // required
-  },
-});
-console.log(data)
+// const data = await auth.api.signInEmail({
+//   body: {
+//     email: "john.doe1@example.com", // required
+//     password: "password1234", // required
+//   },
+// });
+// console.log(data)
 
 // Middleware
 const corsOptions = {
