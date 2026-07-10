@@ -18,7 +18,7 @@ import { useLocation } from "../../contexts/LocationContext";
 import { useFocusEffect } from "@react-navigation/native";
 
 export default function LandingScreen({ children }: any) {
-    const [isMinLoading, setIsMinLoading] = useState(false)
+    const [isMinLoading, setIsMinLoading] = useState(false) //to avoid quick ui flicker when refetching data
     const [refreshing, setRefreshing] = useState(false)
     const [visibleCategories, setVisibleCategories] = useState(IssueCategoryArray)
     const [visibleStatuses, setVisibleStatuses] = useState(IssueStatusArray)

@@ -92,7 +92,7 @@ export default function IssueCreationScreen() {
                 refetch()
             }
             setFormStarted(true)
-        }, [])
+        }, [setFormStarted])
     )
 
     const onImageDeletePressed = (image: any) => {
