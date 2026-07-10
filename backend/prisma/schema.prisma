@@ -36,10 +36,16 @@ enum EventStatus {
   CANCELLED
 }
 
+enum Role{
+  REPORTER
+  ADMIN
+}
+
 model User {
   id            String   @id @default(cuid())
   email         String   @unique
   passwordHash  String
+  role          Role     @default(REPORTER)
   name          String
   profileImage  String?
   createdAt     DateTime @default(now())

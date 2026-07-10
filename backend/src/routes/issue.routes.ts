@@ -3,6 +3,7 @@ import { Router } from 'express';
 import { IssueController } from '../controllers/issue.controller';
 import { UpvoteController } from '../controllers/upvote.controller';
 import { authMiddleware } from '../middleware/auth.middleware';
+import { requirePermission } from '../middleware/authorize.middleware';
 
 const router = Router();
 const issueController = new IssueController();
@@ -20,6 +21,6 @@ router.get('/:issueId/upvote', authMiddleware, upvoteController.getUpvotes) // g
 router.delete('/:issueId/upvote', authMiddleware, upvoteController.removeUpvote); // remove upvote {delete}
 
 // update issue status
-router.patch('/:issueId/status', authMiddleware, issueController.updateStatus);
+router.patch('/:issueId/status', authMiddleware, requirePermission('update:issue_status'), issueController.updateStatus);
 
 export default router;

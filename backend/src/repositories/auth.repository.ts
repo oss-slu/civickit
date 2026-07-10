@@ -30,7 +30,8 @@ export class AuthRepository {
       return {
         id: user?.id, email: user?.email,
         name: user?.name, passwordHash: user?.passwordHash,
-        profileImage: user?.profileImage, createdAt: user?.createdAt
+        profileImage: user?.profileImage, createdAt: user?.createdAt,
+        role: user?.role
       }
     }
 
