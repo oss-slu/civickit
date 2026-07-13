@@ -3,7 +3,7 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useEffect, useRef, useState } from 'react';
 import { View, Animated, useAnimatedValue } from 'react-native';
-import { Circle, LatLng, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import { Circle, Geojson, LatLng, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { StackParams } from '../../types/StackParams';
 import { useLocation } from '../../contexts/LocationContext';
 import Pin from '../../components/Pin';
@@ -33,7 +33,7 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
     const posAnim = useAnimatedValue(0);
     const [paddingBottom, setPaddingBottom] = useState("110%")
     const [markerList, setMarkerList] = useState<any>([])
-    const [pinTolerance, setPinTolerance] = useState(1000)
+    const [pinTolerance, setPinTolerance] = useState(0.5 * 111 * 1000 * 0.06)
 
     //get contexts from above layer(s)
     const location = useLocation().location
@@ -42,6 +42,7 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
         setCurrentElement(element)
         openCallout()
     }
+
 
     const openCallout = () => {
         Animated.timing(fadeAnim, {
@@ -241,6 +242,7 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
                 ref={ref}
                 showsUserLocation={true}
                 showsMyLocationButton={false}
+                followsUserLocation={true}
                 style={{ flex: 1 }}
                 toolbarEnabled={false}
                 onRegionChangeComplete={(Region) => onRegionChange(Region)}

@@ -33,21 +33,21 @@ export default function IssueSquare({ issue, variant = 'compact', onPress, style
             setIcon(<TrafficConeIcon size={typography.sizeXl} color={colors.textPrimary}
                 style={styles.icon} />)
         } else if (issue.category == "STREETLIGHT") {
-            setIcon(<LightBulbIcon size={typography.sizeXl} color={colors.textPrimary}
+            setIcon(<LightBulbIcon size={typography.sizeLg} color={colors.textPrimary}
                 style={styles.icon} />)
         } else if (issue.category == "GRAFFITI") {
-            setIcon(<SprayPaintIcon size={typography.sizeXl} color={colors.textPrimary} />)
+            setIcon(<SprayPaintIcon size={typography.sizeLg} color={colors.textPrimary} />)
         } else if (issue.category == "ILLEGAL_DUMPING") {
-            setIcon(<TrashIcon size={typography.sizeXl} color={colors.textPrimary}
+            setIcon(<TrashIcon size={typography.sizeLg} color={colors.textPrimary}
                 style={styles.icon} />)
         } else if (issue.category == "BROKEN_SIDEWALK") {
-            setIcon(<BrokenIcon size={typography.sizeXl} color={colors.textPrimary}
+            setIcon(<BrokenIcon size={typography.sizeLg} color={colors.textPrimary}
                 style={styles.icon} />)
         } else if (issue.category == "TRAFFIC_SIGNAL") {
-            setIcon(<TrafficLightIcon size={typography.sizeXl} color={colors.textPrimary}
+            setIcon(<TrafficLightIcon size={typography.sizeLg} color={colors.textPrimary}
                 style={styles.icon} />)
         } else {
-            setIcon(<ExclamationPointIcon size={typography.sizeXl} color={colors.textPrimary}
+            setIcon(<ExclamationPointIcon size={typography.sizeLg} color={colors.textPrimary}
                 style={styles.icon} />)
         }
     }, [issue])
@@ -98,17 +98,39 @@ export default function IssueSquare({ issue, variant = 'compact', onPress, style
 
         },
         icon: {
-            marginRight: spacing.xs,
+            paddingLeft: spacing.xs,
+            paddingTop: spacing.xs,
             borderColor: statusColor.background,
             backgroundColor: statusColor.background,
-            borderTopRightRadius: borderRadius.md,
-            borderBottomLeftRadius: borderRadius.lg,
+            borderTopLeftRadius: borderRadius.lg,
+            borderBottomRightRadius: borderRadius.md,
             borderWidth: 4,
             position: "absolute",
-            bottom: 0,
+            top: 0,
         },
         distance: {
             ...globalStyles.bodyText,
+            color: colors.textPrimary,
+            fontWeight: typography.weightMedium,
+            marginTop: spacing.xs
+        },
+        upvotes: {
+            flexDirection: 'row',
+            position: "absolute",
+            bottom: 0,
+            right: 0,
+            alignItems: 'center',
+            paddingRight: spacing.xs,
+            borderWidth: 4,
+            borderColor: statusColor.background,
+            backgroundColor: statusColor.background,
+            borderTopLeftRadius: borderRadius.md,
+            borderBottomRightRadius: borderRadius.lg,
+        },
+        upvoteText: {
+            color: colors.textPrimary,
+            fontSize: typography.sizeSm,
+            fontWeight: typography.weightMedium,
         },
 
     });
@@ -134,13 +156,19 @@ export default function IssueSquare({ issue, variant = 'compact', onPress, style
                         />
                     )}
                     {icon}
+                    <View style={styles.upvotes}>
+                        <UpvoteIcon color={colors.textPrimary} size={typography.sizeLg} />
+                        <Text style={styles.upvoteText}>
+                            {issue.upvoteCount}
+                        </Text>
+                    </View>
                 </View>
 
                 {issue.distance !== undefined && (
                     <Text style={styles.distance}
                         numberOfLines={1}
                         ellipsizeMode="tail">
-                        {parseFloat(issue.distance).toFixed(1)} m away
+                        {issue.title}
                     </Text>
                 )}
 
