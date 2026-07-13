@@ -60,7 +60,17 @@ function MainTabNavigator() {
               ),
               headerShown: false
             }} />
-
+          <Tab.Screen name="Stats Nav" component={StatsNav}
+            options={{
+              tabBarIcon: () => (
+                <SearchIcon
+                  color={colors.textPrimary}
+                  size={size.lg}
+                  style={{ ...styles.icon, ...styles.navIcons }}
+                />
+              ),
+              headerShown: false
+            }} />
 
           <Tab.Screen name="ReportIssue" component={IssueCreationNav}
             options={{
