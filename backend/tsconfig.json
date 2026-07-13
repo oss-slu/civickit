@@ -21,8 +21,9 @@
   },
   "include": [
     "src/**/*",
-    "tests/**/*"
-, "vitest.integration.config.js"  ],
+    "tests/**/*",
+    "vitest.integration.config.js"
+  ],
   "exclude": [
     "node_modules"
   ]
