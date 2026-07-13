@@ -189,7 +189,7 @@ const IssueDetailScreen = () => {
               <TouchableOpacity onPress={() => showLocation({
                 latitude: issue.latitude,
                 longitude: issue.longitude,
-                title: 'Your destination',
+                googleForceLatLon: true
               })}>
                 <Text style={styles.infoRowLabel}>Location</Text>
                 <Text style={{ ...styles.infoRowText, textDecorationLine: 'underline' }}>
