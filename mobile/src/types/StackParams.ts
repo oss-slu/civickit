@@ -20,8 +20,8 @@ export type StackParams = {
         uri: string
         metadata?: PhotoMetadata
     },
-    "Feed": {},
-    "Feed Nav": {},
+    "Statistics": {},
+    "Stats Nav": {},
     "Leaderboard": {
         issues: any[]
         endorsementsOption?: boolean

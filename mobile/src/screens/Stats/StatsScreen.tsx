@@ -1,4 +1,4 @@
-// mobile/src/screens/Feed/FeedScreen.tsx
+// mobile/src/screens/Stats/StatsScreen.tsx
 import { MessageView } from "../../components/MessageView";
 import { Dimensions, RefreshControl, ScrollView, Text, StyleSheet, View } from "react-native"
 import { borderRadius, colors, globalStyles, size, spacing, typography } from "../../styles";
@@ -26,7 +26,7 @@ import Leaderboard from "../../components/Leaderboard";
 
 type record = Record<string, number>;
 
-export default function FeedScreen() {
+export default function StatsScreen() {
 
     const [refreshing, setRefreshing] = useState(false);
     const [radius, setRadius] = useState("1 mile")
