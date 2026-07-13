@@ -191,12 +191,19 @@ const IssueDetailScreen = () => {
                 longitude: issue.longitude,
                 googleForceLatLon: true
               })}>
-                <Text style={styles.infoRowLabel}>Location</Text>
-                <Text style={{ ...styles.infoRowText, textDecorationLine: 'underline' }}>
-                  {resolvedAddress}
-                </Text>
+                <TouchableOpacity onPress={() => showLocation({
+                  latitude: issue.latitude,
+                  longitude: issue.longitude,
+                  title: 'Your destination',
+                })}>
+                  <Text style={styles.infoRowLabel}>Location</Text>
+                  <Text style={{ ...{ ...styles.infoRowText, textDecorationLine: 'underline' }, textDecorationLine: 'underline' }}>
+                    {resolvedAddress}
+                  </Text>
 
-                <Text style={styles.infoRowMeta}>Source: {formatSource(issue.locationSource)}</Text>
+
+                  <Text style={styles.infoRowMeta}>Source: {formatSource(issue.locationSource)}</Text>
+                </TouchableOpacity>
               </TouchableOpacity>
             </View>
           </View>
