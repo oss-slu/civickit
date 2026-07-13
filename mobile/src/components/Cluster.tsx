@@ -1,4 +1,4 @@
-// mobile/src/components/MapMarker.tsx
+// mobile/src/components/Cluster.tsx
 import { View, StyleSheet, Text } from "react-native";
 import { colors, size, spacing, typography } from "../styles";
 import { useState, useEffect } from "react";

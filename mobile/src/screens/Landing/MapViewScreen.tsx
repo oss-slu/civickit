@@ -15,6 +15,7 @@ import CalloutPopup from '../../components/CalloutPopup';
 import { GetNearbyIssueResponse } from '@civickit/shared';
 import Cluster from '../../components/Cluster';
 import { getCenter, getDistance } from 'geolib';
+import CalloutListPopup from '../../components/CalloutListPopup';
 
 interface IssueCluster {
     issues: any[]
@@ -27,7 +28,7 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
     const bottomSheetRef = useRef<BottomSheet>(null);
     const snapPoints = [36, "30%", "80%"]
     const [bottomSheetInd, setBottomSheetInd] = useState<number>(0);
-    const [currentIssue, setCurrentIssue] = useState<GetNearbyIssueResponse | undefined>(undefined)
+    const [currentElement, setCurrentElement] = useState<any>(undefined)
     const fadeAnim = useAnimatedValue(0);
     const posAnim = useAnimatedValue(0);
     const [paddingBottom, setPaddingBottom] = useState("110%")
@@ -37,8 +38,8 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
     //get contexts from above layer(s)
     const location = useLocation().location
 
-    const onMarkerPress = (issue: GetNearbyIssueResponse) => {
-        setCurrentIssue(issue)
+    const onMarkerPress = (element: GetNearbyIssueResponse) => {
+        setCurrentElement(element)
         openCallout()
     }
 
@@ -76,9 +77,9 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
 
     }
 
-    if (currentIssue != undefined && bottomSheetInd == 2) {
+    if (currentElement != undefined && bottomSheetInd == 2) {
         closeCallout()
-    } else if (currentIssue != undefined && bottomSheetInd < 2) {
+    } else if (currentElement != undefined && bottomSheetInd < 2) {
         openCallout()
     }
 
@@ -206,7 +207,7 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
                     key={entry.issues[0].id}
                     coordinate={{ latitude: entry.latitude, longitude: entry.longitude }}
                     style={{}}
-                    onPress={() => { onMarkerPress(entry.issues[0]) }} //<- TODO: build new callout for clusters
+                    onPress={() => { onMarkerPress(entry) }} //<- TODO: build new callout for clusters
                 >
                     <Cluster key={issues[0].id} issues={entry.issues} />
                 </Marker>
@@ -241,6 +242,7 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
                 showsUserLocation={true}
                 showsMyLocationButton={false}
                 style={{ flex: 1 }}
+                toolbarEnabled={false}
                 onRegionChangeComplete={(Region) => onRegionChange(Region)}
                 initialRegion={location ? {
                     latitude: location.latitude,
@@ -262,23 +264,29 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
                     position: "absolute",
 
                 },
-                currentIssue != undefined ? { display: undefined } : { display: "none" }]}
+                currentElement != undefined ? { display: undefined } : { display: "none" }]}
             >
-                <CalloutPopup
-                    issue={currentIssue}
+                {currentElement != undefined && currentElement.issues != undefined ?
+                    <CalloutListPopup
+                        cluster={currentElement}
+                        onClosePress={() => {
+                            closeCallout(() => {
+                                setCurrentElement(undefined)
+                            })
+                        }}
+                    /> : <CalloutPopup
+                        issue={currentElement}
+                        onClosePress={() => {
+                            closeCallout(() => {
+                                setCurrentElement(undefined)
+                            })
+                        }}
+                        onForwardPress={() => {
+                            navigation.navigate("Issue Details", { issue: currentElement! })
+                        }}
+                    />
+                }
 
-                    onClosePress={() => {
-                        closeCallout(() => {
-
-                            setCurrentIssue(undefined)
-                        })
-
-
-                    }}
-                    onForwardPress={() => {
-                        navigation.navigate("Issue Details", { issue: currentIssue! })
-                    }}
-                />
             </Animated.View>
 
             <BottomSheet

@@ -1,4 +1,4 @@
-// mobile/src/components/MapMarker.tsx
+// mobile/src/components/Pin.tsx
 import { View, StyleSheet } from "react-native";
 import { BrokenIcon, ExclamationPointIcon, LightBulbIcon, LocationPinIcon, SprayPaintIcon, TrafficConeIcon, TrafficLightIcon, TrashIcon } from "./Icons";
 import { colors, size, spacing, typography } from "../styles";
