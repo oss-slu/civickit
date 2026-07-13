@@ -10,6 +10,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { PROVIDER_GOOGLE } from 'react-native-maps/lib/ProviderConstants';
 import ENV from '../../config/env';
 import Pin from '../../components/Pin';
+import { showLocation } from 'react-native-map-link';
 
 let MapView: any = null;
 let Marker: any = null;
@@ -185,11 +186,18 @@ const IssueDetailScreen = () => {
               size={typography.sizeLg}
               style={styles.icon} />
             <View style={styles.infoTextColumn}>
-              <Text style={styles.infoRowLabel}>Location</Text>
-              <Text style={styles.infoRowText}>
-                {resolvedAddress}
-              </Text>
-              <Text style={styles.infoRowMeta}>Source: {formatSource(issue.locationSource)}</Text>
+              <TouchableOpacity onPress={() => showLocation({
+                latitude: issue.latitude,
+                longitude: issue.longitude,
+                title: 'Your destination',
+              })}>
+                <Text style={styles.infoRowLabel}>Location</Text>
+                <Text style={{ ...styles.infoRowText, textDecorationLine: 'underline' }}>
+                  {resolvedAddress}
+                </Text>
+
+                <Text style={styles.infoRowMeta}>Source: {formatSource(issue.locationSource)}</Text>
+              </TouchableOpacity>
             </View>
           </View>
 
