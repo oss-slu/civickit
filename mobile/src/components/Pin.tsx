@@ -19,7 +19,7 @@ export default function Pin({ issue }: any) {
     useEffect(() => {
         if (issue.category == "POTHOLE") {
             setIcon(
-                <View style={styles.icon}>
+                <View style={{ ...styles.icon, paddingTop: spacing.xs + 2 }}>
                     <TrafficConeIcon size={size.md} color={colors.textPrimary} />
                 </View>
             )
@@ -70,7 +70,7 @@ export default function Pin({ issue }: any) {
                     d="M180.647 750.96c-4.544 39.094-75.732 127.582-75.732 127.582S33.078 790.379 29.184 750.96c-4.77-48.27 33.906-78.575 75.731-78.575 41.826 0 81.557 28.46 75.732 78.575z"
                     fill={statusColor.background}
                     stroke={statusColor.stroke}
-                    strokeWidth={6}
+                    strokeWidth={11}
                     transform="translate(0 -670.454)" />
             </Svg>
             {icon}

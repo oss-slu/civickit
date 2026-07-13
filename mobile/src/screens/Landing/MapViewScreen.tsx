@@ -1,9 +1,9 @@
 // mobile/src/screens/Landing/MapViewScreen.tsx
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { View, Animated, useAnimatedValue } from 'react-native';
-import { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import { Circle, LatLng, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { StackParams } from '../../types/StackParams';
 import { useLocation } from '../../contexts/LocationContext';
 import Pin from '../../components/Pin';
@@ -13,7 +13,14 @@ import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet';
 import IssueListScreen from './IssueListScreen';
 import CalloutPopup from '../../components/CalloutPopup';
 import { GetNearbyIssueResponse } from '@civickit/shared';
+import Cluster from '../../components/Cluster';
+import { getCenter, getDistance } from 'geolib';
 
+interface IssueCluster {
+    issues: any[]
+    latitude: number,
+    longitude: number
+}
 
 export default function MapViewScreen({ ref, issues, refetch }: any) {
     const navigation = useNavigation<StackNavigationProp<StackParams>>();
@@ -24,6 +31,8 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
     const fadeAnim = useAnimatedValue(0);
     const posAnim = useAnimatedValue(0);
     const [paddingBottom, setPaddingBottom] = useState("110%")
+    const [markerList, setMarkerList] = useState<any>([])
+    const [pinTolerance, setPinTolerance] = useState(1000)
 
     //get contexts from above layer(s)
     const location = useLocation().location
@@ -73,6 +82,157 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
         openCallout()
     }
 
+    // clusters
+    const createClusters = () => {
+        let viewList = structuredClone(issues)
+        let i = 0
+        while (i < viewList.length) {
+            let j = 0
+            while (j < viewList.length) {
+                if (i != j) {
+                    const distance = getDistance(
+                        { latitude: viewList[i].latitude, longitude: viewList[i].longitude },
+                        { latitude: viewList[j].latitude, longitude: viewList[j].longitude }
+                    )
+
+                    if (distance < pinTolerance) {
+                        if (viewList[i].issues == undefined && viewList[j].issues == undefined) {
+                            //neither is a cluster
+                            const center = getCenter([
+                                { latitude: viewList[i].latitude, longitude: viewList[i].longitude },
+                                { latitude: viewList[j].latitude, longitude: viewList[j].longitude }
+                            ])
+                            if (center != false) {
+                                const cluster: IssueCluster = {
+                                    issues: [viewList[i], viewList[j]],
+                                    latitude: center.latitude,
+                                    longitude: center.longitude
+                                }
+                                viewList.push(cluster)
+                                if (i > j) {
+                                    viewList.splice(i, 1)
+                                    viewList.splice(j, 1)
+                                } else {
+                                    viewList.splice(j, 1)
+                                    viewList.splice(i, 1)
+                                }
+
+                            }
+                        } else if ((viewList[i].issues != undefined) !== (viewList[j].issues != undefined)) {
+                            //one of them is a cluster
+                            let issueCluster: IssueCluster
+                            let other
+                            if (viewList[i].issues != undefined) {
+                                issueCluster = viewList[i]
+                                other = viewList[j]
+                            } else {
+                                issueCluster = viewList[j]
+                                other = viewList[i]
+                            }
+
+                            const center = getCenter([
+                                ...issueCluster.issues.map((issue: any) => {
+                                    return {
+                                        latitude: issue.latitude,
+                                        longitude: issue.longitude
+                                    }
+                                }),
+                                { latitude: other.latitude, longitude: other.longitude }
+                            ])
+
+                            if (center != false) {
+                                const cluster: IssueCluster = {
+                                    issues: [...issueCluster.issues, other],
+                                    latitude: center.latitude,
+                                    longitude: center.longitude
+                                }
+                                viewList.push(cluster)
+                                if (i > j) {
+                                    viewList.splice(i, 1)
+                                    viewList.splice(j, 1)
+                                } else {
+                                    viewList.splice(j, 1)
+                                    viewList.splice(i, 1)
+                                }
+                            }
+                        } else {
+                            //both are clusters
+                            const center = getCenter([
+                                ...viewList[i].issues.map((issue: any) => {
+                                    return {
+                                        latitude: issue.latitude,
+                                        longitude: issue.longitude
+                                    }
+                                }),
+                                ...viewList[j].issues.map((issue: any) => {
+                                    return {
+                                        latitude: issue.latitude,
+                                        longitude: issue.longitude
+                                    }
+                                })
+                            ])
+
+                            if (center != false) {
+                                const cluster: IssueCluster = {
+                                    issues: [...viewList[i].issues, ...viewList[j].issues],
+                                    latitude: center.latitude,
+                                    longitude: center.longitude
+                                }
+
+                                viewList.push(cluster)
+                                if (i > j) {
+                                    viewList.splice(i, 1)
+                                    viewList.splice(j, 1)
+                                } else {
+                                    viewList.splice(j, 1)
+                                    viewList.splice(i, 1)
+                                }
+                            }
+                        }
+
+                        i--
+                        break
+                    }
+                }
+                j++
+
+            }
+            i++
+        }
+
+        const markers = viewList.map((entry: any) => {
+            if (entry.issues != undefined) {
+                return <Marker
+                    key={entry.issues[0].id}
+                    coordinate={{ latitude: entry.latitude, longitude: entry.longitude }}
+                    style={{}}
+                    onPress={() => { onMarkerPress(entry.issues[0]) }} //<- TODO: build new callout for clusters
+                >
+                    <Cluster key={issues[0].id} issues={entry.issues} />
+                </Marker>
+            } else {
+                return <Marker
+                    key={entry.id}
+                    coordinate={{ latitude: entry.latitude, longitude: entry.longitude }}
+                    style={{}}
+                    onPress={() => { onMarkerPress(entry) }}
+                >
+                    <Pin issue={entry} />
+                </Marker>
+            }
+        })
+
+        setMarkerList(markers)
+    }
+    useEffect(() => {
+        createClusters()
+    }, [issues, pinTolerance])
+
+    const onRegionChange = (Region: any) => {
+        const newTolerance = Region.latitudeDelta * 111 * 1000 * 0.05
+        setPinTolerance(newTolerance)
+    }
+
     return (
         <View style={{ flex: 1 }}>
             <MapView
@@ -81,6 +241,7 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
                 showsUserLocation={true}
                 showsMyLocationButton={false}
                 style={{ flex: 1 }}
+                onRegionChangeComplete={(Region) => onRegionChange(Region)}
                 initialRegion={location ? {
                     latitude: location.latitude,
                     longitude: location.longitude,
@@ -88,17 +249,7 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
                     longitudeDelta: 0.05,
                 } : undefined}
             >
-                {issues.map((issue: any) =>
-                    <Marker
-                        key={issue.id}
-                        coordinate={{ latitude: issue.latitude, longitude: issue.longitude }}
-                        style={{}}
-                        onPress={() => { onMarkerPress(issue) }}
-                    >
-                        <Pin issue={issue} />
-                    </Marker>
-
-                )}
+                {markerList}
             </MapView>
 
             <Animated.View

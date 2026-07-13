@@ -14,6 +14,7 @@ import { Image } from "expo-image";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import ENV from '../../config/env';
 import LoadingScreen from "../Misc/LoadingScreen";
+import Svg, { Circle } from "react-native-svg";
 
 export default function ProfileScreen({ route }: any) {
     const { logout } = useAuth();
@@ -99,6 +100,9 @@ export default function ProfileScreen({ route }: any) {
                 refreshing={refreshing}
                 onRefresh={refetchQueries} />}
         >
+            <Svg width="100%" height="100%" viewBox="0 0 100 100">
+                <Circle cx="50" cy="50" r="10" stroke="blue" strokeWidth="2.5" fill="green" />
+            </Svg>
             <IconButton style={{ ...styles.button, flexDirection: "row", columnGap: spacing.sm, alignSelf: "flex-end" }}
                 onPress={() => navigation.navigate("Settings", {})}>
                 <SettingsIcon color={styles.button.color} size={styles.button.fontSize} />
