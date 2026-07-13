@@ -1,15 +1,15 @@
-// mobile/src/screens/Feed/FeedNav.tsx
+// mobile/src/screens/Stats/StatsNav.tsx
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StackParams } from '../../types/StackParams';
 import { colors, typography } from '../../styles';
-import FeedScreen from './FeedScreen';
+import StatsScreen from './StatsScreen';
 import LeaderBoardScreen from '../Misc/LeaderboardScreen';
 import IssueDetailScreen from '../Misc/IssueDetailScreen';
 import ErrorScreen from '../Misc/ErrorScreen';
 
 const Stack = createNativeStackNavigator<StackParams>();
 
-export default function FeedNav() {
+export default function StatsNav() {
     return (
         <Stack.Navigator screenOptions={{
             headerStyle: {
@@ -23,7 +23,7 @@ export default function FeedNav() {
 
         }}
         >
-            <Stack.Screen name="Feed" component={FeedScreen}
+            <Stack.Screen name="Statistics" component={StatsScreen}
                 options={{
                     headerShown: true
                 }} />
