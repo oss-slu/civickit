@@ -47,7 +47,7 @@ model User {
 
   issues     Issue[]
   events     Event[]
-  comments   Comment[]
+  timelineEntries    TimelineEntry[]
   upvotes    Upvote[]
   eventRsvps EventRsvp[]
 
@@ -84,7 +84,7 @@ model Issue {
   // Relationships
   userId             String
   user               User          @relation(fields: [userId], references: [id])
-  comments           Comment[]
+  timelineEntries    TimelineEntry[]
   upvotes            Upvote[]
   events             Event[]
   // City integration
@@ -96,14 +96,16 @@ model Issue {
   @@index([createdAt])
 }
 
-model Comment {
+model TimelineEntry {
   id        String   @id @default(cuid())
-  content   String
+  message   String
   createdAt DateTime @default(now())
   issueId   String
   issue     Issue    @relation(fields: [issueId], references: [id], onDelete: Cascade)
   userId    String
   user      User     @relation(fields: [userId], references: [id])
+  status    IssueStatus   @default(REPORTED)
+  images    String[] // Array of Cloudinary URLs
 
   @@index([issueId])
   @@index([createdAt])

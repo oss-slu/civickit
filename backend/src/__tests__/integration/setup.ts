@@ -40,7 +40,7 @@ afterAll(async () => {
 
 // Clear database between test suites
 afterEach(async () => {
-  const tables = ['User', 'Issue', 'Comment', 'Upvote', 'Event', 'EventRsvp'];
+  const tables = ['User', 'Issue', 'TimelineEntry', 'Upvote', 'Event', 'EventRsvp'];
 
   for (const table of tables) {
     await prisma.$executeRawUnsafe(`TRUNCATE TABLE "${table}" CASCADE;`);
