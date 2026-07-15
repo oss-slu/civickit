@@ -3,10 +3,12 @@ import { Router } from 'express';
 import { IssueController } from '../controllers/issue.controller';
 import { UpvoteController } from '../controllers/upvote.controller';
 import { authMiddleware } from '../middleware/auth.middleware';
+import { TimelineController } from '../controllers/timeline.controller';
 
 const router = Router();
 const issueController = new IssueController();
 const upvoteController = new UpvoteController();
+const timelineConttroller = new TimelineController();
 
 router.post('/', authMiddleware, issueController.createIssue);
 router.get('/nearby', issueController.getNearbyIssues);
@@ -21,5 +23,11 @@ router.delete('/:issueId/upvote', authMiddleware, upvoteController.removeUpvote)
 
 // update issue status
 router.patch('/:issueId/status', authMiddleware, issueController.updateStatus);
+
+// timeline functionality
+router.post('/:issueId/update', authMiddleware, timelineConttroller.postUpdate);
+router.get('/:issueId/updates', authMiddleware, timelineConttroller.getIssueUpdates)
+router.get('/:userId/userUpdates', authMiddleware, timelineConttroller.getUserUpdates)
+
 
 export default router;
