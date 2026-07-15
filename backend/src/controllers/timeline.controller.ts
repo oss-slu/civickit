@@ -2,9 +2,14 @@
 import { Request, Response, NextFunction } from 'express';
 import { TimelineService } from '../services/timeline.service';
 import { TimelineRepository } from '../repositories/timeline.repository';
+import { IssueController } from './issue.controller';
+import { IssueService } from '../services/issue.service';
+import { IssueRepository } from '../repositories/issue.repository';
+import { UpvoteRepository } from '../repositories/upvote.repository';
 
 
 const timelineService = new TimelineService(new TimelineRepository());
+const issueService = new IssueService(new IssueRepository, new UpvoteRepository);
 
 export class TimelineController {
 
@@ -12,7 +17,10 @@ export class TimelineController {
     try {
       const { issueId } = req.params;
       const userId = String(req.userId);
-      console.log("in controller", req.body)
+
+      //update status of issue
+      await issueService.updateStatus(String(req.params.issueId), req.body.status);
+      //add an entry to the timeline
       const result = await timelineService.postUpdate(req.body, String(issueId), userId);
 
       res.status(201).json(result);
