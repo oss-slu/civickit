@@ -116,4 +116,6 @@ describe('TimelineService', () => {
             expect(result).toEqual(mockUpdate);
         });
     });
+
+    describe('status')
 });
