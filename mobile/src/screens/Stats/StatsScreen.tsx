@@ -1,9 +1,9 @@
-// mobile/src/screens/Feed/FeedScreen.tsx
+// mobile/src/screens/Stats/StatsScreen.tsx
 import { MessageView } from "../../components/MessageView";
 import { Dimensions, RefreshControl, ScrollView, Text, StyleSheet, View } from "react-native"
 import { borderRadius, colors, globalStyles, size, spacing, typography } from "../../styles";
 import LoadingScreen from "../Misc/LoadingScreen";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import StatusSummaryCard from "../../components/StatusSummaryCard";
 import { IssueStatusArray } from "../../types/IssueStatusArray";
 import { IssueCategoryArray } from "../../types/IssueCategoryArray";
@@ -17,7 +17,7 @@ import ENV from '../../config/env';
 import { FlatList } from "react-native-gesture-handler";
 import { GetNearbyIssueResponse } from "@civickit/shared/src/types/api";
 import IconButton from "../../components/IconButton";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { StackParams } from "../../types/StackParams";
 import { radiusOptions } from "../../types/RadiusOptions";
@@ -26,7 +26,7 @@ import Leaderboard from "../../components/Leaderboard";
 
 type record = Record<string, number>;
 
-export default function FeedScreen() {
+export default function StatsScreen() {
 
     const [refreshing, setRefreshing] = useState(false);
     const [radius, setRadius] = useState("1 mile")
@@ -53,6 +53,14 @@ export default function FeedScreen() {
         queryKey: [radius],
         queryFn: queryFunction
     }, queryClient);
+
+    useFocusEffect(
+        useCallback(() => {
+            refetch()
+
+
+        }, [])
+    )
 
 
     useEffect(() => {
@@ -207,49 +215,56 @@ export default function FeedScreen() {
             </View>
 
 
+            {filteredData.length > 0 ?
+                <View>
+                    <Text style={{ ...styles.heading }}>
+                        Most Endorsed
+                    </Text>
 
-            <Text style={{ ...styles.heading }}>
-                Most Endorsed
-            </Text>
 
+                    <View style={{ ...styles.leaderboardContainer }}>
+                        <Leaderboard issues={filteredData} />
+                    </View>
 
-            <View style={{ ...styles.leaderboardContainer }}>
-                <Leaderboard issues={filteredData} />
-            </View>
+                    <IconButton style={{
+                        ...styles.modalButton,
+                        flexDirection: "row",
+                        columnGap: spacing.xs,
+                    }}
+                        onPress={() => {
+                            navigation.navigate("Leaderboard", {
+                                issues: filteredData, endorsementsOption: true,
+                                dateReportedOption: true, dateUpdatedOption: true, distanceOption: true,
+                            })
+                        }}
+                    >
+                        <Text style={{ fontSize: typography.sizeLg, ...styles.buttonText }}>More</Text>
+                        <RightArrowIcon
+                            color={colors.textSecondary}
+                            size={typography.sizeXl}
+                        />
+                    </IconButton>
 
-            <IconButton style={{
-                ...styles.modalButton,
-                flexDirection: "row",
-                columnGap: spacing.xs,
-            }}
-                onPress={() => {
-                    navigation.navigate("Leaderboard", {
-                        issues: filteredData, endorsementsOption: true,
-                        dateReportedOption: true, dateUpdatedOption: true, distanceOption: true,
-                    })
-                }}
-            >
-                <Text style={{ fontSize: typography.sizeLg, ...styles.buttonText }}>More</Text>
-                <RightArrowIcon
-                    color={colors.textSecondary}
-                    size={typography.sizeXl}
-                />
-            </IconButton>
+                    <View style={{
+                        ...styles.sectionContainer,
+                        backgroundColor: colors.background
+                    }}>
+                        <CategoryPieChart categoryNumbers={categoryNumbers} />
+                    </View>
 
-            <View style={{
-                ...styles.sectionContainer,
-                backgroundColor: colors.background
-            }}>
-                <CategoryPieChart categoryNumbers={categoryNumbers} />
-            </View>
-
-            {/* <View style={{ ...styles.sectionContainer }}>
+                    {/* <View style={{ ...styles.sectionContainer }}>
                         <StatusBarGraph statusNumbers={statusNumbers} />
                     </View> */}
 
-            <View style={{ ...styles.sectionContainer }}>
-                <StatusSummaryCard statusNumbers={statusNumbers} />
-            </View>
+                    <View style={{ ...styles.sectionContainer }}>
+                        <StatusSummaryCard statusNumbers={statusNumbers} />
+                    </View>
+                </View>
+                :
+                <MessageView>
+                    No Issues
+                </MessageView>
+            }
 
         </ScrollView>
     )

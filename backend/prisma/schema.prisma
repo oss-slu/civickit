@@ -42,60 +42,59 @@ enum Role{
 }
 
 model User {
-  id            String   @id @default(cuid())
-  email         String   @unique
-  passwordHash  String
-  role          Role     @default(REPORTER)
-  name          String
-  profileImage  String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String?
+  profileImage String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  issues        Issue[]
-  events        Event[]
-  comments      Comment[]
-  upvotes       Upvote[]
-  eventRsvps    EventRsvp[]
+  issues     Issue[]
+  events     Event[]
+  comments   Comment[]
+  upvotes    Upvote[]
+  eventRsvps EventRsvp[]
+
+  emailVerified Boolean   @default(false)
+  image         String?
+  sessions      Session[]
+  accounts      Account[]
 
   @@index([email])
+  @@map("user")
 }
 
 model Issue {
-  id          String        @id @default(cuid())
-  title       String
-  description String
-  category    IssueCategory
-  status      IssueStatus   @default(REPORTED)
-  
+  id                 String        @id @default(cuid())
+  title              String
+  description        String
+  category           IssueCategory
+  status             IssueStatus   @default(REPORTED)
   // Location data
-  latitude    Float
-  longitude   Float
-  address     String?
-  district    String?
-  subregion   String?
-  name        String?
-  
+  latitude           Float
+  longitude          Float
+  address            String?
+  district           String?
+  subregion          String?
+  name               String?
   // Media
-  images      String[]      // Array of Cloudinary URLs
-  
+  images             String[] // Array of Cloudinary URLs
   // Metadata
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  locationSource String     @default("device")
-  photoTakenAt DateTime?
-  photoTakenAtSource String @default("device")
-  
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  locationSource     String        @default("device")
+  photoTakenAt       DateTime?
+  photoTakenAtSource String        @default("device")
   // Relationships
-  userId      String
-  user        User          @relation(fields: [userId], references: [id])
-  
-  comments    Comment[]
-  upvotes     Upvote[]
-  events      Event[]
-  
+  userId             String
+  user               User          @relation(fields: [userId], references: [id])
+  comments           Comment[]
+  upvotes            Upvote[]
+  events             Event[]
   // City integration
-  cityRefNumber String?     // 311 reference number
-  
+  cityRefNumber      String? // 311 reference number
+
   @@index([latitude, longitude])
   @@index([status])
   @@index([category])
@@ -106,13 +105,11 @@ model Comment {
   id        String   @id @default(cuid())
   content   String
   createdAt DateTime @default(now())
-  
   issueId   String
   issue     Issue    @relation(fields: [issueId], references: [id], onDelete: Cascade)
-  
   userId    String
   user      User     @relation(fields: [userId], references: [id])
-  
+
   @@index([issueId])
   @@index([createdAt])
 }
@@ -120,60 +117,99 @@ model Comment {
 model Upvote {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
-  
   issueId   String
   issue     Issue    @relation(fields: [issueId], references: [id], onDelete: Cascade)
-  
   userId    String
   user      User     @relation(fields: [userId], references: [id])
-  
-  @@unique([issueId, userId]) // User can only upvote once
+
+  // User can only upvote once
+  @@unique([issueId, userId])
   @@index([issueId])
 }
 
 model Event {
-  id           String      @id @default(cuid())
-  title        String
-  description  String
-  status       EventStatus @default(PLANNED)
-  
+  id          String      @id @default(cuid())
+  title       String
+  description String
+  status      EventStatus @default(PLANNED)
   // Date/time
-  startTime    DateTime
-  endTime      DateTime
-  
+  startTime   DateTime
+  endTime     DateTime
   // Location
-  latitude     Float
-  longitude    Float
-  address      String
-  
+  latitude    Float
+  longitude   Float
+  address     String
   // Metadata
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-  
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
   // Relationships
-  organizerId  String
-  organizer    User        @relation(fields: [organizerId], references: [id])
-  
-  issueId      String?     // Optional: event can be linked to an issue
-  issue        Issue?      @relation(fields: [issueId], references: [id])
-  
-  rsvps        EventRsvp[]
-  
+  organizerId String
+  organizer   User        @relation(fields: [organizerId], references: [id])
+  issueId     String? // Optional: event can be linked to an issue
+  issue       Issue?      @relation(fields: [issueId], references: [id])
+  rsvps       EventRsvp[]
+
   @@index([startTime])
   @@index([status])
 }
 
 model EventRsvp {
   id        String   @id @default(cuid())
-  status    String   // "GOING", "MAYBE", "NOT_GOING"
+  status    String // "GOING", "MAYBE", "NOT_GOING"
   createdAt DateTime @default(now())
-  
   eventId   String
   event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  
   userId    String
   user      User     @relation(fields: [userId], references: [id])
-  
+
   @@unique([eventId, userId])
   @@index([eventId])
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
 }
