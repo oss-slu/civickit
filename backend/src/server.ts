@@ -12,11 +12,31 @@ import RateLimit from 'express-rate-limit';
 import { authMiddleware } from './middleware/auth.middleware';
 import { errorHandler } from './middleware/error.middleware';
 import { requestLogger } from './middleware/logger.middleware';
+import { toNodeHandler } from "better-auth/node";
+import { auth } from "./auth";
+import { isAPIError, } from "better-auth/api";
 
 dotenv.config();
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
+
+//BetterAuth
+app.all("/api/better-auth/auth/{*any}", toNodeHandler(auth));
+// const data = auth.api.signUpEmail({
+//   body: {
+//     name: "John Doe", // required
+//     email: "john.doe1@example.com", // required
+//     password: "password1234", // required
+//   },
+// });
+// const data = await auth.api.signInEmail({
+//   body: {
+//     email: "john.doe1@example.com", // required
+//     password: "password1234", // required
+//   },
+// });
+// console.log(data)
 
 // Middleware
 const corsOptions = {
@@ -64,5 +84,6 @@ app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Better Auth app listening on port ${PORT}`);
 });
 

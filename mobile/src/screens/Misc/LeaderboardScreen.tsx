@@ -1,4 +1,4 @@
-// mobile/src/screens/Feed/LeaderboardScreen.tsx
+// mobile/src/screens/Stats/LeaderboardScreen.tsx
 import { View, Text, FlatList, StyleSheet, ScrollView, RefreshControl } from "react-native";
 import { borderRadius, colors, globalStyles, palette, size, spacing, typography } from "../../styles";
 import ModalDropdown from "../../components/ModalDropdown";
