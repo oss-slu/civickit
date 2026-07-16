@@ -33,7 +33,6 @@ export class IssueRepository {
         _count: {
           select: {
             upvotes: true,
-            comments: true,
           },
         },
       },
@@ -70,24 +69,9 @@ export class IssueRepository {
             profileImage: true,
           },
         },
-        comments: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                profileImage: true,
-              },
-            },
-          },
-          orderBy: {
-            createdAt: 'desc',
-          },
-        },
         _count: {
           select: {
             upvotes: true,
-            comments: true,
           },
         },
       },
@@ -105,24 +89,9 @@ export class IssueRepository {
             profileImage: true,
           },
         },
-        comments: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                profileImage: true,
-              },
-            },
-          },
-          orderBy: {
-            createdAt: 'desc',
-          },
-        },
         _count: {
           select: {
             upvotes: true,
-            comments: true,
           },
         },
       },

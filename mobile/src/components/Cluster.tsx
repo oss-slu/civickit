@@ -59,20 +59,21 @@ export default function Cluster({ issues }: any) {
             fontSize: fontSize,
             fontWeight: typography.weightBold,
             color: colors.textPrimary,
-            flexWrap: "nowrap"
+            flexWrap: "nowrap",
+            zIndex: 3
         }
     })
 
 
     return (
         <View style={styles.container}>
-            <View style={{ position: "absolute" }}>
+            <View style={{ position: "absolute", zIndex: 1 }}>
                 <PieChart
                     data={pieData}
                     radius={19}
                 />
             </View>
-            <Svg width="100%" height="100%" viewBox="0 0 100 100" style={{ position: "absolute" }}>
+            <Svg width="100%" height="100%" viewBox="0 0 100 100" style={{ position: "absolute", zIndex: 2 }}>
                 <Circle cx="50" cy="50" r="40" stroke="blue" strokeWidth="0" fill={palette.ckLightGray} />
             </Svg>
             <Text style={{ ...styles.number }}>{issues.length}</Text>
