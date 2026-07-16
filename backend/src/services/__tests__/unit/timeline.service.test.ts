@@ -6,8 +6,10 @@ import { describe, beforeEach, vi, it, expect, Mocked, Mock } from 'vitest';
 import { Prisma } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { exists } from 'fs';
-import { PostUpdateDTO } from '@civickit/shared/src/types/api';
+import { CreateIssueDTO, PostUpdateDTO } from '@civickit/shared/src/types/api';
+import { IssueService } from '../../issue.service';
+import { IssueRepository } from '../../../repositories/issue.repository';
+import { UpvoteRepository } from '../../../repositories/upvote.repository';
 
 // mock repository
 vi.mock('../../../src/repositories/timeline.repository');
@@ -30,23 +32,56 @@ describe('TimelineService', () => {
     let timelineService: TimelineService;
     let mockTimelineRepository: Mocked<TimelineRepository>;
 
+    let issueService: IssueService;
+    let mockIssueRepository: Mocked<IssueRepository>;
+
+    let mockUpvoteRepository: Mocked<UpvoteRepository>;
+
     beforeEach(() => {
         // Manual mock setup
         mockTimelineRepository = {
-            postUpdate: vi.fn(),
-            getIssueUpdates: vi.fn(),
-            getUserUpdates: vi.fn(),
+            createUpdate: vi.fn(),
+            findByIssue: vi.fn(),
+            findByUser: vi.fn(),
         } as unknown as Mocked<TimelineRepository>;
 
+        mockIssueRepository = {
+            create: vi.fn(),
+            findById: vi.fn(),
+            findNearby: vi.fn(),
+        } as unknown as Mocked<IssueRepository>;
+
+        mockUpvoteRepository = {
+            createUpvote: vi.fn(),
+            deleteUpvote: vi.fn(),
+            countUpvotes: vi.fn(),
+            exists: vi.fn(),
+        } as unknown as Mocked<UpvoteRepository>;
+
         timelineService = new TimelineService(mockTimelineRepository);
+        issueService = new IssueService(mockIssueRepository, mockUpvoteRepository);
         vi.clearAllMocks();
     });
 
-    const makeInput1 = (
+    const makeUpdateInput = (
         overrides: Partial<PostUpdateDTO> = {}
     ): PostUpdateDTO => ({
         message: 'test message 1',
         status: 'ACKNOWLEDGED',
+        images: [],
+        ...overrides,
+    });
+
+    const makeIssueInput = (
+        overrides: Partial<CreateIssueDTO> = {}
+    ): CreateIssueDTO => ({
+        title: 'Test Issue',
+        description: 'Test Description',
+        category: 'POTHOLE',
+        status: 'REPORTED',
+        latitude: 38.627,
+        longitude: -90.1994,
+        address: "",
         images: [],
         ...overrides,
     });
@@ -65,7 +100,7 @@ describe('TimelineService', () => {
             mockTimelineRepository.createUpdate.mockResolvedValueOnce(mockUpdate as any);
 
             const result = await timelineService.postUpdate(
-                makeInput1(),
+                makeUpdateInput(),
                 'issue1',
                 'user1'
             );
@@ -79,7 +114,7 @@ describe('TimelineService', () => {
             const error = new Error('Random error');
             mockTimelineRepository.createUpdate.mockRejectedValueOnce(error);
 
-            await expect(timelineService.postUpdate(makeInput1(), 'issue1', 'user1')).rejects.toThrow('Random error');
+            await expect(timelineService.postUpdate(makeUpdateInput(), 'issue1', 'user1')).rejects.toThrow('Random error');
         });
     });
 
@@ -95,9 +130,10 @@ describe('TimelineService', () => {
                 status: 'ACKNOWLEDGED',
                 images: []
             };
+            mockTimelineRepository.findByIssue.mockResolvedValue(mockUpdate as any);
+            const result = await timelineService.getIssueUpdates(mockIssue.id)
 
-            const result = mockTimelineRepository.findByIssue.mockResolvedValue(mockIssue as any);
-            expect(result).toEqual(mockUpdate);
+            expect(result.updates).toEqual(mockUpdate);
         });
 
         it('should return updates attached to user1', async () => {
@@ -111,11 +147,11 @@ describe('TimelineService', () => {
                 status: 'ACKNOWLEDGED',
                 images: []
             };
+            mockTimelineRepository.findByUser.mockResolvedValue(mockUpdate as any);
+            const result = await timelineService.getUserUpdates(mockUser.id)
 
-            const result = mockTimelineRepository.findByUser.mockResolvedValue(mockUser as any);
-            expect(result).toEqual(mockUpdate);
+            expect(result.updates).toEqual(mockUpdate);
         });
-    });
 
-    describe('status')
+    });
 });
