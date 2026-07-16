@@ -7,6 +7,7 @@ import { SafeUser } from '../types/auth.types'
 import { z } from 'zod';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { AppError } from "../utils/errors";
+import { JWT_SECRET } from "../config/env";
 
 export class AuthService {
   constructor(private authRepository: AuthRepository) { }
@@ -47,12 +48,8 @@ export class AuthService {
   }
 
   async getUserByToken(token: string) {
-    const secret = String(process.env.JWT_SECRET)
-    if (secret == undefined) {
-      throw new AppError("JWT secret not configured", 500);
-    }
     try {
-      const tokenResponse = jwt.verify(token, secret) as JwtPayload
+      const tokenResponse = jwt.verify(token, JWT_SECRET) as JwtPayload
       const id = tokenResponse.userId
 
       const user = await this.authRepository.findById(id);
