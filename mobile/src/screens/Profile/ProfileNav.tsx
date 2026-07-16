@@ -1,4 +1,4 @@
-// mobile/src/screens/Profile/FeedNav.tsx
+// mobile/src/screens/Profile/StatsNav.tsx
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StackParams } from '../../types/StackParams';
 import ProfileScreen from './ProfileScreen';

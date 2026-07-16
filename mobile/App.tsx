@@ -21,7 +21,7 @@ import React from 'react';
 import { LocationProvider } from './src/contexts/LocationContext';
 import { NearbyIssuesProvider } from './src/contexts/NearbyIssuesContext';
 import LandingScreenNav from './src/screens/Landing/LandingScreenNav';
-import FeedNav from './src/screens/Feed/FeedNav';
+import StatsNav from './src/screens/Stats/StatsNav';
 import Button from './src/components/Button';
 import ProfileNav from './src/screens/Profile/ProfileNav';
 import LoadingScreen from './src/screens/Misc/LoadingScreen';
@@ -57,7 +57,7 @@ function MainTabNavigator() {
               ),
               headerShown: false
             }} />
-          <Tab.Screen name="Feed Nav" component={FeedNav}
+          <Tab.Screen name="Stats Nav" component={StatsNav}
             options={{
               tabBarIcon: () => (
                 <SearchIcon
