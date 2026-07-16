@@ -232,7 +232,9 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
 
     const onRegionChange = (Region: any) => {
         const newTolerance = Region.latitudeDelta * 111 * 1000 * 0.05
-        setPinTolerance(newTolerance)
+        if (newTolerance != pinTolerance) {
+            setPinTolerance(newTolerance)
+        }
     }
 
     return (
