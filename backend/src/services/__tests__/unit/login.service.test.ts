@@ -35,7 +35,6 @@ describe('LoginService', () => {
         } as unknown as Mocked<LoginRepository>;
 
         loginService = new LoginService(mockLoginRepository);
-        process.env.JWT_SECRET = 'test-secret';
     });
 
     const date = new Date();
@@ -70,7 +69,7 @@ describe('LoginService', () => {
 
         expect(jwt.sign).toHaveBeenCalledWith(
             { userId: user.id },
-            'test-secret',
+            'test-only-fake-secret-value-1234',
             { expiresIn: '7d' }
         );
 
