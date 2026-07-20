@@ -42,7 +42,9 @@ describe('AuthService', () => {
             passwordHash: 'hashedPassword',
             profileImage: null,
             createdAt: new Date(),
-            updatedAt: new Date()
+            updatedAt: new Date(),
+            emailVerified: false,
+            image: null,
         });
 
         const result = await authService.registerUser({
@@ -92,7 +94,9 @@ describe('AuthService', () => {
             passwordHash: 'hashed',
             profileImage: null,
             createdAt: new Date(),
-            updatedAt: new Date()
+            updatedAt: new Date(),
+            emailVerified: false,
+            image: null,
         });
 
         await expect(

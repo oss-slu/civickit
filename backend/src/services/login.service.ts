@@ -6,6 +6,7 @@ import { LoginRepository } from '../repositories/login.repository';
 import { LoginDTO, LoginResponse } from "@civickit/shared";
 import "dotenv/config";
 import { AppError } from "../utils/errors";
+import { JWT_SECRET } from "../config/env";
 
 export class LoginService {
   constructor(private loginRepository: LoginRepository) { }
@@ -25,8 +26,7 @@ export class LoginService {
     }
 
     //generate token with user id
-    const key = String(process.env.JWT_SECRET)
-    const token = jwt.sign({ userId: user.id }, key, { expiresIn: '7d' })
+    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' })
 
     const loginResponse: LoginResponse = {
       token: token,
