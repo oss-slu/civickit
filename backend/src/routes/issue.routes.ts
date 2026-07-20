@@ -3,12 +3,13 @@ import { Router } from 'express';
 import { IssueController } from '../controllers/issue.controller';
 import { UpvoteController } from '../controllers/upvote.controller';
 import { authMiddleware } from '../middleware/auth.middleware';
+import { requirePermission } from '../middleware/authorize.middleware';
 import { TimelineController } from '../controllers/timeline.controller';
 
 const router = Router();
 const issueController = new IssueController();
 const upvoteController = new UpvoteController();
-const timelineConttroller = new TimelineController();
+const timelineController = new TimelineController();
 
 router.post('/', authMiddleware, issueController.createIssue);
 router.get('/nearby', issueController.getNearbyIssues);
@@ -22,12 +23,12 @@ router.get('/:issueId/upvote', authMiddleware, upvoteController.getUpvotes) // g
 router.delete('/:issueId/upvote', authMiddleware, upvoteController.removeUpvote); // remove upvote {delete}
 
 // update issue status
-router.patch('/:issueId/status', authMiddleware, issueController.updateStatus);
+router.patch('/:issueId/status', authMiddleware, requirePermission('update:issue_status'), issueController.updateStatus);
 
 // timeline functionality
-router.post('/:issueId/update', authMiddleware, timelineConttroller.postUpdate);
-router.get('/:issueId/updates', authMiddleware, timelineConttroller.getIssueUpdates)
-router.get('/:userId/userUpdates', authMiddleware, timelineConttroller.getUserUpdates)
+router.post('/:issueId/update', authMiddleware, timelineController.postUpdate);
+router.get('/:issueId/updates', authMiddleware, timelineController.getIssueUpdates)
+router.get('/:userId/userUpdates', authMiddleware, timelineController.getUserUpdates)
 
 
 export default router;
