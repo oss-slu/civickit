@@ -47,6 +47,7 @@ model User {
   name         String
   passwordHash String?
   profileImage String?
+  role         Role     @default(REPORTER)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
