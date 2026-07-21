@@ -29,6 +29,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         (async () => {
             const token = await getToken();
             setAuthToken(token);
+            if (token == null) {
+                setIsLoading(false); //no stored token: skip user fetch, go to login
+            }
         })();
     }, []); //no dependencies bc it runs once on mount to check for token
 
