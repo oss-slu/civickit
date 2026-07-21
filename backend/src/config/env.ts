@@ -18,3 +18,9 @@ export function requireEnv(name: string, minLength = 1): string {
 
 // JWT secret must be present and reasonably long. Never log this value.
 export const JWT_SECRET = requireEnv('JWT_SECRET', 16);
+
+// Comma-separated list of allowed browser origins. Falls back to a localhost dev origin.
+export const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS ?? 'http://localhost:3001')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
