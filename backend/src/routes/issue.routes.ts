@@ -5,13 +5,15 @@ import { UpvoteController } from '../controllers/upvote.controller';
 import { authMiddleware } from '../middleware/auth.middleware';
 import { requirePermission } from '../middleware/authorize.middleware';
 import { TimelineController } from '../controllers/timeline.controller';
+import { validateBody } from '../middleware/validate';
+import { createIssueSchema } from '../schemas/issue.schema';
 
 const router = Router();
 const issueController = new IssueController();
 const upvoteController = new UpvoteController();
 const timelineController = new TimelineController();
 
-router.post('/', authMiddleware, issueController.createIssue);
+router.post('/', authMiddleware, validateBody(createIssueSchema), issueController.createIssue);
 router.get('/nearby', issueController.getNearbyIssues);
 router.get('/user', issueController.getIssuesByUser);
 router.get('/userUpvotes', issueController.getIssuesByUserUpvotes);
