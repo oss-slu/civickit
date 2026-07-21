@@ -25,7 +25,7 @@ export class AuthController {
     }
   }
 
-  async getUserByToken(req: Request, res: Response, next: NextFunction) {
+  async getCurrentUser(req: Request, res: Response, next: NextFunction) {
     try {
       const user = await authService.getUserById(String(req.userId));
       res.json(user);
