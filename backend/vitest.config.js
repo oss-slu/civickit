@@ -5,7 +5,7 @@ export default defineConfig({
     test: {
         include: ['**/*.test.ts'],
         // Run this file before every test file
-        //setupFiles: ['./src/__tests__/integration/setup.ts'],
+        setupFiles: ['./src/__tests__/setup-env.ts'],
         environment: 'node',
         globals: true,
     }

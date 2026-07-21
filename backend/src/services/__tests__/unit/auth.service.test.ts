@@ -25,6 +25,7 @@ describe('AuthService', () => {
         mockAuthRepository = {
             findByEmail: vi.fn(),
             createUser: vi.fn(),
+            findById: vi.fn(),
         } as unknown as Mocked<AuthRepository>;
 
         authService = new AuthService(mockAuthRepository);
@@ -41,8 +42,11 @@ describe('AuthService', () => {
             name: 'Test User',
             passwordHash: 'hashedPassword',
             profileImage: null,
+            role: 'REPORTER',
             createdAt: new Date(),
-            updatedAt: new Date()
+            updatedAt: new Date(),
+            emailVerified: false,
+            image: null,
         });
 
         const result = await authService.registerUser({
@@ -91,8 +95,11 @@ describe('AuthService', () => {
             name: 'Existing User',
             passwordHash: 'hashed',
             profileImage: null,
+            role: 'REPORTER',
             createdAt: new Date(),
-            updatedAt: new Date()
+            updatedAt: new Date(),
+            emailVerified: false,
+            image: null,
         });
 
         await expect(
@@ -103,5 +110,31 @@ describe('AuthService', () => {
             })
         ).rejects.toEqual(
             new AppError("Email already exists", 409));
+    });
+
+    describe('getUserById', () => {
+        it('returns a user without a passwordHash field', async () => {
+            mockAuthRepository.findById.mockResolvedValue({
+                id: '1',
+                email: 'test@example.com',
+                name: 'Test User',
+                profileImage: null,
+                role: 'REPORTER',
+                createdAt: new Date(),
+            } as any);
+
+            const result = await authService.getUserById('1');
+
+            expect(result).not.toHaveProperty('passwordHash');
+            expect(mockAuthRepository.findById).toHaveBeenCalledWith('1');
+        });
+
+        it('throws AppError 404 when the repository returns null', async () => {
+            mockAuthRepository.findById.mockResolvedValue(null);
+
+            await expect(
+                authService.getUserById('missing-id')
+            ).rejects.toEqual(new AppError('User not found', 404));
+        });
     });
 });

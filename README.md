@@ -5,7 +5,7 @@ last updated: 1/15/2026
 Open source civic engagement platform for reporting issues and organizing community action.
 
 ## Project Status
-In Development - Capstone II Project (Spring 2026)
+In Development - SLU New Venture Accelerator(Summer 2026)
 
 ## Team
 - Briana Huelsman - Project Lead

@@ -100,6 +100,62 @@ describe('Error Handling System (Vitest only)', () => {
         });
     });
 
+    it('should handle AppError with a 404 status and return correct response', () => {
+        const err = new AppError('X', 404);
+        const req = mockRequest();
+        const res = mockResponse();
+
+        errorHandler(err, req as Request, res as Response, mockNext);
+
+        expect(res.status).toHaveBeenCalledWith(404);
+        expect(res.json).toHaveBeenCalledWith({
+            success: false,
+            message: 'X',
+        });
+    });
+
+    it('should handle a plain object with a "status" field as its own status code', () => {
+        const err = { status: 400, message: 'Bad input' };
+        const req = mockRequest();
+        const res = mockResponse();
+
+        errorHandler(err, req as Request, res as Response, mockNext);
+
+        expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.json).toHaveBeenCalledWith({
+            success: false,
+            message: 'Bad input',
+        });
+    });
+
+    it('should handle a plain object with a "statusCode" field as its own status code', () => {
+        const err = { statusCode: 422, message: 'Unprocessable' };
+        const req = mockRequest();
+        const res = mockResponse();
+
+        errorHandler(err, req as Request, res as Response, mockNext);
+
+        expect(res.status).toHaveBeenCalledWith(422);
+        expect(res.json).toHaveBeenCalledWith({
+            success: false,
+            message: 'Unprocessable',
+        });
+    });
+
+    it('should not leak internal messages for bare Error objects (unknown errors stay opaque)', () => {
+        const err = new Error('boom');
+        const req = mockRequest();
+        const res = mockResponse();
+
+        errorHandler(err, req as Request, res as Response, mockNext);
+
+        expect(res.status).toHaveBeenCalledWith(500);
+        expect(res.json).toHaveBeenCalledWith({
+            success: false,
+            message: 'Internal Server Error',
+        });
+    });
+
     it('should NOT expose stack trace to client', () => {
         const err = new Error('Sensitive error');
         const req = mockRequest();
