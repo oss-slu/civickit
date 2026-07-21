@@ -16,6 +16,6 @@ const limiter = RateLimit({
 router.use(limiter)
 
 router.post("/register", authController.register.bind(authController));
-router.get('/user', authMiddleware, authController.getUserByToken);
+router.get('/user', authMiddleware, authController.getCurrentUser);
 
 export default router;
