@@ -31,7 +31,10 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
     const fadeAnim = useAnimatedValue(0);
     const posAnim = useAnimatedValue(0);
     const [paddingBottom, setPaddingBottom] = useState("110%")
-    const [pinTolerance, setPinTolerance] = useState(0.5 * 111 * 1000 * 0.06)
+    //initial value matches the initialRegion delta (0.05) with the same
+    //zoom factor used in onRegionChange, so the first render clusters the
+    //same way as every render after the map settles
+    const [pinTolerance, setPinTolerance] = useState(0.05 * 111 * 1000 * 0.05)
     const currentRegion = useRef<any>(null)
 
     //get contexts from above layer(s)
@@ -94,122 +97,43 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
     }
 
     // clusters
+    // greedy pass: each unclaimed issue seeds a cluster and absorbs every
+    // remaining issue within pinTolerance of it. Distances are always
+    // measured from the seed pin (not a moving center), so results are
+    // deterministic and every issue lands in exactly one marker.
     const createClusters = () => {
         if (issues == undefined) return []
-        let viewList = structuredClone(issues)
-        let i = 0
-        while (i < viewList.length) {
-            let j = 0
-            while (j < viewList.length) {
-                if (i != j) {
-                    const distance = getDistance(
-                        { latitude: viewList[i].latitude, longitude: viewList[i].longitude },
-                        { latitude: viewList[j].latitude, longitude: viewList[j].longitude }
-                    )
+        const remaining = [...issues]
+        const viewList: any[] = []
 
-                    if (distance < pinTolerance) {
-                        if (viewList[i].issues == undefined && viewList[j].issues == undefined) {
-                            //neither is a cluster
-                            const center = getCenter([
-                                { latitude: viewList[i].latitude, longitude: viewList[i].longitude },
-                                { latitude: viewList[j].latitude, longitude: viewList[j].longitude }
-                            ])
-                            if (center != false) {
-                                const cluster: IssueCluster = {
-                                    issues: [viewList[i], viewList[j]],
-                                    latitude: center.latitude,
-                                    longitude: center.longitude
-                                }
-                                viewList.push(cluster)
-                                if (i > j) {
-                                    viewList.splice(i, 1)
-                                    viewList.splice(j, 1)
-                                } else {
-                                    viewList.splice(j, 1)
-                                    viewList.splice(i, 1)
-                                }
+        while (remaining.length > 0) {
+            const seed = remaining.shift()
+            const members = [seed]
 
-                            }
-                        } else if ((viewList[i].issues != undefined) !== (viewList[j].issues != undefined)) {
-                            //one of them is a cluster
-                            let issueCluster: IssueCluster
-                            let other
-                            if (viewList[i].issues != undefined) {
-                                issueCluster = viewList[i]
-                                other = viewList[j]
-                            } else {
-                                issueCluster = viewList[j]
-                                other = viewList[i]
-                            }
-
-                            const center = getCenter([
-                                ...issueCluster.issues.map((issue: any) => {
-                                    return {
-                                        latitude: issue.latitude,
-                                        longitude: issue.longitude
-                                    }
-                                }),
-                                { latitude: other.latitude, longitude: other.longitude }
-                            ])
-
-                            if (center != false) {
-                                const cluster: IssueCluster = {
-                                    issues: [...issueCluster.issues, other],
-                                    latitude: center.latitude,
-                                    longitude: center.longitude
-                                }
-                                viewList.push(cluster)
-                                if (i > j) {
-                                    viewList.splice(i, 1)
-                                    viewList.splice(j, 1)
-                                } else {
-                                    viewList.splice(j, 1)
-                                    viewList.splice(i, 1)
-                                }
-                            }
-                        } else {
-                            //both are clusters
-                            const center = getCenter([
-                                ...viewList[i].issues.map((issue: any) => {
-                                    return {
-                                        latitude: issue.latitude,
-                                        longitude: issue.longitude
-                                    }
-                                }),
-                                ...viewList[j].issues.map((issue: any) => {
-                                    return {
-                                        latitude: issue.latitude,
-                                        longitude: issue.longitude
-                                    }
-                                })
-                            ])
-
-                            if (center != false) {
-                                const cluster: IssueCluster = {
-                                    issues: [...viewList[i].issues, ...viewList[j].issues],
-                                    latitude: center.latitude,
-                                    longitude: center.longitude
-                                }
-
-                                viewList.push(cluster)
-                                if (i > j) {
-                                    viewList.splice(i, 1)
-                                    viewList.splice(j, 1)
-                                } else {
-                                    viewList.splice(j, 1)
-                                    viewList.splice(i, 1)
-                                }
-                            }
-                        }
-
-                        i--
-                        break
-                    }
+            for (let k = remaining.length - 1; k >= 0; k--) {
+                const distance = getDistance(
+                    { latitude: seed.latitude, longitude: seed.longitude },
+                    { latitude: remaining[k].latitude, longitude: remaining[k].longitude }
+                )
+                if (distance < pinTolerance) {
+                    members.push(remaining[k])
+                    remaining.splice(k, 1)
                 }
-                j++
-
             }
-            i++
+
+            if (members.length == 1) {
+                viewList.push(seed)
+            } else {
+                const center = getCenter(members.map((issue: any) => {
+                    return { latitude: issue.latitude, longitude: issue.longitude }
+                }))
+                const cluster: IssueCluster = {
+                    issues: members,
+                    latitude: center != false ? center.latitude : seed.latitude,
+                    longitude: center != false ? center.longitude : seed.longitude
+                }
+                viewList.push(cluster)
+            }
         }
 
         return viewList
