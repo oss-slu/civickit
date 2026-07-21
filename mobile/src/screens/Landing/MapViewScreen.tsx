@@ -13,7 +13,7 @@ import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet';
 import IssueListScreen from './IssueListScreen';
 import CalloutPopup from '../../components/CalloutPopup';
 import Cluster from '../../components/Cluster';
-import { getCenter, getDistance } from 'geolib';
+import { getDistance } from 'geolib';
 import CalloutListPopup from '../../components/CalloutListPopup';
 
 interface IssueCluster {
@@ -124,13 +124,13 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
             if (members.length == 1) {
                 viewList.push(seed)
             } else {
-                const center = getCenter(members.map((issue: any) => {
-                    return { latitude: issue.latitude, longitude: issue.longitude }
-                }))
+                //anchor the cluster at its seed pin rather than the member
+                //centroid: seeds are always >= pinTolerance apart, so no two
+                //markers can render fully on top of each other
                 const cluster: IssueCluster = {
                     issues: members,
-                    latitude: center != false ? center.latitude : seed.latitude,
-                    longitude: center != false ? center.longitude : seed.longitude
+                    latitude: seed.latitude,
+                    longitude: seed.longitude
                 }
                 viewList.push(cluster)
             }
