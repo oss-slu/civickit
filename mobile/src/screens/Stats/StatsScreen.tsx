@@ -13,7 +13,7 @@ import ModalDropdown from "../../components/ModalDropdown";
 import { CaretDownIcon, RefreshIcon, RightArrowIcon } from "../../components/Icons";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "../../contexts/LocationContext";
-import ENV from '../../config/env';
+import { api } from '../../services/apiClient';
 import { FlatList } from "react-native-gesture-handler";
 import { GetNearbyIssueResponse } from "@civickit/shared/src/types/api";
 import IconButton from "../../components/IconButton";
@@ -40,13 +40,13 @@ export default function StatsScreen() {
 
     async function queryFunction({ queryKey }: any) {
         const [radius] = queryKey
-        const response = await fetch(
-            ENV.apiUrl + '/issues/nearby?lat=' +
-            location.latitude + '&lng=' + location.longitude
-            + '&radius=' + parseInt(radius) * 1609.34 //miles -> meters
-        );
-        if (!response.ok) throw new Error('Failed to fetch');
-        return response.json();
+        return api('/issues/nearby', {
+            params: {
+                lat: location.latitude,
+                lng: location.longitude,
+                radius: parseInt(radius) * 1609.34 //miles -> meters
+            }
+        });
     }
 
     const { data, isLoading, error, refetch } = useQuery({

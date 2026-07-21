@@ -8,7 +8,7 @@ import { CategoryIcon, ClockIcon, LocationPinIcon, TagIcon, WrenchIcon } from '.
 import { borderRadius, colors, globalStyles, palette, size, spacing, typography } from '../../styles';
 import { useAuth } from '../../contexts/AuthContext';
 import { PROVIDER_GOOGLE } from 'react-native-maps/lib/ProviderConstants';
-import ENV from '../../config/env';
+import { api } from '../../services/apiClient';
 import Pin from '../../components/Pin';
 import { showLocation } from 'react-native-map-link';
 
@@ -47,16 +47,7 @@ const IssueDetailScreen = () => {
   useEffect(() => {
     const fetchUpvoteState = async () => {
       try {
-        const res = await fetch(
-          `${ENV.apiUrl}/issues/${issue.id}/upvote`,
-          {
-            headers: {
-              Authorization: `Bearer ${authToken}`,
-            },
-          }
-        );
-
-        const data = await res.json();
+        const data = await api(`/issues/${issue.id}/upvote`, { token: authToken });
 
         setHasEndorsed(data.upvoted);
         setUpvoteCount(data.upvoteCount);
@@ -77,17 +68,7 @@ const IssueDetailScreen = () => {
 
       const method = hasEndorsed ? 'DELETE' : 'POST';
 
-      const res = await fetch(
-        `${ENV.apiUrl}/issues/${issue.id}/upvote`,
-        {
-          method,
-          headers: {
-            Authorization: `Bearer ${authToken}`,
-          },
-        }
-      );
-
-      const data = await res.json();
+      const data = await api(`/issues/${issue.id}/upvote`, { method, token: authToken });
 
       setHasEndorsed(data.upvoted);
       setUpvoteCount(data.upvoteCount);

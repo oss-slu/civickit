@@ -12,7 +12,7 @@ import { StackParams } from "../../types/StackParams";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { Image } from "expo-image";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import ENV from '../../config/env';
+import { api } from '../../services/apiClient';
 import LoadingScreen from "../Misc/LoadingScreen";
 import Svg, { Circle } from "react-native-svg";
 
@@ -30,30 +30,12 @@ export default function ProfileScreen({ route }: any) {
     const navigation = useNavigation<StackNavigationProp<StackParams>>();
     const issuesQuery = useQuery({
         queryKey: ['issues', 'user'],
-        queryFn: async () => {
-            const response = await fetch(
-                ENV.apiUrl + '/issues/user?id=' +
-                user?.id
-            );
-
-
-            if (!response.ok) throw new Error('Failed to fetch');
-            return response.json()
-        }
+        queryFn: () => api('/issues/user', { params: { id: user?.id } })
     }, queryClient);
 
     const upvotesQuery = useQuery({
         queryKey: ['upvotes', 'user'],
-        queryFn: async () => {
-            const response = await fetch(
-                ENV.apiUrl + '/issues/userUpvotes?id=' +
-                user?.id
-            );
-
-
-            if (!response.ok) throw new Error('Failed to fetch');
-            return response.json()
-        }
+        queryFn: () => api('/issues/userUpvotes', { params: { id: user?.id } })
     }, queryClient);
 
     const refetchQueries = () => {

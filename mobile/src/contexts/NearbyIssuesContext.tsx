@@ -3,7 +3,7 @@ import { QueryObserverResult, RefetchOptions, useQuery, useQueryClient } from "@
 import { createContext, useContext, useState } from "react";
 import { useLocation } from "./LocationContext";
 import { userLocation } from "../types/userLocation";
-import ENV from '../config/env';
+import { api } from '../services/apiClient';
 import LoadingScreen from "../screens/Misc/LoadingScreen";
 import { View, Text } from "react-native";
 
@@ -26,17 +26,13 @@ export const NearbyIssuesProvider = ({ children }: any) => {
     //fetch issues from database 
     const { data, isLoading, isFetching, error, refetch } = useQuery({
         queryKey: ['issues', 'nearby'],
-        queryFn: async () => {
-            console.log("url: ", ENV.apiUrl)
-            const response = await fetch(
-                ENV.apiUrl + '/issues/nearby?lat=' +
-                location.latitude + '&lng=' + location.longitude
-                + '&radius=' + radius * 1609.34 //1 mile
-            );
-            // console.log("fetch", response)
-            if (!response.ok) throw new Error('Failed to fetch');
-            return response.json();
-        }
+        queryFn: () => api('/issues/nearby', {
+            params: {
+                lat: location.latitude,
+                lng: location.longitude,
+                radius: radius * 1609.34 //miles -> meters
+            }
+        })
     }, queryClient);
 
     return (
