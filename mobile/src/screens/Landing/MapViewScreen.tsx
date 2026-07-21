@@ -142,11 +142,11 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
     const markerList = useMemo(() => {
         return createClusters().map((entry: any) => {
             if (entry.issues != undefined) {
-                //key by the cluster's member ids so it stays stable while
-                //the same issues are grouped, and re-mounts when regrouped
-                const clusterKey = entry.issues.map((issue: any) => issue.id).sort().join('-')
+                //key by the seed (issues[0], where the marker is anchored) so
+                //a marker keeps its native view across zoom changes instead of
+                //remounting — rapid unmount/mount can drop markers on iOS
                 return <Marker
-                    key={clusterKey}
+                    key={entry.issues[0].id}
                     coordinate={{ latitude: entry.latitude, longitude: entry.longitude }}
                     style={{}}
                     onPress={() => { onMarkerPress(entry) }}
