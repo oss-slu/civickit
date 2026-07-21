@@ -26,7 +26,8 @@ router.delete('/:issueId/upvote', authMiddleware, upvoteController.removeUpvote)
 router.patch('/:issueId/status', authMiddleware, requirePermission('update:issue_status'), issueController.updateStatus);
 
 // timeline functionality
-router.post('/:issueId/update', authMiddleware, timelineController.postUpdate);
+// postUpdate changes the issue status, so it needs the same gate as PATCH /status.
+router.post('/:issueId/update', authMiddleware, requirePermission('update:issue_status'), timelineController.postUpdate);
 router.get('/:issueId/updates', authMiddleware, timelineController.getIssueUpdates)
 router.get('/:userId/userUpdates', authMiddleware, timelineController.getUserUpdates)
 

@@ -97,8 +97,8 @@ export class IssueService {
   }
 
   // update status tag
+  // Callers must gate this behind requirePermission('update:issue_status').
   async updateStatus(id: string, status: IssueStatus) {
-    // TODO: add user restrictions here for role based access control
     return this.issueRepository.updateStatus(id, { status });
   }
 }
