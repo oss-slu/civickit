@@ -5,19 +5,20 @@ import { CreateIssueDTO, IssueStatus } from '@civickit/shared';
 import { uploadImage } from '../utils/cloudinary';
 import { UpvoteRepository } from '../repositories/upvote.repository';
 import { is } from 'zod/v4/locales';
+import { AppError } from '../utils/errors';
 
 export class IssueService {
   constructor(private issueRepository: IssueRepository, private upvoteRepository: UpvoteRepository) { }
 
   async createIssue(data: CreateIssueDTO, userId: string) {
     if (!data.title || data.title.length < 3) {
-      throw { status: 400, message: 'Title must be at least 3 characters' };
+      throw new AppError('Title must be at least 3 characters', 400);
     }
     if (!data.category) {
-      throw { status: 400, message: 'Category is required' };
+      throw new AppError('Category is required', 400);
     }
     if (data.latitude === undefined || data.longitude === undefined) {
-      throw { status: 400, message: 'Latitude and longitude are required' };
+      throw new AppError('Latitude and longitude are required', 400);
     }
 
     // Images are already URLs from Cloudinary, provided by the client
@@ -46,7 +47,7 @@ export class IssueService {
   async getIssueById(id: string) {
     const issue = await this.issueRepository.findById(id);
     if (!issue) {
-      throw { status: 404, message: 'Issue not found' };
+      throw new AppError('Issue not found', 404);
     }
 
     const upvoteCount = await this.upvoteRepository.countUpvotes(issue.id);
