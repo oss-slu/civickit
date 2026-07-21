@@ -4,10 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "migrate:dev": "npx prisma migrate dev --name init --schema ./src/prisma/schema.prisma --config ./src/prisma.config.ts",
+    "migrate:dev": "npx prisma migrate dev --name init --schema ./prisma/schema.prisma --config ./prisma.config.ts",
     "dev": "tsx watch --import ./src/tracing.ts src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
@@ -31,6 +32,7 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "@better-auth/prisma-adapter": "^1.6.23",
     "@cloudinary/react": "^1.14.4",
     "@cloudinary/url-gen": "^1.22.0",
     "@opentelemetry/api": "^1.9.1",
@@ -46,6 +48,7 @@
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "bcryptjs": "^3.0.3",
+    "better-auth": "^1.6.23",
     "cloudinary": "^2.9.0",
     "cors": "^2.8.5",
     "express": "^5.2.1",

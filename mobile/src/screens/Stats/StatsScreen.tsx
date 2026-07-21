@@ -1,4 +1,4 @@
-// mobile/src/screens/Feed/FeedScreen.tsx
+// mobile/src/screens/Stats/StatsScreen.tsx
 import { MessageView } from "../../components/MessageView";
 import { Dimensions, RefreshControl, ScrollView, Text, StyleSheet, View } from "react-native"
 import { borderRadius, colors, globalStyles, size, spacing, typography } from "../../styles";
@@ -26,7 +26,7 @@ import Leaderboard from "../../components/Leaderboard";
 
 type record = Record<string, number>;
 
-export default function FeedScreen() {
+export default function StatsScreen() {
 
     const [refreshing, setRefreshing] = useState(false);
     const [radius, setRadius] = useState("1 mile")
@@ -215,49 +215,56 @@ export default function FeedScreen() {
             </View>
 
 
+            {filteredData.length > 0 ?
+                <View>
+                    <Text style={{ ...styles.heading }}>
+                        Most Endorsed
+                    </Text>
 
-            <Text style={{ ...styles.heading }}>
-                Most Endorsed
-            </Text>
 
+                    <View style={{ ...styles.leaderboardContainer }}>
+                        <Leaderboard issues={filteredData} />
+                    </View>
 
-            <View style={{ ...styles.leaderboardContainer }}>
-                <Leaderboard issues={filteredData} />
-            </View>
+                    <IconButton style={{
+                        ...styles.modalButton,
+                        flexDirection: "row",
+                        columnGap: spacing.xs,
+                    }}
+                        onPress={() => {
+                            navigation.navigate("Leaderboard", {
+                                issues: filteredData, endorsementsOption: true,
+                                dateReportedOption: true, dateUpdatedOption: true, distanceOption: true,
+                            })
+                        }}
+                    >
+                        <Text style={{ fontSize: typography.sizeLg, ...styles.buttonText }}>More</Text>
+                        <RightArrowIcon
+                            color={colors.textSecondary}
+                            size={typography.sizeXl}
+                        />
+                    </IconButton>
 
-            <IconButton style={{
-                ...styles.modalButton,
-                flexDirection: "row",
-                columnGap: spacing.xs,
-            }}
-                onPress={() => {
-                    navigation.navigate("Leaderboard", {
-                        issues: filteredData, endorsementsOption: true,
-                        dateReportedOption: true, dateUpdatedOption: true, distanceOption: true,
-                    })
-                }}
-            >
-                <Text style={{ fontSize: typography.sizeLg, ...styles.buttonText }}>More</Text>
-                <RightArrowIcon
-                    color={colors.textSecondary}
-                    size={typography.sizeXl}
-                />
-            </IconButton>
+                    <View style={{
+                        ...styles.sectionContainer,
+                        backgroundColor: colors.background
+                    }}>
+                        <CategoryPieChart categoryNumbers={categoryNumbers} />
+                    </View>
 
-            <View style={{
-                ...styles.sectionContainer,
-                backgroundColor: colors.background
-            }}>
-                <CategoryPieChart categoryNumbers={categoryNumbers} />
-            </View>
-
-            {/* <View style={{ ...styles.sectionContainer }}>
+                    {/* <View style={{ ...styles.sectionContainer }}>
                         <StatusBarGraph statusNumbers={statusNumbers} />
                     </View> */}
 
-            <View style={{ ...styles.sectionContainer }}>
-                <StatusSummaryCard statusNumbers={statusNumbers} />
-            </View>
+                    <View style={{ ...styles.sectionContainer }}>
+                        <StatusSummaryCard statusNumbers={statusNumbers} />
+                    </View>
+                </View>
+                :
+                <MessageView>
+                    No Issues
+                </MessageView>
+            }
 
         </ScrollView>
     )
