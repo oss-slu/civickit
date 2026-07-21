@@ -34,11 +34,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
 
     const { data, error, refetch } = useQuery({
-        queryKey: ['user'],
+        queryKey: ['user', authToken],
+        enabled: !!authToken,
         queryFn: async () => {
             const response = await fetch(
-                ENV.apiUrl + '/auth/user?token=' +
-                authToken
+                ENV.apiUrl + '/auth/user',
+                { headers: { Authorization: `Bearer ${authToken}` } }
             );
             if (!response.ok) {
                 if (response.status == 401 || response.status == 404) {
