@@ -39,11 +39,13 @@ export class IssueRepository {
     });
   }
 
-  async findNearby(lat: number, lng: number, radiusMeters: number = 1000): Promise<Issue[]> {
+  // TODO(integration): assert LIMIT + upvoteCount against a real PostGIS database
+  async findNearby(lat: number, lng: number, radiusMeters: number = 1000, limit: number = 100): Promise<any[]> {
     // Using raw SQL for PostGIS geospatial query
     return prisma.$queryRaw`
-      SELECT 
+      SELECT
         i.*,
+        (SELECT count(*)::int FROM "Upvote" u WHERE u."issueId" = i.id) AS "upvoteCount",
         ST_Distance(
           ST_SetSRID(ST_MakePoint(i.longitude, i.latitude), 4326)::geography,
           ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326)::geography
@@ -55,6 +57,7 @@ export class IssueRepository {
         ${radiusMeters}
       )
       ORDER BY distance ASC
+      LIMIT ${limit}
     `;
   }
 
@@ -78,7 +81,7 @@ export class IssueRepository {
     });
   }
 
-  async findByUser(id: string) {
+  async findByUser(id: string, limit: number = 100) {
     return prisma.issue.findMany({
       where: { userId: id },
       include: {
@@ -95,6 +98,19 @@ export class IssueRepository {
           },
         },
       },
+      take: limit,
+    });
+  }
+
+  async findByUpvoter(userId: string, limit: number = 100) {
+    return prisma.issue.findMany({
+      where: { upvotes: { some: { userId } } },
+      include: {
+        user: { select: { id: true, name: true, profileImage: true } },
+        _count: { select: { upvotes: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
     });
   }
 
