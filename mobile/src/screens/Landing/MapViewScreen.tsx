@@ -1,7 +1,7 @@
 // mobile/src/screens/Landing/MapViewScreen.tsx
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { useEffect, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { View, Animated, useAnimatedValue } from 'react-native';
 import { Circle, Geojson, LatLng, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { StackParams } from '../../types/StackParams';
@@ -12,7 +12,6 @@ import MapView from "react-native-maps"
 import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet';
 import IssueListScreen from './IssueListScreen';
 import CalloutPopup from '../../components/CalloutPopup';
-import { GetNearbyIssueResponse } from '@civickit/shared';
 import Cluster from '../../components/Cluster';
 import { getCenter, getDistance } from 'geolib';
 import CalloutListPopup from '../../components/CalloutListPopup';
@@ -32,13 +31,23 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
     const fadeAnim = useAnimatedValue(0);
     const posAnim = useAnimatedValue(0);
     const [paddingBottom, setPaddingBottom] = useState("110%")
-    const [markerList, setMarkerList] = useState<any>([])
     const [pinTolerance, setPinTolerance] = useState(0.5 * 111 * 1000 * 0.06)
+    const currentRegion = useRef<any>(null)
 
     //get contexts from above layer(s)
     const location = useLocation().location
 
-    const onMarkerPress = (element: GetNearbyIssueResponse) => {
+    const onMarkerPress = (element: any) => {
+        //large clusters zoom the map in instead of rendering a huge callout (#174)
+        if (element.issues != undefined && element.issues.length > 10) {
+            ref?.current?.animateToRegion({
+                latitude: element.latitude,
+                longitude: element.longitude,
+                latitudeDelta: (currentRegion.current?.latitudeDelta ?? 0.05) / 3,
+                longitudeDelta: (currentRegion.current?.longitudeDelta ?? 0.05) / 3,
+            }, 300)
+            return
+        }
         setCurrentElement(element)
         openCallout()
     }
@@ -86,6 +95,7 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
 
     // clusters
     const createClusters = () => {
+        if (issues == undefined) return []
         let viewList = structuredClone(issues)
         let i = 0
         while (i < viewList.length) {
@@ -202,15 +212,22 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
             i++
         }
 
-        const markers = viewList.map((entry: any) => {
+        return viewList
+    }
+
+    const markerList = useMemo(() => {
+        return createClusters().map((entry: any) => {
             if (entry.issues != undefined) {
+                //key by the cluster's member ids so it stays stable while
+                //the same issues are grouped, and re-mounts when regrouped
+                const clusterKey = entry.issues.map((issue: any) => issue.id).sort().join('-')
                 return <Marker
-                    key={entry.issues[0].id}
+                    key={clusterKey}
                     coordinate={{ latitude: entry.latitude, longitude: entry.longitude }}
                     style={{}}
-                    onPress={() => { onMarkerPress(entry) }} //<- TODO: build new callout for clusters
+                    onPress={() => { onMarkerPress(entry) }}
                 >
-                    <Cluster key={issues[0].id} issues={entry.issues} />
+                    <Cluster issues={entry.issues} />
                 </Marker>
             } else {
                 return <Marker
@@ -223,14 +240,10 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
                 </Marker>
             }
         })
-
-        setMarkerList(markers)
-    }
-    useEffect(() => {
-        createClusters()
     }, [issues, pinTolerance])
 
     const onRegionChange = (Region: any) => {
+        currentRegion.current = Region
         const newTolerance = Region.latitudeDelta * 111 * 1000 * 0.05
         if (newTolerance != pinTolerance) {
             setPinTolerance(newTolerance)
