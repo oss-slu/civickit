@@ -12,5 +12,13 @@ services:
     volumes:
       - civickit-data:/var/lib/postgresql/data
 
+  jaeger:
+    image: jaegertracing/all-in-one:1.76.0
+    container_name: civickit-jaegertrace
+    restart: unless-stopped
+    ports:
+      - "16686:16686"
+      - "4318:4318"
+
 volumes:
   civickit-data:
