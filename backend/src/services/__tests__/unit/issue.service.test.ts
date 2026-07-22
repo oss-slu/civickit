@@ -26,6 +26,8 @@ describe('IssueService', () => {
       create: vi.fn(),
       findById: vi.fn(),
       findNearby: vi.fn(),
+      findByUser: vi.fn(),
+      findByUpvoter: vi.fn(),
     } as unknown as Mocked<IssueRepository>;
 
     mockUpvoteRepository = {
@@ -217,6 +219,86 @@ describe('IssueService', () => {
       await expect(
         issueService.getIssueById('123')
       ).rejects.toThrow('Issue not found');
+    });
+  });
+
+  describe('getNearbyIssues', () => {
+    it('should return issues from the repository without an N+1 upvote count loop', async () => {
+      const mockIssues = [
+        { id: 'issue-1', upvoteCount: 3 },
+        { id: 'issue-2', upvoteCount: 0 },
+      ];
+      mockIssueRepository.findNearby.mockResolvedValue(mockIssues as any);
+
+      const result = await issueService.getNearbyIssues(38.627, -90.1994);
+
+      expect(mockUpvoteRepository.countUpvotes).not.toHaveBeenCalled();
+      expect(mockIssueRepository.findNearby).toHaveBeenCalledWith(
+        38.627,
+        -90.1994,
+        undefined,
+        undefined
+      );
+      expect(result).toEqual(mockIssues);
+      result.forEach((issue) => {
+        expect(typeof issue.upvoteCount).toBe('number');
+      });
+    });
+
+    it('should pass radius and limit through to the repository', async () => {
+      mockIssueRepository.findNearby.mockResolvedValue([]);
+
+      await issueService.getNearbyIssues(38.627, -90.1994, 500, 50);
+
+      expect(mockIssueRepository.findNearby).toHaveBeenCalledWith(
+        38.627,
+        -90.1994,
+        500,
+        50
+      );
+    });
+  });
+
+  describe('getIssuesByUser', () => {
+    it('should not call countUpvotes and should map _count.upvotes onto upvoteCount', async () => {
+      const mockIssues = [
+        { id: 'issue-1', _count: { upvotes: 5 } },
+        { id: 'issue-2', _count: { upvotes: 0 } },
+      ];
+      mockIssueRepository.findByUser.mockResolvedValue(mockIssues as any);
+
+      const result = await issueService.getIssuesByUser('user-123');
+
+      expect(mockUpvoteRepository.countUpvotes).not.toHaveBeenCalled();
+      expect(result).toEqual([
+        { id: 'issue-1', _count: { upvotes: 5 }, upvoteCount: 5 },
+        { id: 'issue-2', _count: { upvotes: 0 }, upvoteCount: 0 },
+      ]);
+      result.forEach((issue) => {
+        expect(typeof issue.upvoteCount).toBe('number');
+      });
+    });
+  });
+
+  describe('getIssuesByUserUpvotes', () => {
+    it('should call findByUpvoter exactly once and never call findById', async () => {
+      const mockIssues = [
+        { id: 'issue-1', _count: { upvotes: 2 } },
+      ];
+      mockIssueRepository.findByUpvoter.mockResolvedValue(mockIssues as any);
+
+      const result = await issueService.getIssuesByUserUpvotes('user-123');
+
+      expect(mockIssueRepository.findByUpvoter).toHaveBeenCalledTimes(1);
+      expect(mockIssueRepository.findByUpvoter).toHaveBeenCalledWith('user-123', undefined);
+      expect(mockIssueRepository.findById).not.toHaveBeenCalled();
+      expect(mockUpvoteRepository.countUpvotes).not.toHaveBeenCalled();
+      expect(result).toEqual([
+        { id: 'issue-1', _count: { upvotes: 2 }, upvoteCount: 2 },
+      ]);
+      result.forEach((issue) => {
+        expect(typeof issue.upvoteCount).toBe('number');
+      });
     });
   });
 });
