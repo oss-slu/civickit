@@ -2,7 +2,7 @@ Last updated 7/21/2026
 # Development Setup
 
 ## Prerequisites
-- Node.js 20+ (matches CI)
+- Node.js **>= 20.19** (Node 22 LTS recommended). Prisma 7 refuses to run on older 20.x releases such as 20.9, so `npm run db:setup` will fail to generate the client. An `.nvmrc` is provided — run `nvm use` to pick up the expected version.
 - Docker (runs the PostgreSQL 15 + PostGIS database)
 - Git
 - A free [Cloudinary](https://cloudinary.com) account (needed for image upload and database seeding)
