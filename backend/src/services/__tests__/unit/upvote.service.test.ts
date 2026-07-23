@@ -2,28 +2,10 @@
 
 import { UpvoteService } from '../../upvote.service';
 import { UpvoteRepository } from '../../../repositories/upvote.repository';
-import { describe, beforeEach, vi, it, expect, Mocked, Mock } from 'vitest';
-import { Prisma } from '@prisma/client';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import { exists } from 'fs';
+import { describe, beforeEach, vi, it, expect, Mocked } from 'vitest';
 
 // mock repository
 vi.mock('../../../src/repositories/upvote.repository');
-
-// mock bcrypt
-vi.mock('bcryptjs', () => ({
-    default: {
-        compare: vi.fn(),
-    },
-}));
-
-// mock jwt
-vi.mock('jsonwebtoken', () => ({
-    default: {
-        sign: vi.fn(),
-    },
-}));
 
 describe('UpvoteService', () => {
     let upvoteService: UpvoteService;
@@ -60,10 +42,11 @@ describe('UpvoteService', () => {
         });
 
         it('should throw 409 if issue already upvoted', async () => {
-            const error = new Prisma.PrismaClientKnownRequestError('Unique constraint failed', {
-                code: 'P2002',
-                clientVersion: '7.4.1',
-            });
+            // Mirrors the real runtime shape: Drizzle throws a DrizzleQueryError
+            // wrapping the node-postgres DatabaseError, so SQLSTATE 23505
+            // (unique_violation) is on `error.cause.code`, not on the error itself.
+            const dbError = Object.assign(new Error('duplicate key value'), { code: '23505' });
+            const error = Object.assign(new Error('Failed query'), { cause: dbError });
 
             mockUpvoteRepository.createUpvote.mockRejectedValueOnce(error);
 
@@ -99,12 +82,8 @@ describe('UpvoteService', () => {
         });
 
         it('should throw 404 if upvote does not exist', async () => {
-            const error = new Prisma.PrismaClientKnownRequestError('Record not found', {
-                code: 'P2025',
-                clientVersion: '7.4.1',
-            });
-
-            mockUpvoteRepository.deleteUpvote.mockRejectedValueOnce(error);
+            // Drizzle delete returns no row when nothing matched.
+            mockUpvoteRepository.deleteUpvote.mockResolvedValueOnce(undefined);
 
             await expect(upvoteService.removeUpvote('issue1', 'user1')).rejects.toEqual({
                 status: 404,
