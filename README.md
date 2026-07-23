@@ -21,6 +21,7 @@ In Development - SLU New Venture Accelerator(Summer 2026)
 - **Authentication**: BetterAuth
 
 ## Documentation
+- [Architecture](docs/ARCHITECTURE.md)
 - [Setup Guide](docs/SETUP.md)
 - [Contributing](docs/CONTRIBUTING.md)
 - [User Flows](docs/USER_FLOWS.md)
