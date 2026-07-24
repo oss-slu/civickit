@@ -1,5 +1,5 @@
 // mobile/src/services/cloudinaryService.ts
-import ENV from '../config/env';
+import { api } from './apiClient';
 
 interface CloudinaryUploadResponse {
     secure_url: string;
@@ -30,19 +30,10 @@ async function getUploadSignature(authToken: string): Promise<UploadSignature> {
         }
 
         const startTime = Date.now();
-        const response = await fetch(ENV.apiUrl + '/upload/signature', {
+        const result = await api<UploadSignature>('/upload/signature', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${authToken}`,
-            },
+            token: authToken,
         });
-
-        if (!response.ok) {
-            throw new Error('Failed to get upload signature from server');
-        }
-
-        const result = await response.json();
         const elapsed = Date.now() - startTime;
         
         // Cache the signature with expiration time

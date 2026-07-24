@@ -20,7 +20,7 @@ import Button from '../../components/Button';
 import IconButton from '../../components/IconButton';
 import SelectedImage from '../../components/SelectedImage';
 import ModalDropdown from '../../components/ModalDropdown';
-import ENV from '../../config/env';
+import { api } from '../../services/apiClient';
 import { ImagesContext, PhotoMetadataContext, UserLocationContext, AddressContext, TitleContext, CategoryContext, DescriptionContext, FormStartedContext } from '../../contexts/FormContexts';
 import { userLocation } from '../../types/userLocation';
 import { PhotoMetadataSource } from '../../utils/photoMetadata';
@@ -220,22 +220,21 @@ export default function IssueCreationScreen() {
             };
 
             const backendStartTime = Date.now();
-            const response = await fetch(ENV.apiUrl + '/issues/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${authToken}`,
-                },
-                body: JSON.stringify(requestBody)
-            });
-            performanceLog.times.backendSubmitMs = Date.now() - backendStartTime;
-
-            setIsLoading(false);
-
-            if (!response.ok) {
+            let issue;
+            try {
+                issue = await api('/issues/', {
+                    method: 'POST',
+                    body: requestBody,
+                    token: authToken
+                });
+            } catch (submitError) {
+                setIsLoading(false);
                 navigation.navigate('Error', { errorMessage: 'Upload Failed' });
                 throw new Error("Issue could not be reported at this time");
             }
+            performanceLog.times.backendSubmitMs = Date.now() - backendStartTime;
+
+            setIsLoading(false);
 
             performanceLog.times.totalMs = Date.now() - totalStartTime;
             console.log('Issue Creation Performance:', performanceLog);
@@ -245,7 +244,6 @@ export default function IssueCreationScreen() {
                 backgroundColor: palette.ckGreen,
                 color: colors.textContrast
             });
-            const issue = await response.json();
             setImages([])
             setPhotoMetadata([])
             setLocation(null)

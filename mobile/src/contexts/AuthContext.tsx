@@ -3,7 +3,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { getToken, saveToken, deleteToken } from '../services/AuthService';
 import { User } from '@civickit/shared';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import ENV from "../config/env";
+import { api } from "../services/apiClient";
 
 interface AuthContextType {
     isLoggedIn: boolean;
@@ -39,20 +39,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const { data, error, refetch } = useQuery({
         queryKey: ['user', authToken],
         enabled: !!authToken,
-        queryFn: async () => {
-            const response = await fetch(
-                ENV.apiUrl + '/auth/user',
-                { headers: { Authorization: `Bearer ${authToken}` } }
-            );
-            if (!response.ok) {
-                if (response.status == 401 || response.status == 404) {
-                    throw new Error('Invalid Token');
-                } else {
-                    throw new Error("Failed to Fetch")
-                }
-            }
-            return response.json()
-        },
+        queryFn: () => api('/auth/user', { token: authToken }),
     }, queryClient);
 
     //login store token + update state

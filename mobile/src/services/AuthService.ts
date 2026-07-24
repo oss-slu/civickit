@@ -1,10 +1,9 @@
 //mobile/src/services/AuthService.ts
-import * as SecureStore from 'expo-secure-store';
-import ENV from '../config/env';
 import { User } from '@civickit/shared';
+import { api, ApiError } from './apiClient';
 
-//reusable ket used to store/retrieve JWR token from secure storage
-export const AUTH_TOKEN_KEY = 'AUTH_TOKEN';
+// Token Storage (re-exported so existing imports keep working)
+export { AUTH_TOKEN_KEY, saveToken, getToken, deleteToken } from './tokenStorage';
 
 //represents a logged in user
 export interface AuthUser {
@@ -18,56 +17,40 @@ export interface AuthResponse {
     user: User;
 }
 
-// Token Storage 
-export const saveToken = async (token: string): Promise<void> => {
-    await SecureStore.setItemAsync(AUTH_TOKEN_KEY, token);
-};
-
-export const getToken = async (): Promise<string | null> => {
-    return await SecureStore.getItemAsync(AUTH_TOKEN_KEY);
-};
-
-export const deleteToken = async (): Promise<void> => {
-    await SecureStore.deleteItemAsync(AUTH_TOKEN_KEY);
-};
-
 // API Calls
 export const registerUser = async (
     name: string,
     email: string,
     password: string
 ): Promise<AuthResponse> => {
-    const response = await fetch(`${ENV.apiUrl}/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password }),
-    });
-    const json = await response.json();
-
-    if (!response.ok) {
-        // Surface the server's error message (e.g. "Email already in use")
-        throw new Error(json?.message ?? 'Registration failed. Please try again.');
+    try {
+        return await api<AuthResponse>('/auth/register', {
+            method: 'POST',
+            body: { name, email, password },
+            token: null,
+        });
+    } catch (error) {
+        if (error instanceof ApiError && error.body?.message == undefined) {
+            throw new Error('Registration failed. Please try again.');
+        }
+        throw error;
     }
-
-    return json as AuthResponse;
 };
 
 export const loginUser = async (
     email: string,
     password: string
 ): Promise<AuthResponse> => {
-    const response = await fetch(`${ENV.apiUrl}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-    });
-
-    const json = await response.json();
-    console.log('Login response:', JSON.stringify(json));
-
-    if (!response.ok) {
-        throw new Error(json?.message ?? 'Login failed. Check your credentials.');
+    try {
+        return await api<AuthResponse>('/auth/login', {
+            method: 'POST',
+            body: { email, password },
+            token: null,
+        });
+    } catch (error) {
+        if (error instanceof ApiError && error.body?.message == undefined) {
+            throw new Error('Login failed. Check your credentials.');
+        }
+        throw error;
     }
-
-    return json as AuthResponse;
 };
