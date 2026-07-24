@@ -1,0 +1,28 @@
+{
+  "name": "civickit",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Root task runner for the CivicKit backend, mobile, and web projects",
+  "license": "MIT",
+  "scripts": {
+    "setup": "npm run env:init && npm run install:all && npm run db:setup",
+    "env:init": "node -e \"const fs=require('fs');if(fs.existsSync('backend/.env')){console.log('backend/.env already exists, leaving it alone')}else{fs.copyFileSync('backend/.env.example','backend/.env');console.log('created backend/.env from .env.example -- fill in your Cloudinary values')}\"",
+    "install:all": "cd shared && npm install && cd ../backend && npm install && cd ../web && npm install && cd ../mobile && npm install",
+    "dev": "npm run db:up && concurrently -n backend,mobile,web -c blue,magenta,green \"npm:dev:backend\" \"npm:dev:mobile\" \"npm:dev:web\"",
+    "dev:services": "npm run db:up && concurrently -n backend,web -c blue,green \"npm:dev:backend\" \"npm:dev:web\"",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:mobile": "cd mobile && npm start",
+    "dev:web": "cd web && npm run dev",
+    "db:up": "cd backend && npm run db:up",
+    "db:down": "cd backend && npm run db:down",
+    "db:setup": "cd backend && npm run db:setup",
+    "db:studio": "cd backend && npm run db:studio",
+    "seed": "cd backend && npm run seed:run",
+    "seed:reset": "cd backend && npm run seed:reset",
+    "test": "cd backend && npm test -- --run && cd ../mobile && npm test --if-present",
+    "typecheck": "cd backend && npm run typecheck && cd ../web && npm run typecheck && cd ../mobile && npm run typecheck --if-present"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

@@ -1,7 +1,6 @@
 import { palette } from "@/lib/colors"
 import { Eye, Layers, ShieldCheck, TrendingUp } from "lucide-react"
 import Reveal from "../Reveal"
-import MapVisualization from "../MapVisualization"
 
 export default function SharedMap() {
     const benefits = [

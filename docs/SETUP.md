@@ -21,6 +21,36 @@ Notes:
 - `JWT_SECRET` must be at least 16 characters or the server refuses to start.
 - The `CLOUDINARY_*` values come from your Cloudinary dashboard. The server starts without them, but image upload and seeding will fail until they are filled in.
 
+## Quick Start (all projects)
+From the repository root:
+```bash
+npm install       # root task runner only
+npm run setup     # installs every project, creates backend/.env, starts the database
+npm run dev       # database + backend + mobile + web in one terminal
+```
+Fill in the `CLOUDINARY_*` values in `backend/.env` before uploading images or seeding.
+
+| command | what it does |
+|---|---|
+| `npm run dev` | database + backend + mobile + web |
+| `npm run dev:services` | database + backend + web only |
+| `npm run dev:backend` / `dev:mobile` / `dev:web` | one project on its own |
+| `npm run db:up` / `db:down` / `db:studio` | database container and Prisma Studio |
+| `npm run seed` / `seed:reset` | sample data |
+| `npm test` | tests across all projects |
+| `npm run typecheck` | typecheck across all projects |
+
+Two caveats worth knowing:
+- Under `npm run dev`, Expo is not attached to an interactive terminal, so its keyboard
+  shortcuts (`i`, `a`, `r`) do nothing. The QR code and logs work normally. For the
+  shortcuts, run `npm run dev:services` in one terminal and `npm run dev:mobile` in another.
+- `npm run typecheck` includes `web`, which needs `web/src/routeTree.gen.ts`. That file is
+  generated and gitignored, so on a fresh clone run `npm run dev:web` (or `cd web && npm run build`)
+  once before typechecking.
+
+The sections below cover each project individually, which is still the right path if you
+only want to work on one of them.
+
 ## Backend Setup
 1. Clone repo
 2. `cd backend`
