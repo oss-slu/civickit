@@ -1,6 +1,6 @@
 //mobile/src/hooks/useAuthToken.ts
 import { useEffect, useState } from 'react';
-import { getToken } from '../services/AuthService';
+import { getToken } from '../services/tokenStorage';
 
 /**
  * Checks SecureStore on mount and returns whether a token exists.

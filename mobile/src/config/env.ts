@@ -59,13 +59,3 @@ export function getApiBaseUrl(): string {
     }
     return cachedBaseUrl;
 }
-
-// Getter rather than a plain field so resolution stays lazy for the existing
-// `ENV.apiUrl` call sites.
-const ENV = {
-    get apiUrl(): string {
-        return getApiBaseUrl();
-    },
-};
-
-export default ENV;
