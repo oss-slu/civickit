@@ -28,7 +28,7 @@ In Development - SLU New Venture Accelerator(Summer 2026)
 
 ## Getting Started
 ### Prerequisites
-- Node.js 20+: https://nodejs.org/en/download, install tools for native modules
+- Node.js >= 20.19 (Node 22 LTS recommended): https://nodejs.org/en/download, install tools for native modules
 check installation with ```npm -v```
 - Docker (runs PostgreSQL 15 + PostGIS locally)
 - Expo Go app installed on your phone (iOS or Android)

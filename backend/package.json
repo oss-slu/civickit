@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "engines": {
+    "node": ">=20.19"
+  },
   "scripts": {
     "migrate:dev": "npx prisma migrate dev --name init --schema ./prisma/schema.prisma --config ./prisma.config.ts",
     "dev": "tsx watch src/server.ts",
