@@ -17,7 +17,6 @@ import { StackParams } from '../../types/StackParams';
 import { registerUser } from '../../services/AuthService';
 import { useAuth } from '../../contexts/AuthContext';
 import { globalStyles } from '../../styles';
-import { loginUser } from '../../services/AuthService';
 import { colors, spacing, typography, borderRadius } from '../../styles/theme';
 // Validation
 const isValidEmail = (email: string) =>
@@ -92,8 +91,8 @@ export default function RegisterScreen() {
         try {
             console.log("handling register")
             setIsLoading(true);
-            const { token } = await registerUser(name.trim(), email.trim(), password);
-            const { user } = await loginUser(email.trim(), password);
+            // Registration already returns a signed-in session — no second login.
+            const { token, user } = await registerUser(name.trim(), email.trim(), password);
             setUser(user)
             await login(token);
         } catch (error: any) {

@@ -3,7 +3,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { getToken, saveToken, deleteToken } from '../services/tokenStorage';
 import { User } from '@civickit/shared';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { authApi, queryKeys } from '../api';
+import { authApi, queryKeys, setUnauthorizedHandler } from '../api';
 
 interface AuthContextType {
     isLoggedIn: boolean;
@@ -35,6 +35,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         })();
     }, []); //no dependencies bc it runs once on mount to check for token
 
+    //logout deletes token + updates state
+    const logout = async () => {
+        await deleteToken();
+        setAuthToken(null);
+        setUser(null)
+        setIsLoggedIn(false);
+        queryClient.clear();
+    };
+
+    // Any 401 from the API — including a token that expires mid-session —
+    // tears down auth state instead of leaving a signed-in shell that 401s.
+    useEffect(() => {
+        setUnauthorizedHandler(() => { void logout(); });
+        return () => setUnauthorizedHandler(null);
+    }, []);
 
     const { data, error } = useQuery({
         queryKey: queryKeys.currentUser(authToken),
@@ -47,13 +62,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         await saveToken(token);
         setAuthToken(token);
         setIsLoggedIn(true);
-    };
-    //logout deletes token + updates state
-    const logout = async () => {
-        await deleteToken();
-        setAuthToken(null);
-        setUser(null)
-        setIsLoggedIn(false);
     };
 
     if (error != null && isLoading == true) {

@@ -1,6 +1,7 @@
 // mobile/App.tsx
 import { NavigationContainer } from '@react-navigation/native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ApiError } from './src/api';
 import { AuthProvider, useAuth } from './src/contexts/AuthContext';
 import { MessageView } from './src/components/MessageView';
 import { StackParams } from './src/types/StackParams';
@@ -28,7 +29,19 @@ import LoadingScreen from './src/screens/Misc/LoadingScreen';
 
 const Tab = createBottomTabNavigator<TabParams>();
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // A 4xx will not become a 2xx on retry — only retry transport failures.
+      retry: (failureCount, error) => {
+        if (error instanceof ApiError && error.status >= 400 && error.status < 500) {
+          return false;
+        }
+        return failureCount < 2;
+      },
+    },
+  },
+});
 
 const Stack = createNativeStackNavigator<StackParams>();
 
