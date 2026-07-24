@@ -2,6 +2,7 @@
 
 import { Router } from "express";
 import { AuthController } from "../controllers/auth.controller";
+import { authMiddleware } from "../middleware/auth.middleware";
 
 const router = Router();
 const authController = new AuthController();
@@ -15,6 +16,6 @@ const limiter = RateLimit({
 router.use(limiter)
 
 router.post("/register", authController.register.bind(authController));
-router.get('/user', authController.getUserByToken);
+router.get('/user', authMiddleware, authController.getCurrentUser);
 
 export default router;

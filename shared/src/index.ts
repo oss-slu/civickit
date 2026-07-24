@@ -11,6 +11,7 @@ export {
 export {
     ApiResponse,
     CreateIssueDTO,
+    PostUpdateDTO,
     LoginDTO,
     LoginResponse,
     CreateAuthDTO,

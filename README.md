@@ -1,11 +1,11 @@
-last updated: 1/15/2026
+last updated: 7/21/2026
 
 # CivicKit
 
 Open source civic engagement platform for reporting issues and organizing community action.
 
 ## Project Status
-In Development - Capstone II Project (Spring 2026)
+In Development - SLU New Venture Accelerator(Summer 2026)
 
 ## Team
 - Briana Huelsman - Project Lead
@@ -14,7 +14,7 @@ In Development - Capstone II Project (Spring 2026)
 
 ## Tech Stack
 - **Mobile**: React Native (Expo)
-- **Web**: React + Vite
+- **Web**: React (TanStack Start + Vite, deployed to Cloudflare Workers)
 - **Backend**: Node.js + Express + TypeScript + Prisma
 - **Database**: PostgreSQL + PostGIS
 - **Image Storage**: Cloudinary
@@ -22,16 +22,16 @@ In Development - Capstone II Project (Spring 2026)
 
 ## Documentation
 - [Setup Guide](docs/SETUP.md)
-- [Architecture](docs/ARCHITECTURE.md)
 - [Contributing](docs/CONTRIBUTING.md)
-- [API Docs](docs/API.md)
+- [User Flows](docs/USER_FLOWS.md)
+- [Security](docs/SECURITY.md)
 
 ## Getting Started
 ### Prerequisites
-- Node.js 18+: https://nodejs.org/en/download, install tools for native modules
+- Node.js 20+: https://nodejs.org/en/download, install tools for native modules
 check installation with ```npm -v```
-- PostgreSQL 15+ with PostGIS enabled
-- Expo Go app installed on your phoone (iOS or Android)
+- Docker (runs PostgreSQL 15 + PostGIS locally)
+- Expo Go app installed on your phone (iOS or Android)
 - npm
 
 ## Running the Project Locally

@@ -5,19 +5,20 @@ import { CreateIssueDTO, IssueStatus } from '@civickit/shared';
 import { uploadImage } from '../utils/cloudinary';
 import { UpvoteRepository } from '../repositories/upvote.repository';
 import { is } from 'zod/v4/locales';
+import { AppError } from '../utils/errors';
 
 export class IssueService {
   constructor(private issueRepository: IssueRepository, private upvoteRepository: UpvoteRepository) { }
 
   async createIssue(data: CreateIssueDTO, userId: string) {
     if (!data.title || data.title.length < 3) {
-      throw { status: 400, message: 'Title must be at least 3 characters' };
+      throw new AppError('Title must be at least 3 characters', 400);
     }
     if (!data.category) {
-      throw { status: 400, message: 'Category is required' };
+      throw new AppError('Category is required', 400);
     }
     if (data.latitude === undefined || data.longitude === undefined) {
-      throw { status: 400, message: 'Latitude and longitude are required' };
+      throw new AppError('Latitude and longitude are required', 400);
     }
 
     // Images are already URLs from Cloudinary, provided by the client
@@ -25,28 +26,14 @@ export class IssueService {
     return this.issueRepository.create({ ...data, userId, status: 'REPORTED' });
   }
 
-  async getNearbyIssues(lat: number, lng: number, radius?: number) {
-    const issues = await this.issueRepository.findNearby(lat, lng, radius);
-
-    const issuesWithUpvoteCounts = await Promise.all(
-      issues.map(async (issue) => {
-
-        const upvoteCount = await this.upvoteRepository.countUpvotes(issue.id);
-
-        return {
-          ...issue,
-          upvoteCount,
-        };
-
-      })
-    );
-    return issuesWithUpvoteCounts;
+  async getNearbyIssues(lat: number, lng: number, radius?: number, limit?: number) {
+    return this.issueRepository.findNearby(lat, lng, radius, limit);
   }
 
   async getIssueById(id: string) {
     const issue = await this.issueRepository.findById(id);
     if (!issue) {
-      throw { status: 404, message: 'Issue not found' };
+      throw new AppError('Issue not found', 404);
     }
 
     const upvoteCount = await this.upvoteRepository.countUpvotes(issue.id);
@@ -57,48 +44,21 @@ export class IssueService {
     };
   }
 
-  async getIssuesByUser(id: string) {
-    const issues = await this.issueRepository.findByUser(id);
+  async getIssuesByUser(id: string, limit?: number) {
+    const issues = await this.issueRepository.findByUser(id, limit);
 
-    const issuesWithUpvoteCounts = await Promise.all(
-      issues.map(async (issue) => {
-
-        const upvoteCount = await this.upvoteRepository.countUpvotes(issue.id);
-
-        return {
-          ...issue,
-          upvoteCount,
-        };
-
-      })
-    );
-
-    return issuesWithUpvoteCounts;
+    return issues.map((issue) => ({ ...issue, upvoteCount: issue._count.upvotes }));
   }
 
-  async getIssuesByUserUpvotes(id: string) {
-    const upvotes = await this.upvoteRepository.findByUser(id);
-    const issues = await Promise.all(upvotes.map(async (upvote) => { return this.issueRepository.findById(upvote.issueId) }))
-    const issuesWithUpvoteCounts = await Promise.all(
-      issues.map(async (issue) => {
+  async getIssuesByUserUpvotes(id: string, limit?: number) {
+    const issues = await this.issueRepository.findByUpvoter(id, limit);
 
-        const upvoteCount = await this.upvoteRepository.countUpvotes(issue!.id);
-
-        return {
-          ...issue,
-          upvoteCount,
-        };
-
-      })
-    );
-
-    return issuesWithUpvoteCounts;
-
+    return issues.map((issue) => ({ ...issue, upvoteCount: issue._count.upvotes }));
   }
 
   // update status tag
+  // Callers must gate this behind requirePermission('update:issue_status').
   async updateStatus(id: string, status: IssueStatus) {
-    // TODO: add user restrictions here for role based access control
     return this.issueRepository.updateStatus(id, { status });
   }
 }

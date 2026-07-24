@@ -29,16 +29,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         (async () => {
             const token = await getToken();
             setAuthToken(token);
+            if (token == null) {
+                setIsLoading(false); //no stored token: skip user fetch, go to login
+            }
         })();
     }, []); //no dependencies bc it runs once on mount to check for token
 
 
     const { data, error, refetch } = useQuery({
-        queryKey: ['user'],
+        queryKey: ['user', authToken],
+        enabled: !!authToken,
         queryFn: async () => {
             const response = await fetch(
-                ENV.apiUrl + '/auth/user?token=' +
-                authToken
+                ENV.apiUrl + '/auth/user',
+                { headers: { Authorization: `Bearer ${authToken}` } }
             );
             if (!response.ok) {
                 if (response.status == 401 || response.status == 404) {
