@@ -26,22 +26,8 @@ export class IssueService {
     return this.issueRepository.create({ ...data, userId, status: 'REPORTED' });
   }
 
-  async getNearbyIssues(lat: number, lng: number, radius?: number) {
-    const issues = await this.issueRepository.findNearby(lat, lng, radius);
-
-    const issuesWithUpvoteCounts = await Promise.all(
-      issues.map(async (issue) => {
-
-        const upvoteCount = await this.upvoteRepository.countUpvotes(issue.id);
-
-        return {
-          ...issue,
-          upvoteCount,
-        };
-
-      })
-    );
-    return issuesWithUpvoteCounts;
+  async getNearbyIssues(lat: number, lng: number, radius?: number, limit?: number) {
+    return this.issueRepository.findNearby(lat, lng, radius, limit);
   }
 
   async getIssueById(id: string) {
@@ -58,43 +44,16 @@ export class IssueService {
     };
   }
 
-  async getIssuesByUser(id: string) {
-    const issues = await this.issueRepository.findByUser(id);
+  async getIssuesByUser(id: string, limit?: number) {
+    const issues = await this.issueRepository.findByUser(id, limit);
 
-    const issuesWithUpvoteCounts = await Promise.all(
-      issues.map(async (issue) => {
-
-        const upvoteCount = await this.upvoteRepository.countUpvotes(issue.id);
-
-        return {
-          ...issue,
-          upvoteCount,
-        };
-
-      })
-    );
-
-    return issuesWithUpvoteCounts;
+    return issues.map((issue) => ({ ...issue, upvoteCount: issue._count.upvotes }));
   }
 
-  async getIssuesByUserUpvotes(id: string) {
-    const upvotes = await this.upvoteRepository.findByUser(id);
-    const issues = await Promise.all(upvotes.map(async (upvote) => { return this.issueRepository.findById(upvote.issueId) }))
-    const issuesWithUpvoteCounts = await Promise.all(
-      issues.map(async (issue) => {
+  async getIssuesByUserUpvotes(id: string, limit?: number) {
+    const issues = await this.issueRepository.findByUpvoter(id, limit);
 
-        const upvoteCount = await this.upvoteRepository.countUpvotes(issue!.id);
-
-        return {
-          ...issue,
-          upvoteCount,
-        };
-
-      })
-    );
-
-    return issuesWithUpvoteCounts;
-
+    return issues.map((issue) => ({ ...issue, upvoteCount: issue._count.upvotes }));
   }
 
   // update status tag
