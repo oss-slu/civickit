@@ -1,73 +1,21 @@
 //mobile/src/services/AuthService.ts
-import * as SecureStore from 'expo-secure-store';
-import ENV from '../config/env';
-import { User } from '@civickit/shared';
+import type { LoginResponse } from '@civickit/shared';
+import * as authApi from '../api/auth';
 
-//reusable ket used to store/retrieve JWR token from secure storage
-export const AUTH_TOKEN_KEY = 'AUTH_TOKEN';
+export { AUTH_TOKEN_KEY, saveToken, getToken, deleteToken } from './tokenStorage';
 
-//represents a logged in user
-export interface AuthUser {
-    id: string;
-    name: string;
-    email: string;
-}
 //represents what the backend returns after login/register
-export interface AuthResponse {
-    token: string;
-    user: User;
-}
+export type AuthResponse = LoginResponse;
 
-// Token Storage 
-export const saveToken = async (token: string): Promise<void> => {
-    await SecureStore.setItemAsync(AUTH_TOKEN_KEY, token);
-};
-
-export const getToken = async (): Promise<string | null> => {
-    return await SecureStore.getItemAsync(AUTH_TOKEN_KEY);
-};
-
-export const deleteToken = async (): Promise<void> => {
-    await SecureStore.deleteItemAsync(AUTH_TOKEN_KEY);
-};
-
-// API Calls
-export const registerUser = async (
+/**
+ * Registration signs the user in server-side and returns the same payload as
+ * login, so there is no need for a follow-up login request.
+ */
+export const registerUser = (
     name: string,
     email: string,
-    password: string
-): Promise<AuthResponse> => {
-    const response = await fetch(`${ENV.apiUrl}/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password }),
-    });
-    const json = await response.json();
+    password: string,
+): Promise<AuthResponse> => authApi.register(name, email, password);
 
-    if (!response.ok) {
-        // Surface the server's error message (e.g. "Email already in use")
-        throw new Error(json?.message ?? 'Registration failed. Please try again.');
-    }
-
-    return json as AuthResponse;
-};
-
-export const loginUser = async (
-    email: string,
-    password: string
-): Promise<AuthResponse> => {
-    const response = await fetch(`${ENV.apiUrl}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-    });
-
-    const json = await response.json();
-    console.log('Login response:', JSON.stringify(json));
-
-    if (!response.ok) {
-        throw new Error(json?.message ?? 'Login failed. Check your credentials.');
-    }
-
-    return json as AuthResponse;
-};
+export const loginUser = (email: string, password: string): Promise<AuthResponse> =>
+    authApi.login(email, password);

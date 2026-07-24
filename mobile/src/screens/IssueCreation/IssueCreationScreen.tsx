@@ -20,7 +20,7 @@ import Button from '../../components/Button';
 import IconButton from '../../components/IconButton';
 import SelectedImage from '../../components/SelectedImage';
 import ModalDropdown from '../../components/ModalDropdown';
-import ENV from '../../config/env';
+import { NetworkError, issuesApi } from '../../api';
 import { ImagesContext, PhotoMetadataContext, UserLocationContext, AddressContext, TitleContext, CategoryContext, DescriptionContext, FormStartedContext } from '../../contexts/FormContexts';
 import { userLocation } from '../../types/userLocation';
 import { PhotoMetadataSource } from '../../utils/photoMetadata';
@@ -193,7 +193,7 @@ export default function IssueCreationScreen() {
                         backgroundColor: palette.ckGreen,
                         color: colors.textContrast
                     });
-                    imageUrls = await uploadImagesToCloudinary(images, authToken);
+                    imageUrls = await uploadImagesToCloudinary(images);
                     performanceLog.times.imageUploadMs = Date.now() - imageUploadStartTime;
                 } catch (uploadError) {
                     setIsLoading(false);
@@ -220,22 +220,17 @@ export default function IssueCreationScreen() {
             };
 
             const backendStartTime = Date.now();
-            const response = await fetch(ENV.apiUrl + '/issues/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${authToken}`,
-                },
-                body: JSON.stringify(requestBody)
-            });
+            let issue;
+            try {
+                issue = await issuesApi.createIssue(requestBody);
+            } catch (submitError) {
+                setIsLoading(false);
+                navigation.navigate('Error', { errorMessage: 'Upload Failed' });
+                throw submitError;
+            }
             performanceLog.times.backendSubmitMs = Date.now() - backendStartTime;
 
             setIsLoading(false);
-
-            if (!response.ok) {
-                navigation.navigate('Error', { errorMessage: 'Upload Failed' });
-                throw new Error("Issue could not be reported at this time");
-            }
 
             performanceLog.times.totalMs = Date.now() - totalStartTime;
             console.log('Issue Creation Performance:', performanceLog);
@@ -245,7 +240,6 @@ export default function IssueCreationScreen() {
                 backgroundColor: palette.ckGreen,
                 color: colors.textContrast
             });
-            const issue = await response.json();
             setImages([])
             setPhotoMetadata([])
             setLocation(null)
@@ -260,10 +254,11 @@ export default function IssueCreationScreen() {
             navigation.navigate('Issue Details', { issue: issue });
 
         } catch (error: any) {
-            if (error.message.includes("latitude") || error.message.includes("longtitude")) {
+            const message = String(error?.message ?? error)
+            if (message.includes("latitude") || message.includes("longitude")) {
                 navigation.navigate('Error', { errorMessage: 'Location permission denied' })
                 throw new Error("Location permission denied")
-            } else if (error.message.includes("network")) {
+            } else if (error instanceof NetworkError) {
                 navigation.navigate('Error', { errorMessage: 'NetworkError' })
                 throw new Error("Network Error")
             } else {
