@@ -1,7 +1,11 @@
-//mobile/src/services/tokenStorage.ts
+// mobile/src/services/tokenStorage.ts
 import * as SecureStore from 'expo-secure-store';
 
-//reusable key used to store/retrieve JWT token from secure storage
+/**
+ * Sole owner of the stored JWT. Kept separate from AuthService so the API
+ * client can read the token without importing the API surface back into
+ * itself.
+ */
 export const AUTH_TOKEN_KEY = 'AUTH_TOKEN';
 
 export const saveToken = async (token: string): Promise<void> => {

@@ -6,9 +6,8 @@ import { GetNearbyIssueResponse, Issue } from '@civickit/shared';
 import { format, formatDistanceToNow } from 'date-fns';
 import { CategoryIcon, ClockIcon, LocationPinIcon, TagIcon, WrenchIcon } from '../../components/Icons';
 import { borderRadius, colors, globalStyles, palette, size, spacing, typography } from '../../styles';
-import { useAuth } from '../../contexts/AuthContext';
 import { PROVIDER_GOOGLE } from 'react-native-maps/lib/ProviderConstants';
-import { api } from '../../services/apiClient';
+import { issuesApi } from '../../api';
 import Pin from '../../components/Pin';
 import { showLocation } from 'react-native-map-link';
 
@@ -39,25 +38,26 @@ const IssueDetailScreen = () => {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   const navigation = useNavigation();
-  const { authToken } = useAuth();
 
   const resolvedAddress = issue.address || 'No address available';
   const formatSource = (source?: string) => source === 'exif' ? 'Photo metadata' : 'Device GPS';
 
   useEffect(() => {
-    const fetchUpvoteState = async () => {
-      try {
-        const data = await api(`/issues/${issue.id}/upvote`, { token: authToken });
+    const controller = new AbortController();
 
-        setHasEndorsed(data.upvoted);
-        setUpvoteCount(data.upvoteCount);
-      } catch (err) {
-        console.error("Failed to fetch upvote state:", err);
-      }
-    };
+    issuesApi
+      .getUpvoteState(issue.id, controller.signal)
+      .then((state) => {
+        setHasEndorsed(state.upvoted);
+        setUpvoteCount(state.upvoteCount);
+      })
+      .catch((err) => {
+        if (controller.signal.aborted) return;
+        console.error('Failed to fetch upvote state:', err);
+      });
 
-    fetchUpvoteState();
-  }, []);
+    return () => controller.abort();
+  }, [issue.id]);
 
 
   const handleEndorse = async () => {
@@ -66,12 +66,12 @@ const IssueDetailScreen = () => {
     try {
       setLoading(true);
 
-      const method = hasEndorsed ? 'DELETE' : 'POST';
+      const state = hasEndorsed
+        ? await issuesApi.removeUpvote(issue.id)
+        : await issuesApi.addUpvote(issue.id);
 
-      const data = await api(`/issues/${issue.id}/upvote`, { method, token: authToken });
-
-      setHasEndorsed(data.upvoted);
-      setUpvoteCount(data.upvoteCount);
+      setHasEndorsed(state.upvoted);
+      setUpvoteCount(state.upvoteCount);
 
     } catch (err) {
       console.error('Endorse failed:', err);

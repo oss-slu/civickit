@@ -12,9 +12,8 @@ import { StackParams } from "../../types/StackParams";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { Image } from "expo-image";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { api } from '../../services/apiClient';
+import { issuesApi, queryKeys } from "../../api";
 import LoadingScreen from "../Misc/LoadingScreen";
-import Svg, { Circle } from "react-native-svg";
 
 export default function ProfileScreen({ route }: any) {
     const { logout } = useAuth();
@@ -29,13 +28,15 @@ export default function ProfileScreen({ route }: any) {
 
     const navigation = useNavigation<StackNavigationProp<StackParams>>();
     const issuesQuery = useQuery({
-        queryKey: ['issues', 'user'],
-        queryFn: () => api('/issues/user', { params: { id: user?.id } })
+        queryKey: queryKeys.issues.byUser(user?.id),
+        enabled: !!user?.id,
+        queryFn: ({ signal }) => issuesApi.getIssuesByUser(user!.id, { signal }),
     }, queryClient);
 
     const upvotesQuery = useQuery({
-        queryKey: ['upvotes', 'user'],
-        queryFn: () => api('/issues/userUpvotes', { params: { id: user?.id } })
+        queryKey: queryKeys.upvotes.byUser(user?.id),
+        enabled: !!user?.id,
+        queryFn: ({ signal }) => issuesApi.getIssuesUpvotedByUser(user!.id, { signal }),
     }, queryClient);
 
     const refetchQueries = () => {
@@ -74,7 +75,11 @@ export default function ProfileScreen({ route }: any) {
         )
     }
 
-
+    // Both queries stay disabled until the user id is known, so data can still
+    // be absent here without either query having errored.
+    if (issuesQuery.data == null || upvotesQuery.data == null) {
+        return <LoadingScreen />
+    }
 
     return (
         <ScrollView contentContainerStyle={[styles.container]}
@@ -82,7 +87,6 @@ export default function ProfileScreen({ route }: any) {
                 refreshing={refreshing}
                 onRefresh={refetchQueries} />}
         >
-
             <IconButton style={{ ...styles.button, flexDirection: "row", columnGap: spacing.sm, alignSelf: "flex-end" }}
                 onPress={() => navigation.navigate("Settings", {})}>
                 <SettingsIcon color={styles.button.color} size={styles.button.fontSize} />

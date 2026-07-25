@@ -11,9 +11,9 @@ import { Issue } from "@civickit/shared";
 import CategoryPieChart from "../../components/CategoryPieChart";
 import ModalDropdown from "../../components/ModalDropdown";
 import { CaretDownIcon, RefreshIcon, RightArrowIcon } from "../../components/Icons";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "../../contexts/LocationContext";
-import { api } from '../../services/apiClient';
+import { issuesApi, queryKeys } from "../../api";
 import { FlatList } from "react-native-gesture-handler";
 import { GetNearbyIssueResponse } from "@civickit/shared/src/types/api";
 import IconButton from "../../components/IconButton";
@@ -33,25 +33,28 @@ export default function StatsScreen() {
     const [time, setTime] = useState("All Time")
     const [statusNumbers, setStatusNumbers] = useState<record>({})
     const [categoryNumbers, setCategoryNumbers] = useState<record>({})
-    const [filteredData, setFilteredData] = useState([])
+    const [filteredData, setFilteredData] = useState<GetNearbyIssueResponse[]>([])
     const queryClient = useQueryClient()
     const location = useLocation().location
     const navigation = useNavigation<StackNavigationProp<StackParams>>()
 
-    async function queryFunction({ queryKey }: any) {
-        const [radius] = queryKey
-        return api('/issues/nearby', {
-            params: {
-                lat: location.latitude,
-                lng: location.longitude,
-                radius: parseInt(radius) * 1609.34 //miles -> meters
-            }
-        });
-    }
+    const radiusMiles = parseInt(radius)
 
     const { data, isLoading, error, refetch } = useQuery({
-        queryKey: [radius],
-        queryFn: queryFunction
+        queryKey: queryKeys.issues.nearby({
+            lat: location.latitude,
+            lng: location.longitude,
+            radiusMiles,
+        }),
+        queryFn: ({ signal }) =>
+            issuesApi.getNearbyIssues({
+                lat: location.latitude,
+                lng: location.longitude,
+                radiusMiles,
+                signal,
+            }),
+        // Keep the current chart data on screen while a new radius loads.
+        placeholderData: keepPreviousData,
     }, queryClient);
 
     useFocusEffect(
