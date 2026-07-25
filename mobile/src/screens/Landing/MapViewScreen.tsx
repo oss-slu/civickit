@@ -3,7 +3,7 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useMemo, useRef, useState } from 'react';
 import { View, Animated, useAnimatedValue } from 'react-native';
-import { Circle, Geojson, LatLng, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { StackParams } from '../../types/StackParams';
 import { useLocation } from '../../contexts/LocationContext';
 import Pin from '../../components/Pin';
@@ -15,11 +15,20 @@ import CalloutPopup from '../../components/CalloutPopup';
 import Cluster from '../../components/Cluster';
 import { getDistance } from 'geolib';
 import CalloutListPopup from '../../components/CalloutListPopup';
+import { GetNearbyIssueResponse } from '@civickit/shared';
 
 interface IssueCluster {
-    issues: any[]
+    issues: GetNearbyIssueResponse[]
     latitude: number,
     longitude: number
+}
+
+//a marker on the map is either a lone issue or a cluster standing in for several
+type MapElement = GetNearbyIssueResponse | IssueCluster
+
+//only a cluster carries a member list, which is what every call site branches on
+function isCluster(element: MapElement): element is IssueCluster {
+    return (element as IssueCluster).issues != undefined
 }
 
 export default function MapViewScreen({ ref, issues, refetch }: any) {
@@ -27,7 +36,7 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
     const bottomSheetRef = useRef<BottomSheet>(null);
     const snapPoints = [36, "30%", "80%"]
     const [bottomSheetInd, setBottomSheetInd] = useState<number>(0);
-    const [currentElement, setCurrentElement] = useState<any>(undefined)
+    const [currentElement, setCurrentElement] = useState<MapElement | undefined>(undefined)
     const fadeAnim = useAnimatedValue(0);
     const posAnim = useAnimatedValue(0);
     const [paddingBottom, setPaddingBottom] = useState("110%")
@@ -40,9 +49,9 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
     //get contexts from above layer(s)
     const location = useLocation().location
 
-    const onMarkerPress = (element: any) => {
+    const onMarkerPress = (element: MapElement) => {
         //large clusters zoom the map in instead of rendering a huge callout (#174)
-        if (element.issues != undefined && element.issues.length > 10) {
+        if (isCluster(element) && element.issues.length > 10) {
             ref?.current?.animateToRegion({
                 latitude: element.latitude,
                 longitude: element.longitude,
@@ -101,14 +110,15 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
     // remaining issue within pinTolerance of it. Distances are always
     // measured from the seed pin (not a moving center), so results are
     // deterministic and every issue lands in exactly one marker.
-    const createClusters = () => {
+    const createClusters = (): MapElement[] => {
         if (issues == undefined) return []
-        const remaining = [...issues]
-        const viewList: any[] = []
+        const remaining: GetNearbyIssueResponse[] = [...issues]
+        const viewList: MapElement[] = []
 
         while (remaining.length > 0) {
-            const seed = remaining.shift()
-            const members = [seed]
+            //the loop condition guarantees an element
+            const seed = remaining.shift()!
+            const members: GetNearbyIssueResponse[] = [seed]
 
             for (let k = remaining.length - 1; k >= 0; k--) {
                 const distance = getDistance(
@@ -140,8 +150,8 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
     }
 
     const markerList = useMemo(() => {
-        return createClusters().map((entry: any) => {
-            if (entry.issues != undefined) {
+        return createClusters().map((entry: MapElement) => {
+            if (isCluster(entry)) {
                 //key by the seed (issues[0], where the marker is anchored) so
                 //a marker keeps its native view across zoom changes instead of
                 //remounting — rapid unmount/mount can drop markers on iOS
@@ -207,7 +217,7 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
                 },
                 currentElement != undefined ? { display: undefined } : { display: "none" }]}
             >
-                {currentElement != undefined && currentElement.issues != undefined ?
+                {currentElement != undefined && isCluster(currentElement) ?
                     <CalloutListPopup
                         cluster={currentElement}
                         onClosePress={() => {

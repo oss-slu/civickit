@@ -69,7 +69,10 @@ curl -X POST http://localhost:3000/api/issues \
 ```
 
 ## Mobile Setup
-The app works out the backend address from whichever address Metro is served on, so there is nothing to configure by hand.
+The app derives the backend address from whichever address Metro is served on —
+the same machine that runs the backend — so testing on a physical phone needs no
+IP configuration. To point it somewhere else, such as a deployed backend, set
+`EXPO_PUBLIC_API_URL` (see `mobile/.env.example`).
 
 1. From the `mobile/` directory
 ```bash
@@ -80,9 +83,6 @@ npm install
 ```bash
 npm start
 ```
-
-No IP configuration is needed. The app derives the backend URL from whatever
-address Metro is served on, which is the same machine running the backend.
 
 * Press `i` to open iOS simulator (macOS only)
 * Press `a` to open Android emulator
