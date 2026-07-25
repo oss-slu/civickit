@@ -11,6 +11,15 @@ services:
       - "5432:5432"
     volumes:
       - civickit-data:/var/lib/postgresql/data
+    # Lets `docker compose up -d --wait` block until the server accepts
+    # connections. A first start initialises the data directory and takes far
+    # longer than a restart, which a fixed sleep cannot allow for.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d civickit"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+      start_period: 5s
 
 volumes:
   civickit-data:

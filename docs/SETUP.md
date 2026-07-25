@@ -84,8 +84,16 @@ endpoint fails without PostGIS.
 
 > **Upgrading an existing checkout:** this replaced Prisma, and the migration
 > history was restarted. A database created before that change cannot be
-> migrated forward — recreate it with `npm run db:down && npm run db:setup`,
-> then re-seed. Any local data is lost.
+> migrated forward — `db:migrate` fails on types and tables that already exist.
+> Recreate it, then re-seed:
+>
+> ```bash
+> npm run db:reset && npm run seed:run
+> ```
+>
+> Any local data is lost. Note that `db:down` alone is **not** enough: it keeps
+> the `civickit-data` volume, so the old schema survives. `db:reset` calls
+> `db:nuke` (`docker compose down -v`), which removes it.
 
 ### Running backend tests
 ```bash

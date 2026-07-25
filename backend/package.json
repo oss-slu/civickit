@@ -20,9 +20,11 @@
     "test:integration": "vitest --config vitest.integration.config.js",
     "test:watch": "vitest --watch",
     "test:coverage": "vitest --coverage",
-    "db:up": "docker compose up -d",
+    "db:up": "docker compose up -d --wait",
     "db:down": "docker compose down",
-    "db:setup": "docker compose up -d && sleep 2 && npm run db:migrate",
+    "db:setup": "npm run db:up && npm run db:migrate",
+    "db:nuke": "docker compose down -v",
+    "db:reset": "npm run db:nuke && npm run db:setup",
     "dev:proxy": "cloudflared tunnel --url http://localhost:3000"
   },
   "keywords": [],
