@@ -1,50 +1,58 @@
-// backend/src/__tests__/setup.ts
-import dotenv from 'dotenv';
-dotenv.config({ path: '.env.test.local' });
+// backend/src/__tests__/integration/setup.ts
+//
+// Runs before each integration test file. Points the app's database client at
+// the test database and clears rows between cases. Schema creation happens once
+// per run, in global-setup.ts.
 
-import { PrismaClient } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
-import { execSync } from 'child_process';
+import { Pool } from 'pg';
+import { resolveTestDatabaseUrl } from './test-database-url';
 
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL not defined in .env.test")
+// Must happen at module scope: setup files are evaluated before the test file's
+// imports, and src/prisma.ts reads DATABASE_URL when it is first imported. Set
+// this any later and the repositories under test would open a pool against the
+// developer's own database.
+const databaseUrl = resolveTestDatabaseUrl();
+process.env.DATABASE_URL = databaseUrl;
+
+// A pool of our own, so cleanup never depends on the client being tested.
+const pool = new Pool({ connectionString: databaseUrl });
+
+// Owned by PostGIS or a migration tool, not by the application.
+const PRESERVED_TABLES = [
+  'spatial_ref_sys',
+  '_prisma_migrations',
+  '__drizzle_migrations',
+];
+
+/**
+ * Discovered rather than hardcoded: the previous fixed list still named "User",
+ * which was renamed to "user" in 20260714141948, so cleanup threw on every run.
+ */
+async function applicationTables(): Promise<string[]> {
+  const { rows } = await pool.query<{ tablename: string }>(
+    `SELECT tablename
+       FROM pg_tables
+      WHERE schemaname = 'public'
+        AND tablename <> ALL($1::text[])`,
+    [PRESERVED_TABLES],
+  );
+  return rows.map((row) => row.tablename);
 }
 
-const adapter = new PrismaPg({
-  connectionString: process.env.DATABASE_URL!,
-});
-
-const prisma = new PrismaClient({ adapter });
-
-
-// Runs before all tests
-beforeAll(async () => {
-  // Set test database URL
-  // Reset database and run migrations
-  execSync('npx prisma migrate reset --force', {
-    env: { ...process.env },
-  });
-  /* option to use deploy instead of reset
-    execSync('npx prisma migrate deploy', {
-    env: { ...process.env },
-  });
-  */
-});
-
-// Runs after all tests
-afterAll(async () => {
-  if (prisma) {
-    await prisma.$disconnect();
-  }
-});
-
-// Clear database between test suites
 afterEach(async () => {
-  const tables = ['User', 'Issue', 'TimelineEntry', 'Upvote', 'Event', 'EventRsvp'];
+  const tables = await applicationTables();
+  if (tables.length === 0) return;
 
-  for (const table of tables) {
-    await prisma.$executeRawUnsafe(`TRUNCATE TABLE "${table}" CASCADE;`);
-  }
+  const quoted = tables.map((table) => `"${table}"`).join(', ');
+  // One statement so CASCADE resolves foreign keys in any order.
+  await pool.query(`TRUNCATE TABLE ${quoted} RESTART IDENTITY CASCADE`);
 });
 
-export { prisma }; //exporting use for tests
+afterAll(async () => {
+  await pool.end();
+
+  // Imported lazily: a static import would load src/prisma.ts before the
+  // DATABASE_URL assignment above.
+  const { default: prisma } = await import('../../prisma');
+  await prisma.$disconnect();
+});
