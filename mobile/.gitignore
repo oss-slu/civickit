@@ -40,6 +40,3 @@ yarn-error.*
 # generated native folders
 /ios
 /android
-
-#local mobile env
-env.local.json
