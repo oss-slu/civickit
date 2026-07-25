@@ -1,4 +1,4 @@
-import { Role } from "@prisma/client";
+import { Role } from "../db/schema";
 
 //action : (on available) resource 
 const reporter_perms = ['create:issue', 'create:upvote',

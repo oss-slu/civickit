@@ -14,6 +14,11 @@ import { resolveTestDatabaseUrl } from './test-database-url';
 const databaseUrl = resolveTestDatabaseUrl();
 process.env.DATABASE_URL = databaseUrl;
 
+// Not a real credential. Set here so better-auth does not fall back to a
+// generated one, for the same import-order reason as the URL above.
+process.env.BETTER_AUTH_SECRET =
+  process.env.BETTER_AUTH_SECRET ?? 'test-only-fake-better-auth-secret';
+
 // A pool of our own, so cleanup never depends on the client being tested.
 const pool = new Pool({ connectionString: databaseUrl });
 
