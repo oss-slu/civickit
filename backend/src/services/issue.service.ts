@@ -2,9 +2,16 @@
 
 import { IssueRepository } from '../repositories/issue.repository';
 import { CreateIssueDTO, IssueStatus } from '@civickit/shared';
-import { uploadImage } from '../utils/cloudinary';
-import { is } from 'zod/v4/locales';
+import { issueStatus } from '../db/schema';
 import { AppError } from '../utils/errors';
+
+/** Checked against the database enum, so the two cannot drift apart. */
+function isIssueStatus(value: unknown): value is IssueStatus {
+  return (
+    typeof value === 'string' &&
+    (issueStatus.enumValues as readonly string[]).includes(value)
+  );
+}
 
 export class IssueService {
   constructor(private issueRepository: IssueRepository) { }
@@ -51,6 +58,14 @@ export class IssueService {
   // update status tag
   // Callers must gate this behind requirePermission('update:issue_status').
   async updateStatus(id: string, status: IssueStatus) {
+    // The route has no body validation, so this is the only thing standing
+    // between `PATCH {}` and the database. An absent status used to reach the
+    // ORM as an empty patch, which Prisma treated as a no-op update and
+    // answered 200 -- reporting success for a request that changed nothing.
+    if (!isIssueStatus(status)) {
+      throw new AppError('A valid status is required', 400);
+    }
+
     return this.issueRepository.updateStatus(id, { status });
   }
 }

@@ -4,26 +4,9 @@ import { UpvoteService } from '../../upvote.service';
 import { UpvoteRepository } from '../../../repositories/upvote.repository';
 import { describe, beforeEach, vi, it, expect, Mocked, Mock } from 'vitest';
 import { RecordNotFoundError } from '../../../db/errors';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import { exists } from 'fs';
 
 // mock repository
 vi.mock('../../../src/repositories/upvote.repository');
-
-// mock bcrypt
-vi.mock('bcryptjs', () => ({
-    default: {
-        compare: vi.fn(),
-    },
-}));
-
-// mock jwt
-vi.mock('jsonwebtoken', () => ({
-    default: {
-        sign: vi.fn(),
-    },
-}));
 
 describe('UpvoteService', () => {
     let upvoteService: UpvoteService;

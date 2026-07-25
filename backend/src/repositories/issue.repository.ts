@@ -4,7 +4,17 @@ import { CreateIssueDTO, IssueStatus } from '@civickit/shared';
 import { and, desc, eq, exists, getTableColumns, sql } from 'drizzle-orm';
 import db, { first } from '../db';
 import { RecordNotFoundError } from '../db/errors';
-import { issues, upvotes, users } from '../db/schema';
+import { Issue, issues, upvotes, users } from '../db/schema';
+
+/**
+ * A row from findNearby. The columns are the Issue table's, selected raw
+ * (`i.*`), plus the two the geospatial query computes.
+ */
+export interface NearbyIssue extends Issue {
+  upvoteCount: number;
+  /** Metres from the query point, from ST_Distance over geography. */
+  distance: number;
+}
 
 /**
  * Prisma returned `_count: { upvotes }`, which issue.service.ts then mapped onto
@@ -61,13 +71,12 @@ export class IssueRepository {
     return (await this.findById(inserted.id))!;
   }
 
-  // TODO(integration): assert LIMIT + upvoteCount against a real PostGIS database
   async findNearby(
     lat: number,
     lng: number,
     radiusMeters: number = 1000,
     limit: number = 100,
-  ): Promise<any[]> {
+  ): Promise<NearbyIssue[]> {
     // Raw SQL for the PostGIS geospatial query. Parameters are cast explicitly
     // so Postgres does not have to infer types for the ST_* overloads.
     const result = await db.execute(sql`
@@ -88,7 +97,9 @@ export class IssueRepository {
       LIMIT ${limit}::int
     `);
 
-    return result.rows;
+    // Raw SQL, so the shape is asserted rather than inferred. The integration
+    // tests are what hold it to NearbyIssue.
+    return result.rows as unknown as NearbyIssue[];
   }
 
   async findById(id: string) {

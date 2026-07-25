@@ -283,4 +283,38 @@ describe('IssueService', () => {
       });
     });
   });
+
+  describe('updateStatus', () => {
+    beforeEach(() => {
+      mockIssueRepository.updateStatus = vi.fn();
+    });
+
+    it('should pass a valid status through to the repository', async () => {
+      const updated = { id: 'issue-1', status: 'RESOLVED' };
+      (mockIssueRepository.updateStatus as any).mockResolvedValue(updated);
+
+      const result = await issueService.updateStatus('issue-1', 'RESOLVED');
+
+      expect(mockIssueRepository.updateStatus).toHaveBeenCalledWith('issue-1', {
+        status: 'RESOLVED',
+      });
+      expect(result).toEqual(updated);
+    });
+
+    // PATCH /:issueId/status reads req.body.status with no body validation, so
+    // these arrive exactly as written.
+    it.each([
+      ['missing', undefined],
+      ['null', null],
+      ['empty', ''],
+      ['not a member of the enum', 'BANANA'],
+      ['the wrong type', 42],
+    ])('should reject a status that is %s with a 400', async (_label, status) => {
+      await expect(
+        issueService.updateStatus('issue-1', status as never),
+      ).rejects.toThrow('A valid status is required');
+
+      expect(mockIssueRepository.updateStatus).not.toHaveBeenCalled();
+    });
+  });
 });

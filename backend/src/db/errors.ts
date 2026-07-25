@@ -11,18 +11,19 @@ const UNIQUE_VIOLATION = '23505';
 /** Guards against a cause chain that loops back on itself. */
 const MAX_CAUSE_DEPTH = 5;
 
-function hasSqlState(error: unknown, sqlState: string, depth = 0): boolean {
-  if (depth > MAX_CAUSE_DEPTH) return false;
-  if (typeof error !== 'object' || error === null) return false;
+/** The SQLSTATE a failed query carries, from anywhere in the cause chain. */
+export function sqlStateOf(error: unknown, depth = 0): string | null {
+  if (depth > MAX_CAUSE_DEPTH) return null;
+  if (typeof error !== 'object' || error === null) return null;
 
   const candidate = error as { code?: unknown; cause?: unknown };
-  if (candidate.code === sqlState) return true;
+  if (typeof candidate.code === 'string') return candidate.code;
 
-  return hasSqlState(candidate.cause, sqlState, depth + 1);
+  return sqlStateOf(candidate.cause, depth + 1);
 }
 
 export function isUniqueViolation(error: unknown): boolean {
-  return hasSqlState(error, UNIQUE_VIOLATION);
+  return sqlStateOf(error) === UNIQUE_VIOLATION;
 }
 
 /**
