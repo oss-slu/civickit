@@ -60,12 +60,16 @@ describe('UpvoteService', () => {
         });
 
         it('should throw 409 if issue already upvoted', async () => {
-            // What node-postgres raises for Upvote_issueId_userId_key, in place
-            // of Prisma's P2002.
-            const error = Object.assign(
-                new Error('duplicate key value violates unique constraint'),
-                { code: '23505', constraint: 'Upvote_issueId_userId_key' },
-            );
+            // Shaped like what actually reaches the service: Drizzle wraps the
+            // failed query, and the driver error carrying the SQLSTATE is the
+            // cause. A bare { code: '23505' } passes this test while the real
+            // endpoint answers 500, so the nesting is the point.
+            const error = Object.assign(new Error('Failed query'), {
+                cause: Object.assign(
+                    new Error('duplicate key value violates unique constraint'),
+                    { code: '23505', constraint: 'Upvote_issueId_userId_key' },
+                ),
+            });
 
             mockUpvoteRepository.createUpvote.mockRejectedValueOnce(error);
 
