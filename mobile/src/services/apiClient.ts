@@ -1,5 +1,5 @@
 //mobile/src/services/apiClient.ts
-import ENV from '../config/env';
+import { getApiBaseUrl } from '../config/env';
 import { getToken } from './tokenStorage';
 
 //thrown for any non-2xx response; carries the status code and whatever
@@ -32,7 +32,7 @@ interface ApiOptions {
 export async function api<T = any>(path: string, options: ApiOptions = {}): Promise<T> {
     const { method = 'GET', params, body } = options;
 
-    let url = ENV.apiUrl + path;
+    let url = getApiBaseUrl() + path;
     if (params != undefined) {
         const query = Object.entries(params)
             .filter(([, value]) => value !== undefined)

@@ -69,32 +69,61 @@ curl -X POST http://localhost:3000/api/issues \
 ```
 
 ## Mobile Setup
-The app reads the backend address from `mobile/src/config/env.local.json`. This file is gitignored — it is generated for you by the start scripts below, so always use them the first time.
+The app works out the backend address from whichever address Metro is served on, so there is nothing to configure by hand.
 
 1. From the `mobile/` directory
 ```bash
 cd mobile
 npm install
 ```
-2. In the `mobile/` directory, choose `startWin.sh` for Windows or `startMac.sh` for Mac
-   1. In a bash terminal, set permissions with `chmod +x startWin.sh` or `chmod +x startMac.sh` (You only need to do this once)
-   2. To start using your IPv4 address as the domain (necessary to test on a physical phone), run `./startWin.sh ip` or `./startMac.sh ip`
-   3. To start on localhost (fine for simulators/emulators), run `./startWin.sh localhost` or `./startMac.sh localhost`
+2. In the `mobile/` directory, start Metro:
+```bash
+npm start
+```
+
+No IP configuration is needed. The app derives the backend URL from whatever
+address Metro is served on, which is the same machine running the backend.
 
 * Press `i` to open iOS simulator (macOS only)
 * Press `a` to open Android emulator
 * Press `w` to run in the browser (web)
 
-To run on a physical device: start with the `ip` option (phone and computer must be on the same Wi-Fi network), then scan the QR code using the Camera app (iOS) or Expo Go (Android). Expo Go must be installed on the device. From Windows you may need production mode:
+3. Then scan the QR code using the Camera app (iOS) or Expo Go (Android). Expo
+Go must be installed on the device. From Windows you may need production mode:
 ```bash
 npx expo start --no-dev --minify
 ```
 
-If the app loads but fails to fetch (common on networks that block device-to-device traffic), proxy the backend through Cloudflare:
-1. ensure dependencies are up to date in backend `npm install`
-2. in `backend/` run `npm run dev`
-3. in `backend/` run `npm run dev:proxy` which generates a public trycloudflare.com link. Put that link (with `/api` appended) as the dev `apiUrl` in `mobile/src/config/env.ts`
-4. in `mobile/` run `npx expo start --tunnel`
+### When the phone can't reach your laptop
+
+`npm start` needs the phone and the laptop on the same wifi, with
+client-to-client traffic allowed. It fails when you are on cellular data, or on
+guest/"sandboxed" wifi that isolates clients from each other. The symptom is the
+app loading but every request failing.
+
+Use Tailscale instead. It puts the phone and the laptop on a private network of
+your own, so they reach each other regardless of the wifi in between — including
+networks that block direct traffic, where it relays over port 443.
+
+1. Install Tailscale on the laptop and the phone, signed into the same account.
+2. Start the backend as usual: `cd backend && npm run dev`
+3. Start Metro bound to the Tailscale address:
+```bash
+cd mobile
+npm run start:tailscale
+```
+
+That is the whole setup. Metro is served from the laptop's Tailscale address, so
+the app derives the backend from it automatically — nothing to configure, and no
+URL to re-paste, because the address never changes.
+
+On Windows the npm script's shell syntax will not run; use:
+```
+set REACT_NATIVE_PACKAGER_HOSTNAME=<your tailscale ip> && npx expo start
+```
+
+Image uploads go from the phone straight to Cloudinary, so they keep working on
+cellular either way.
 
 ## Web Setup
 ```bash
