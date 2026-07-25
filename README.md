@@ -15,7 +15,7 @@ In Development - SLU New Venture Accelerator(Summer 2026)
 ## Tech Stack
 - **Mobile**: React Native (Expo)
 - **Web**: React (TanStack Start + Vite, deployed to Cloudflare Workers)
-- **Backend**: Node.js + Express + TypeScript + Prisma
+- **Backend**: Node.js + Express + TypeScript + Drizzle
 - **Database**: PostgreSQL + PostGIS
 - **Image Storage**: Cloudinary
 - **Authentication**: BetterAuth

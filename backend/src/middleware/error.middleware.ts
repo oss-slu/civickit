@@ -1,6 +1,7 @@
 // backend/src/middleware/error.middleware.ts
 import { Request, Response, NextFunction } from 'express';
 import { AppError } from '../utils/errors';
+import { RecordNotFoundError } from '../db/errors';
 
 export const errorHandler = (
     err: any,
@@ -15,6 +16,12 @@ export const errorHandler = (
     // Handle known operational errors
     if (err instanceof AppError) {
         statusCode = err.statusCode;
+        message = err.message;
+    } else if (err instanceof RecordNotFoundError) {
+        // Raised by any repository whose update or delete matched no row --
+        // where Prisma raised P2025. Handled here rather than in each service
+        // so a repository that starts throwing it does not answer 500.
+        statusCode = 404;
         message = err.message;
     } else if (err && typeof err === 'object' && typeof (err.status ?? err.statusCode) === 'number') {
         statusCode = err.status ?? err.statusCode;
