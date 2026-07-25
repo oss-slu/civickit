@@ -69,7 +69,7 @@ curl -X POST http://localhost:3000/api/issues \
 ```
 
 ## Mobile Setup
-The app reads the backend address from `mobile/src/config/env.local.json`. This file is gitignored — it is generated for you by the start scripts below, so always use them the first time.
+The app derives the backend address from the Metro host it was loaded from, so testing on a physical phone needs no configuration — your machine's LAN IP is discovered automatically. To point at something else, set `EXPO_PUBLIC_API_URL` (see the Cloudflare proxy steps below).
 
 1. From the `mobile/` directory
 ```bash
@@ -78,14 +78,14 @@ npm install
 ```
 2. In the `mobile/` directory, choose `startWin.sh` for Windows or `startMac.sh` for Mac
    1. In a bash terminal, set permissions with `chmod +x startWin.sh` or `chmod +x startMac.sh` (You only need to do this once)
-   2. To start using your IPv4 address as the domain (necessary to test on a physical phone), run `./startWin.sh ip` or `./startMac.sh ip`
+   2. Run `./startWin.sh` or `./startMac.sh` — this uses your LAN address and works on a physical phone
    3. To start on localhost (fine for simulators/emulators), run `./startWin.sh localhost` or `./startMac.sh localhost`
 
 * Press `i` to open iOS simulator (macOS only)
 * Press `a` to open Android emulator
 * Press `w` to run in the browser (web)
 
-To run on a physical device: start with the `ip` option (phone and computer must be on the same Wi-Fi network), then scan the QR code using the Camera app (iOS) or Expo Go (Android). Expo Go must be installed on the device. From Windows you may need production mode:
+To run on a physical device: start with no argument (phone and computer must be on the same Wi-Fi network), then scan the QR code using the Camera app (iOS) or Expo Go (Android). Expo Go must be installed on the device. From Windows you may need production mode:
 ```bash
 npx expo start --no-dev --minify
 ```
@@ -93,8 +93,12 @@ npx expo start --no-dev --minify
 If the app loads but fails to fetch (common on networks that block device-to-device traffic), proxy the backend through Cloudflare:
 1. ensure dependencies are up to date in backend `npm install`
 2. in `backend/` run `npm run dev`
-3. in `backend/` run `npm run dev:proxy` which generates a public trycloudflare.com link. Put that link (with `/api` appended) as the dev `apiUrl` in `mobile/src/config/env.ts`
-4. in `mobile/` run `npx expo start --tunnel`
+3. in `backend/` run `npm run dev:proxy` which generates a public trycloudflare.com link
+4. in `mobile/` run it with that link (with `/api` appended) as the API base URL:
+```bash
+EXPO_PUBLIC_API_URL=https://<your-link>.trycloudflare.com/api npx expo start --tunnel
+```
+Any `EXPO_PUBLIC_*` variable can also live in a `mobile/.env` file instead of the command line.
 
 ## Web Setup
 ```bash

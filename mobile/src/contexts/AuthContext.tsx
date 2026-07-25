@@ -1,9 +1,9 @@
 //mobile/src/contexts/AuthContext.tsx
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { getToken, saveToken, deleteToken } from '../services/AuthService';
+import { getToken, saveToken, deleteToken } from '../services/tokenStorage';
 import { User } from '@civickit/shared';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import ENV from "../config/env";
+import { authApi, queryKeys, setUnauthorizedHandler } from '../api';
 
 interface AuthContextType {
     isLoggedIn: boolean;
@@ -35,24 +35,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         })();
     }, []); //no dependencies bc it runs once on mount to check for token
 
+    //logout deletes token + updates state
+    const logout = async () => {
+        await deleteToken();
+        setAuthToken(null);
+        setUser(null)
+        setIsLoggedIn(false);
+        queryClient.clear();
+    };
 
-    const { data, error, refetch } = useQuery({
-        queryKey: ['user', authToken],
+    // Any 401 from the API — including a token that expires mid-session —
+    // tears down auth state instead of leaving a signed-in shell that 401s.
+    useEffect(() => {
+        setUnauthorizedHandler(() => { void logout(); });
+        return () => setUnauthorizedHandler(null);
+    }, []);
+
+    const { data, error } = useQuery({
+        queryKey: queryKeys.currentUser(authToken),
         enabled: !!authToken,
-        queryFn: async () => {
-            const response = await fetch(
-                ENV.apiUrl + '/auth/user',
-                { headers: { Authorization: `Bearer ${authToken}` } }
-            );
-            if (!response.ok) {
-                if (response.status == 401 || response.status == 404) {
-                    throw new Error('Invalid Token');
-                } else {
-                    throw new Error("Failed to Fetch")
-                }
-            }
-            return response.json()
-        },
+        queryFn: ({ signal }) => authApi.getCurrentUser(authToken, signal),
     }, queryClient);
 
     //login store token + update state
@@ -60,13 +62,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         await saveToken(token);
         setAuthToken(token);
         setIsLoggedIn(true);
-    };
-    //logout deletes token + updates state
-    const logout = async () => {
-        await deleteToken();
-        setAuthToken(null);
-        setUser(null)
-        setIsLoggedIn(false);
     };
 
     if (error != null && isLoading == true) {

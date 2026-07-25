@@ -1,11 +1,8 @@
 // mobile/src/contexts/NearbyIssuesContext.tsx
-import { QueryObserverResult, RefetchOptions, useQuery, useQueryClient } from "@tanstack/react-query";
+import { QueryObserverResult, RefetchOptions, keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createContext, useContext, useState } from "react";
 import { useLocation } from "./LocationContext";
-import { userLocation } from "../types/userLocation";
-import ENV from '../config/env';
-import LoadingScreen from "../screens/Misc/LoadingScreen";
-import { View, Text } from "react-native";
+import { issuesApi, queryKeys } from "../api";
 
 interface NearbyIssuesContextType {
     data: any;
@@ -23,20 +20,23 @@ export const NearbyIssuesProvider = ({ children }: any) => {
     const location = useLocation().location
     const [radius, setRadius] = useState<number>(5)
 
-    //fetch issues from database 
+    //fetch issues from database
     const { data, isLoading, isFetching, error, refetch } = useQuery({
-        queryKey: ['issues', 'nearby'],
-        queryFn: async () => {
-            console.log("url: ", ENV.apiUrl)
-            const response = await fetch(
-                ENV.apiUrl + '/issues/nearby?lat=' +
-                location.latitude + '&lng=' + location.longitude
-                + '&radius=' + radius * 1609.34 //1 mile
-            );
-            // console.log("fetch", response)
-            if (!response.ok) throw new Error('Failed to fetch');
-            return response.json();
-        }
+        queryKey: queryKeys.issues.nearby({
+            lat: location.latitude,
+            lng: location.longitude,
+            radiusMiles: radius,
+        }),
+        queryFn: ({ signal }) =>
+            issuesApi.getNearbyIssues({
+                lat: location.latitude,
+                lng: location.longitude,
+                radiusMiles: radius,
+                signal,
+            }),
+        // Consumers read `data.issues` directly; keep the last result on screen
+        // while a new location or radius loads instead of dropping to undefined.
+        placeholderData: keepPreviousData,
     }, queryClient);
 
     return (

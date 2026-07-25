@@ -1,17 +1,11 @@
 // mobile/src/services/cloudinaryService.ts
-import ENV from '../config/env';
+import { uploadApi } from '../api';
+import type { UploadSignature } from '../api/upload';
 
 interface CloudinaryUploadResponse {
     secure_url: string;
     public_id: string;
     [key: string]: any;
-}
-
-interface UploadSignature {
-    signature: string;
-    timestamp: number;
-    cloudName: string;
-    apiKey: string;
 }
 
 // Cache upload signatures briefly to avoid repeated backend requests
@@ -20,7 +14,7 @@ const SIGNATURE_CACHE_DURATION_MS = 5 * 60 * 1000; // Cache for 5 minutes
 
 // Get a signed upload token from the backend
 // This allows secure direct uploads to Cloudinary without exposing credentials
-async function getUploadSignature(authToken: string): Promise<UploadSignature> {
+async function getUploadSignature(): Promise<UploadSignature> {
     try {
         // Check if cached signature is still valid
         if (cachedSignature && Date.now() < cachedSignature.expiresAt) {
@@ -30,27 +24,15 @@ async function getUploadSignature(authToken: string): Promise<UploadSignature> {
         }
 
         const startTime = Date.now();
-        const response = await fetch(ENV.apiUrl + '/upload/signature', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${authToken}`,
-            },
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to get upload signature from server');
-        }
-
-        const result = await response.json();
+        const result = await uploadApi.getUploadSignature();
         const elapsed = Date.now() - startTime;
-        
+
         // Cache the signature with expiration time
         cachedSignature = {
             ...result,
             expiresAt: Date.now() + SIGNATURE_CACHE_DURATION_MS,
         };
-        
+
         console.log(`Signature Request: ${elapsed}ms (network + parse)`);
         return result;
     } catch (error) {
@@ -62,17 +44,14 @@ async function getUploadSignature(authToken: string): Promise<UploadSignature> {
 
 // Upload an image directly to Cloudinary from the mobile app using a signed request
 // Returns the secure URL of the uploaded image
-export async function uploadImageToCloudinary(
-    imageUri: string,
-    authToken: string
-): Promise<string> {
+export async function uploadImageToCloudinary(imageUri: string): Promise<string> {
     try {
         const uploadStartTime = Date.now();
         const timings = {} as any;
 
         // Step 1: Get signed upload credentials from backend
         const signatureStartTime = Date.now();
-        const uploadSignature = await getUploadSignature(authToken);
+        const uploadSignature = await getUploadSignature();
         timings.signatureMs = Date.now() - signatureStartTime;
 
         // Step 2: Create FormData with signed credentials
@@ -125,12 +104,9 @@ export async function uploadImageToCloudinary(
 
 // Upload multiple images to Cloudinary in parallel using signed requests
 // Returns an array of secure URLs
-export async function uploadImagesToCloudinary(
-    imageUris: string[],
-    authToken: string
-): Promise<string[]> {
+export async function uploadImagesToCloudinary(imageUris: string[]): Promise<string[]> {
     try {
-        const uploadPromises = imageUris.map(uri => uploadImageToCloudinary(uri, authToken));
+        const uploadPromises = imageUris.map(uri => uploadImageToCloudinary(uri));
         const urls = await Promise.all(uploadPromises);
         return urls;
     } catch (error) {

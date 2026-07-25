@@ -12,7 +12,7 @@ import { StackParams } from "../../types/StackParams";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { Image } from "expo-image";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import ENV from '../../config/env';
+import { issuesApi, queryKeys } from "../../api";
 import LoadingScreen from "../Misc/LoadingScreen";
 
 export default function ProfileScreen({ route }: any) {
@@ -28,31 +28,15 @@ export default function ProfileScreen({ route }: any) {
 
     const navigation = useNavigation<StackNavigationProp<StackParams>>();
     const issuesQuery = useQuery({
-        queryKey: ['issues', 'user'],
-        queryFn: async () => {
-            const response = await fetch(
-                ENV.apiUrl + '/issues/user?id=' +
-                user?.id
-            );
-
-
-            if (!response.ok) throw new Error('Failed to fetch');
-            return response.json()
-        }
+        queryKey: queryKeys.issues.byUser(user?.id),
+        enabled: !!user?.id,
+        queryFn: ({ signal }) => issuesApi.getIssuesByUser(user!.id, { signal }),
     }, queryClient);
 
     const upvotesQuery = useQuery({
-        queryKey: ['upvotes', 'user'],
-        queryFn: async () => {
-            const response = await fetch(
-                ENV.apiUrl + '/issues/userUpvotes?id=' +
-                user?.id
-            );
-
-
-            if (!response.ok) throw new Error('Failed to fetch');
-            return response.json()
-        }
+        queryKey: queryKeys.upvotes.byUser(user?.id),
+        enabled: !!user?.id,
+        queryFn: ({ signal }) => issuesApi.getIssuesUpvotedByUser(user!.id, { signal }),
     }, queryClient);
 
     const refetchQueries = () => {
@@ -91,7 +75,11 @@ export default function ProfileScreen({ route }: any) {
         )
     }
 
-
+    // Both queries stay disabled until the user id is known, so data can still
+    // be absent here without either query having errored.
+    if (issuesQuery.data == null || upvotesQuery.data == null) {
+        return <LoadingScreen />
+    }
 
     return (
         <ScrollView contentContainerStyle={[styles.container]}
