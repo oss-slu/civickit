@@ -8,8 +8,8 @@ import { Pool } from 'pg';
 import { resolveTestDatabaseUrl } from './test-database-url';
 
 // Must happen at module scope: setup files are evaluated before the test file's
-// imports, and src/prisma.ts reads DATABASE_URL when it is first imported. Set
-// this any later and the repositories under test would open a pool against the
+// imports, and src/db reads DATABASE_URL when it is first imported. Set this any
+// later and the repositories under test would open a pool against the
 // developer's own database.
 const databaseUrl = resolveTestDatabaseUrl();
 process.env.DATABASE_URL = databaseUrl;
