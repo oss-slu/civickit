@@ -22,16 +22,13 @@ process.env.BETTER_AUTH_SECRET =
 // A pool of our own, so cleanup never depends on the client being tested.
 const pool = new Pool({ connectionString: databaseUrl });
 
-// Owned by PostGIS or a migration tool, not by the application.
-const PRESERVED_TABLES = [
-  'spatial_ref_sys',
-  '_prisma_migrations',
-  '__drizzle_migrations',
-];
+// Owned by PostGIS, not by the application. Drizzle keeps its applied-migration
+// table in a separate `drizzle` schema, so it is already out of scope here.
+const PRESERVED_TABLES = ['spatial_ref_sys'];
 
 /**
- * Discovered rather than hardcoded: the previous fixed list still named "User",
- * which was renamed to "user" in 20260714141948, so cleanup threw on every run.
+ * Discovered rather than hardcoded: the previous fixed list still named "User"
+ * long after that table became "user", so cleanup threw on every run.
  */
 async function applicationTables(): Promise<string[]> {
   const { rows } = await pool.query<{ tablename: string }>(

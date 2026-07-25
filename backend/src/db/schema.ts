@@ -4,11 +4,11 @@
 // silently destructive:
 //
 // - Table naming is inconsistent by history. `user`, `session`, `account` and
-//   `verification` are lowercase (they were @@map'd for better-auth in
-//   20260714141948); everything else is PascalCase. These strings are the real
-//   table names, so they have to match exactly.
-// - `createdAt` has a database default but `updatedAt` does not -- Prisma wrote
-//   it from the client on every insert and update. Without $defaultFn and
+//   `verification` are lowercase, having been renamed when better-auth was
+//   added; everything else is PascalCase. These strings are the real table
+//   names, so they have to match exactly.
+// - `createdAt` has a database default but `updatedAt` does not -- it was
+//   written from the client on every insert and update. Without $defaultFn and
 //   $onUpdate below, every insert would fail the NOT NULL constraint.
 
 import { createId } from '@paralleldrive/cuid2';
@@ -23,8 +23,8 @@ import {
   uniqueIndex,
 } from 'drizzle-orm/pg-core';
 
-// These types already exist in Postgres; the names must match what
-// prisma/migrations created.
+// The names below are the Postgres type names, not just identifiers for the
+// TypeScript side.
 export const issueStatus = pgEnum('IssueStatus', [
   'REPORTED',
   'ACKNOWLEDGED',

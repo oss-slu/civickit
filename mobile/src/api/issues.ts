@@ -6,13 +6,15 @@ export const METERS_PER_MILE = 1609.34;
 
 /**
  * Shape actually returned by the issue *list* endpoints. This is deliberately
- * not `Issue` from @civickit/shared: the backend includes the Prisma relation
- * as `user` (not `author`) and adds a `_count`. Reconciling the two is a
- * separate change — this type documents reality in the meantime.
+ * not `Issue` from @civickit/shared: the backend names the author relation
+ * `user`, not `author`. Reconciling the two is a separate change — this type
+ * documents reality in the meantime.
+ *
+ * `upvoteCount` comes from Issue. The endpoints used to also carry a Prisma
+ * `_count: { upvotes }` alongside it, which nothing ever read.
  */
 export interface IssueListItem extends Omit<Issue, 'author'> {
     user: Pick<User, 'id' | 'name' | 'profileImage'>;
-    _count: { upvotes: number };
 }
 
 export interface IssueListResponse<T> {
