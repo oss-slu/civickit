@@ -1,11 +1,42 @@
 // backend/src/repositories/issue.repository.ts
-import prisma from "../prisma";
-import { CreateIssueDTO, Issue, IssueStatus } from '@civickit/shared';
+
+import { CreateIssueDTO, IssueStatus } from '@civickit/shared';
+import { and, desc, eq, exists, getTableColumns, sql } from 'drizzle-orm';
+import db, { first } from '../db';
+import { RecordNotFoundError } from '../db/errors';
+import { issues, upvotes, users } from '../db/schema';
+
+/**
+ * Prisma returned `_count: { upvotes }`, which issue.service.ts then mapped onto
+ * `upvoteCount` before anything left the backend. Drizzle has no `_count`, and
+ * every consumer -- the shared types, all four mobile screens, and findNearby
+ * below -- already spoke `upvoteCount`, so the subquery produces that name
+ * directly and the mapping step is gone.
+ */
+const upvoteCount = sql<number>`(
+  SELECT count(*)::int FROM ${upvotes} WHERE ${upvotes.issueId} = ${issues.id}
+)`;
+
+/** The author fields the API exposes. Never the whole user row. */
+const author = {
+  id: users.id,
+  name: users.name,
+  profileImage: users.profileImage,
+};
 
 export class IssueRepository {
+  /** One shape for every non-geospatial read, so they cannot drift apart. */
+  private selectIssues() {
+    return db
+      .select({ ...getTableColumns(issues), upvoteCount, user: author })
+      .from(issues)
+      .innerJoin(users, eq(issues.userId, users.id));
+  }
+
   async create(data: CreateIssueDTO & { userId: string }) {
-    return prisma.issue.create({
-      data: {
+    const [inserted] = await db
+      .insert(issues)
+      .values({
         title: data.title,
         description: data.description,
         category: data.category,
@@ -18,107 +49,84 @@ export class IssueRepository {
         name: data.name,
         images: data.images,
         locationSource: data.locationSource,
-        photoTakenAt: data.photoTakenAt,
+        // CreateIssueDTO types this as an ISO string; the column is a timestamp.
+        // Prisma accepted either, the driver does not.
+        photoTakenAt: data.photoTakenAt ? new Date(data.photoTakenAt) : undefined,
         photoTakenAtSource: data.photoTakenAtSource,
         userId: data.userId,
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            profileImage: true,
-          },
-        },
-        _count: {
-          select: {
-            upvotes: true,
-          },
-        },
-      },
-    });
+      })
+      .returning({ id: issues.id });
+
+    // Re-read so create returns the same shape as findById.
+    return (await this.findById(inserted.id))!;
   }
 
   // TODO(integration): assert LIMIT + upvoteCount against a real PostGIS database
-  async findNearby(lat: number, lng: number, radiusMeters: number = 1000, limit: number = 100): Promise<any[]> {
-    // Using raw SQL for PostGIS geospatial query
-    return prisma.$queryRaw`
+  async findNearby(
+    lat: number,
+    lng: number,
+    radiusMeters: number = 1000,
+    limit: number = 100,
+  ): Promise<any[]> {
+    // Raw SQL for the PostGIS geospatial query. Parameters are cast explicitly
+    // so Postgres does not have to infer types for the ST_* overloads.
+    const result = await db.execute(sql`
       SELECT
         i.*,
-        (SELECT count(*)::int FROM "Upvote" u WHERE u."issueId" = i.id) AS "upvoteCount",
+        (SELECT count(*)::int FROM ${upvotes} u WHERE u."issueId" = i.id) AS "upvoteCount",
         ST_Distance(
           ST_SetSRID(ST_MakePoint(i.longitude, i.latitude), 4326)::geography,
-          ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326)::geography
+          ST_SetSRID(ST_MakePoint(${lng}::float8, ${lat}::float8), 4326)::geography
         ) as distance
-      FROM "Issue" i
+      FROM ${issues} i
       WHERE ST_DWithin(
         ST_SetSRID(ST_MakePoint(i.longitude, i.latitude), 4326)::geography,
-        ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326)::geography,
-        ${radiusMeters}
+        ST_SetSRID(ST_MakePoint(${lng}::float8, ${lat}::float8), 4326)::geography,
+        ${radiusMeters}::float8
       )
       ORDER BY distance ASC
-      LIMIT ${limit}
-    `;
+      LIMIT ${limit}::int
+    `);
+
+    return result.rows;
   }
 
   async findById(id: string) {
-    return prisma.issue.findUnique({
-      where: { id },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            profileImage: true,
-          },
-        },
-        _count: {
-          select: {
-            upvotes: true,
-          },
-        },
-      },
-    });
+    return first(await this.selectIssues().where(eq(issues.id, id)).limit(1));
   }
 
   async findByUser(id: string, limit: number = 100) {
-    return prisma.issue.findMany({
-      where: { userId: id },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            profileImage: true,
-          },
-        },
-        _count: {
-          select: {
-            upvotes: true,
-          },
-        },
-      },
-      take: limit,
-    });
+    return this.selectIssues().where(eq(issues.userId, id)).limit(limit);
   }
 
   async findByUpvoter(userId: string, limit: number = 100) {
-    return prisma.issue.findMany({
-      where: { upvotes: { some: { userId } } },
-      include: {
-        user: { select: { id: true, name: true, profileImage: true } },
-        _count: { select: { upvotes: true } },
-      },
-      orderBy: { createdAt: 'desc' },
-      take: limit,
-    });
+    // EXISTS rather than a join: an issue with several upvotes must still come
+    // back once.
+    return this.selectIssues()
+      .where(
+        exists(
+          db
+            .select({ one: sql`1` })
+            .from(upvotes)
+            .where(and(eq(upvotes.issueId, issues.id), eq(upvotes.userId, userId))),
+        ),
+      )
+      .orderBy(desc(issues.createdAt))
+      .limit(limit);
   }
 
   // update issue statuss
   async updateStatus(id: string, data: Partial<{ status: IssueStatus }>) {
-    return prisma.issue.update({
-      where: { id },
-      data,
-    });
+    const [updated] = await db
+      .update(issues)
+      .set(data)
+      .where(eq(issues.id, id))
+      .returning();
+
+    if (!updated) {
+      throw new RecordNotFoundError('Issue not found');
+    }
+
+    return updated;
   }
 }

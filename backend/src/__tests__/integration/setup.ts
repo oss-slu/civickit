@@ -51,8 +51,8 @@ afterEach(async () => {
 afterAll(async () => {
   await pool.end();
 
-  // Imported lazily: a static import would load src/prisma.ts before the
-  // DATABASE_URL assignment above.
-  const { default: prisma } = await import('../../prisma');
-  await prisma.$disconnect();
+  // Imported lazily: a static import would load src/db before the
+  // DATABASE_URL assignment above, opening its pool against the wrong database.
+  const { pool: appPool } = await import('../../db');
+  await appPool.end();
 });

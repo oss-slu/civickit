@@ -33,7 +33,7 @@ describe('IssueRepository', () => {
         name: 'Ada Lovelace',
         profileImage: null,
       });
-      expect(issue._count).toEqual({ upvotes: 0 });
+      expect(issue.upvoteCount).toBe(0);
     });
 
     it('applies the column defaults for status and the two source fields', async () => {
@@ -106,7 +106,7 @@ describe('IssueRepository', () => {
         name: 'Ada Lovelace',
         profileImage: null,
       });
-      expect(found!._count).toEqual({ upvotes: 1 });
+      expect(found!.upvoteCount).toBe(1);
     });
 
     it('returns null for an unknown id', async () => {
@@ -136,7 +136,7 @@ describe('IssueRepository', () => {
       await upvotes.createUpvote(popular.id, voter.id);
 
       const found = await repository.findByUser(author.id);
-      const byId = Object.fromEntries(found.map((issue) => [issue.id, issue._count.upvotes]));
+      const byId = Object.fromEntries(found.map((issue) => [issue.id, issue.upvoteCount]));
 
       expect(byId[popular.id]).toBe(2);
       expect(byId[ignored.id]).toBe(0);
@@ -191,7 +191,7 @@ describe('IssueRepository', () => {
       const found = await repository.findByUpvoter(voter.id);
 
       expect(found).toHaveLength(1);
-      expect(found[0]._count).toEqual({ upvotes: 2 });
+      expect(found[0].upvoteCount).toBe(2);
     });
 
     it('orders newest first', async () => {

@@ -3,12 +3,11 @@
 import { IssueRepository } from '../repositories/issue.repository';
 import { CreateIssueDTO, IssueStatus } from '@civickit/shared';
 import { uploadImage } from '../utils/cloudinary';
-import { UpvoteRepository } from '../repositories/upvote.repository';
 import { is } from 'zod/v4/locales';
 import { AppError } from '../utils/errors';
 
 export class IssueService {
-  constructor(private issueRepository: IssueRepository, private upvoteRepository: UpvoteRepository) { }
+  constructor(private issueRepository: IssueRepository) { }
 
   async createIssue(data: CreateIssueDTO, userId: string) {
     if (!data.title || data.title.length < 3) {
@@ -36,24 +35,17 @@ export class IssueService {
       throw new AppError('Issue not found', 404);
     }
 
-    const upvoteCount = await this.upvoteRepository.countUpvotes(issue.id);
-
-    return {
-      ...issue,
-      upvoteCount,
-    };
+    // findById already counts upvotes in the same statement that reads the row.
+    // This used to issue a second countUpvotes query and return both values.
+    return issue;
   }
 
   async getIssuesByUser(id: string, limit?: number) {
-    const issues = await this.issueRepository.findByUser(id, limit);
-
-    return issues.map((issue) => ({ ...issue, upvoteCount: issue._count.upvotes }));
+    return this.issueRepository.findByUser(id, limit);
   }
 
   async getIssuesByUserUpvotes(id: string, limit?: number) {
-    const issues = await this.issueRepository.findByUpvoter(id, limit);
-
-    return issues.map((issue) => ({ ...issue, upvoteCount: issue._count.upvotes }));
+    return this.issueRepository.findByUpvoter(id, limit);
   }
 
   // update status tag

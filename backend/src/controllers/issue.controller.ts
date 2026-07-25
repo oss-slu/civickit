@@ -2,11 +2,9 @@
 import { Request, Response, NextFunction } from 'express';
 import { IssueService } from '../services/issue.service';
 import { IssueRepository } from '../repositories/issue.repository';
-import { UpvoteRepository } from '../repositories/upvote.repository';
 
 const issueRepository = new IssueRepository();
-const upvoteRepository = new UpvoteRepository();
-const issueService = new IssueService(issueRepository, upvoteRepository);
+const issueService = new IssueService(issueRepository);
 
 // Parses an optional `limit` query param, clamped to [1, 200], defaulting to 100.
 function parseLimit(raw: unknown): number {

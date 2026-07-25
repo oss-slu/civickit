@@ -1,6 +1,6 @@
 // backend/src/services/upvote.service.ts
 import { UpvoteRepository } from '../repositories/upvote.repository';
-import { Prisma } from '@prisma/client';
+import { RecordNotFoundError, isUniqueViolation } from '../db/errors';
 
 export class UpvoteService {
   constructor(private readonly upvoteRepository: UpvoteRepository) { }
@@ -9,10 +9,8 @@ export class UpvoteService {
     try {
       await this.upvoteRepository.createUpvote(issueId, userId);
     } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === 'P2002'
-      ) {
+      // Postgres unique_violation, where Prisma reported P2002.
+      if (isUniqueViolation(error)) {
         throw { status: 409, message: 'Issue already upvoted' };
       }
       throw error;
@@ -30,10 +28,9 @@ export class UpvoteService {
     try {
       await this.upvoteRepository.deleteUpvote(issueId, userId);
     } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === 'P2025'
-      ) {
+      // Deleting no rows raises nothing in Postgres, where Prisma reported
+      // P2025, so the repository raises this in its place.
+      if (error instanceof RecordNotFoundError) {
         throw { status: 404, message: 'Upvote does not exist' };
       }
       throw error;

@@ -3,20 +3,17 @@
 // Runs once per `npm run test:integration`, before any test file. Builds the
 // schema; per-file cleanup lives in setup.ts.
 
-import { readdirSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { Client } from 'pg';
+import { runMigrations } from '../../db/migrate';
 import { resolveTestDatabaseUrl } from './test-database-url';
 
-// Migrations are applied as plain SQL rather than through a migration CLI. That
-// keeps the harness independent of whichever ORM owns the schema -- at the
-// Drizzle cutover this only needs to point at drizzle/ instead.
-const MIGRATIONS_DIR = 'prisma/migrations';
-
-// postgis_tiger_geocoder and postgis_topology install outside public, so
-// dropping public alone would leave their objects behind and the extensions
-// half-present.
-const OWNED_SCHEMAS = ['public', 'tiger', 'tiger_data', 'topology'];
+// `drizzle` holds the applied-migrations table. Dropping public without it
+// would leave that table claiming everything is already applied, and the
+// migrations would be skipped against an empty database.
+//
+// postgis_tiger_geocoder and postgis_topology install outside public too, so
+// dropping public alone would leave their objects behind.
+const OWNED_SCHEMAS = ['public', 'drizzle', 'tiger', 'tiger_data', 'topology'];
 
 /** `db:up` only creates the dev database, so the test one is made on demand. */
 async function ensureDatabaseExists(url: string): Promise<void> {
@@ -49,40 +46,27 @@ async function ensureDatabaseExists(url: string): Promise<void> {
   }
 }
 
-/** Migration directories are timestamp-prefixed, so name order is apply order. */
-function migrationFiles(): string[] {
-  return readdirSync(MIGRATIONS_DIR, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => entry.name)
-    .sort()
-    .map((name) => join(MIGRATIONS_DIR, name, 'migration.sql'));
+async function dropSchemas(url: string): Promise<void> {
+  const client = new Client({ connectionString: url });
+  await client.connect();
+  try {
+    await client.query(
+      OWNED_SCHEMAS.map((schema) => `DROP SCHEMA IF EXISTS "${schema}" CASCADE;`).join('\n') +
+        '\nCREATE SCHEMA public;',
+    );
+  } finally {
+    await client.end();
+  }
 }
 
 export default async function globalSetup(): Promise<void> {
   const databaseUrl = resolveTestDatabaseUrl();
 
   await ensureDatabaseExists(databaseUrl);
+  await dropSchemas(databaseUrl);
 
-  const client = new Client({ connectionString: databaseUrl });
-  await client.connect();
-
-  try {
-    await client.query(
-      OWNED_SCHEMAS.map((schema) => `DROP SCHEMA IF EXISTS "${schema}" CASCADE;`).join('\n') +
-        '\nCREATE SCHEMA public;',
-    );
-
-    // Replaying these is also what creates the PostGIS extensions that
-    // findNearby depends on.
-    for (const file of migrationFiles()) {
-      const sql = readFileSync(file, 'utf8');
-      try {
-        await client.query(sql);
-      } catch (error) {
-        throw new Error(`Failed applying ${file}:\n${(error as Error).message}`);
-      }
-    }
-  } finally {
-    await client.end();
-  }
+  // The same path production uses, so the tests cannot pass against a schema
+  // that db:migrate would not produce. This is also what creates the PostGIS
+  // extensions findNearby depends on.
+  await runMigrations(databaseUrl);
 }
