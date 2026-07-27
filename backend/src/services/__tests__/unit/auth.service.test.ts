@@ -88,6 +88,57 @@ describe('AuthService', () => {
             new AppError('Password too short (min 8 characters)', 400));
     });
 
+    it.each([
+        ['an empty name', ''],
+        ['a whitespace-only name', '   '],
+        ['a single-character name', 'A'],
+    ])('should throw a 400 for %s', async (_label, name) => {
+        await expect(
+            authService.registerUser({
+                email: 'test@example.com',
+                password: 'password123',
+                name,
+            })
+        ).rejects.toEqual(new AppError('Name is required (min 2 characters)', 400));
+    });
+
+    it('should throw a 400 for a name longer than 100 characters', async () => {
+        await expect(
+            authService.registerUser({
+                email: 'test@example.com',
+                password: 'password123',
+                name: 'a'.repeat(101),
+            })
+        ).rejects.toEqual(new AppError('Name too long (max 100 characters)', 400));
+    });
+
+    it('should trim the name before persisting it', async () => {
+        mockAuthRepository.findByEmail.mockResolvedValue(null);
+        (bcrypt.hash as any).mockResolvedValue('hashedPassword');
+        mockAuthRepository.createUser.mockResolvedValue({
+            id: '1',
+            email: 'test@example.com',
+            name: 'Jane Doe',
+            passwordHash: 'hashedPassword',
+            profileImage: null,
+            role: 'REPORTER',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            emailVerified: false,
+            image: null,
+        });
+
+        await authService.registerUser({
+            email: 'test@example.com',
+            password: 'password123',
+            name: '  Jane Doe  ',
+        });
+
+        expect(mockAuthRepository.createUser).toHaveBeenCalledWith(
+            expect.objectContaining({ name: 'Jane Doe' })
+        );
+    });
+
     it('should throw error if email already exists', async () => {
         mockAuthRepository.findByEmail.mockResolvedValue({
             id: '1',

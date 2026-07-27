@@ -24,6 +24,15 @@ export class AuthService {
       throw new AppError("Password too short (min 8 characters)", 400);
     }
 
+    // Validate name: trim, reject empty/whitespace-only, bound the length.
+    const trimmedName = typeof name === "string" ? name.trim() : "";
+    if (trimmedName.length < 2) {
+      throw new AppError("Name is required (min 2 characters)", 400);
+    }
+    if (trimmedName.length > 100) {
+      throw new AppError("Name too long (max 100 characters)", 400);
+    }
+
     // Check for existing user
     const existingUser = await this.authRepository.findByEmail(email);
     if (existingUser) {
@@ -33,10 +42,11 @@ export class AuthService {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create user in database
+    // Create user in database (store the trimmed name so stray whitespace never
+    // persists).
     const newUser = await this.authRepository.createUser({
       email,
-      name,
+      name: trimmedName,
       passwordHash: hashedPassword,
     });
 
