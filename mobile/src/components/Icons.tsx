@@ -10,6 +10,7 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import React from "react";
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import EvilIcons from '@expo/vector-icons/EvilIcons';
+import Octicons from '@expo/vector-icons/Octicons';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
 interface IconProps {
@@ -389,3 +390,22 @@ export function CheckMarkCircleIcon(props: IconProps) {
             style={props.style} />
     )
 }
+
+export function BarGraphIcon(props: IconProps) {
+    return (
+        <Entypo name="bar-graph"
+            color={props.color}
+            size={props.size}
+            style={props.style} />
+    )
+}
+
+export function LineGraphIcon(props: IconProps) {
+    return (
+        <Octicons name="graph"
+            color={props.color}
+            size={props.size}
+            style={props.style} />
+    )
+}
+

@@ -166,22 +166,6 @@ export default function ProfileScreen({ route }: any) {
                         </IconButton>
                     </View>
                 }
-                <View style={styles.statRow}>
-                    <Text style={styles.statsText}>Events Attended:</Text>
-                    <Text style={styles.statsText}>Coming Soon</Text>
-                    {/* <IconButton style={{
-                        ...globalStyles.outlinedButton,
-                        flexDirection: "row",
-                        columnGap: spacing.xs,
-                    }}
-                    >
-                        <Text style={{ fontSize: globalStyles.outlinedButton.fontSize, color: globalStyles.outlinedButton.color }}>My Events</Text>
-                        <RightArrowIcon
-                            color={globalStyles.outlinedButton.color}
-                            size={typography.sizeXl}
-                        />
-                    </IconButton> */}
-                </View>
             </View>
 
 
