@@ -20,11 +20,18 @@ export default function LandingScreenNav() {
                 fontWeight: typography.weightRegular,
             },
             headerTitleAlign: "left"
-
+            // headerShown: false
         }}
         >
-            <Stack.Screen name="Nearby Issues" component={LandingScreen} />
-            <Stack.Screen name="Issue Details" component={IssueDetailScreen} />
+            <Stack.Screen name="Nearby Issues" component={LandingScreen}
+                options={{
+                    headerShown: false
+                }} />
+            <Stack.Screen name="Issue Details" component={IssueDetailScreen}
+                options={({ route }) => ({
+                    headerTitle: route.params.issue.title,
+                    headerShadowVisible: false
+                })} />
             <Stack.Screen name="Error" component={ErrorScreen} />
         </Stack.Navigator>
     );

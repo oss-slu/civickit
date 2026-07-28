@@ -25,11 +25,21 @@ export default function StatsNav() {
         >
             <Stack.Screen name="Statistics" component={StatsScreen}
                 options={{
-                    headerShown: true
+                    headerShown: true,
+                    headerTitle: "Statistics in Your Area",
+                    headerShadowVisible: false
                 }} />
-            <Stack.Screen name="Leaderboard" component={LeaderBoardScreen} />
+            <Stack.Screen name="Leaderboard" component={LeaderBoardScreen}
+                options={{
+                    headerTitle: "",
+                    headerShadowVisible: false
+                }} />
 
-            <Stack.Screen name="Issue Details" component={IssueDetailScreen} />
+            <Stack.Screen name="Issue Details" component={IssueDetailScreen}
+                options={{
+                    headerTitle: "",
+                    headerShadowVisible: false
+                }} />
             <Stack.Screen name="Error" component={ErrorScreen} />
         </Stack.Navigator>
     );

@@ -9,7 +9,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { TabParams } from './src/types/TabParams'
 import { colors, globalStyles, palette, size, spacing, typography } from './src/styles';
 import { View, StyleSheet } from 'react-native';
-import { CalendarIcon, MapIcon, PlusIcon, SearchIcon, UserIcon } from './src/components/Icons';
+import { BarGraphIcon, CalendarIcon, LineGraphIcon, MapIcon, PlusIcon, SearchIcon, UserIcon } from './src/components/Icons';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import FlashMessage from 'react-native-flash-message';
 import EventsScreen from './src/screens/Events/EventsScreen';
@@ -39,11 +39,14 @@ function MainTabNavigator() {
         <Tab.Navigator screenOptions={{
           tabBarStyle: {
             backgroundColor: colors.background,
+            elevation: 0
           },
           tabBarShowLabel: false,
+
           animation: "shift",
           tabBarActiveBackgroundColor: colors.backgroundSecondary,
-          headerTitleAlign: "left"
+          headerTitleAlign: "left",
+
         }}
         >
           <Tab.Screen name="Map" component={LandingScreenNav}
@@ -57,17 +60,7 @@ function MainTabNavigator() {
               ),
               headerShown: false
             }} />
-          <Tab.Screen name="Stats Nav" component={StatsNav}
-            options={{
-              tabBarIcon: () => (
-                <SearchIcon
-                  color={colors.textPrimary}
-                  size={size.lg}
-                  style={{ ...styles.icon, ...styles.navIcons }}
-                />
-              ),
-              headerShown: false
-            }} />
+
 
           <Tab.Screen name="ReportIssue" component={IssueCreationNav}
             options={{
@@ -83,20 +76,11 @@ function MainTabNavigator() {
               ),
               headerShown: false
             }} />
-          <Tab.Screen name="Events" component={EventsScreen}
+
+          <Tab.Screen name="Stats Nav" component={StatsNav}
             options={{
               tabBarIcon: () => (
-                <CalendarIcon
-                  color={colors.textPrimary}
-                  size={size.lg}
-                  style={{ ...styles.icon, ...styles.navIcons }}
-                />
-              ),
-            }} />
-          <Tab.Screen name="Profile Nav" component={ProfileNav}
-            options={{
-              tabBarIcon: () => (
-                <UserIcon
+                <LineGraphIcon
                   color={colors.textPrimary}
                   size={size.lg}
                   style={{ ...styles.icon, ...styles.navIcons }}
@@ -104,6 +88,7 @@ function MainTabNavigator() {
               ),
               headerShown: false
             }} />
+
         </Tab.Navigator>
       </NearbyIssuesProvider>
     </LocationProvider>

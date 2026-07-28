@@ -51,24 +51,36 @@ export default function IssueCreationNav() {
             >
                 <Stack.Screen name="Camera" component={CameraScreen}
                     options={{
-                        headerShown: true,
-                        headerTitle: "Report An Issue"
+                        headerShown: false,
                     }} />
-                <Stack.Screen name="Issue Details" component={IssueDetailScreen} />
+                <Stack.Screen name="Issue Details" component={IssueDetailScreen}
+                    options={{
+                        headerTitle: "",
+                        headerShadowVisible: false
+                    }} />
                 <Stack.Screen name="Photo Validation" component={PhotoValidationScreen}
                     options={{
                         headerShown: false
                     }} />
                 <Stack.Screen name="Report An Issue" component={IssueCreationScreen}
                     options={{
-                        headerBackVisible: false
-                    }} />
+                        headerBackVisible: false,
+                        headerShadowVisible: false,
+                        headerTitle: "",
+                        headerShown: false
+                    }}
+                />
                 <Stack.Screen name="DuplicateCheck" component={DuplicateCheckScreen}
                     options={{
-                        headerTitle: "Has this already been reported?"
+                        headerTitle: "Has this already been reported?",
+                        headerShadowVisible: false
                     }} />
 
-                <Stack.Screen name="Error" component={ErrorScreen} />
+                <Stack.Screen name="Error" component={ErrorScreen}
+                    options={{
+                        headerTitle: "",
+                        headerShadowVisible: false
+                    }} />
             </Stack.Navigator>
         </ContextWrapper>
     );
@@ -86,22 +98,22 @@ function ContextWrapper({
     formStarted, setFormStarted,
     children, }: any) {
     return (
-      
+
         <ImagesContext.Provider value={{ images, setImages }}>
-        <PhotoMetadataContext.Provider value={{ photoMetadata, setPhotoMetadata }}>
-            <UserLocationContext.Provider value={{ location, setLocation }}>
-                <AddressContext.Provider value={{ address, setAddress }}>
-                    <TitleContext.Provider value={{ title, setTitle }}>
-                        <CategoryContext.Provider value={{ category, setCategory }}>
-                            <DescriptionContext.Provider value={{ description, setDescription }}>
-                                <FormStartedContext.Provider value={{ formStarted, setFormStarted }}>
-                                    {children}
-                                </FormStartedContext.Provider>
-                            </DescriptionContext.Provider>
-                        </CategoryContext.Provider>
-                    </TitleContext.Provider>
-                </AddressContext.Provider>
-            </UserLocationContext.Provider>
+            <PhotoMetadataContext.Provider value={{ photoMetadata, setPhotoMetadata }}>
+                <UserLocationContext.Provider value={{ location, setLocation }}>
+                    <AddressContext.Provider value={{ address, setAddress }}>
+                        <TitleContext.Provider value={{ title, setTitle }}>
+                            <CategoryContext.Provider value={{ category, setCategory }}>
+                                <DescriptionContext.Provider value={{ description, setDescription }}>
+                                    <FormStartedContext.Provider value={{ formStarted, setFormStarted }}>
+                                        {children}
+                                    </FormStartedContext.Provider>
+                                </DescriptionContext.Provider>
+                            </CategoryContext.Provider>
+                        </TitleContext.Provider>
+                    </AddressContext.Provider>
+                </UserLocationContext.Provider>
             </PhotoMetadataContext.Provider>
         </ImagesContext.Provider>
     )
