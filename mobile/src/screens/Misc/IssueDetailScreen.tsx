@@ -105,18 +105,6 @@ const IssueDetailScreen = () => {
     <View style={styles.page}>
       <ScrollView contentContainerStyle={styles.container}>
 
-        {/* Header */}
-        <View style={styles.header}>
-          <WrenchIcon color={colors.textPrimary} size={size.xl}
-            style={{ marginRight: spacing.xs }} />
-          <Text style={styles.headerTitle}>{issue.title}</Text>
-
-          <View style={styles.countBadge}>
-            <Text style={styles.countLabel}>count</Text>
-            <Text style={styles.countValue}>{upvoteCount}</Text>
-          </View>
-        </View>
-
         {/* Image Gallery */}
         <View style={[styles.imageGallery, { width: imageWidth, height: imageHeight }]}>
           <FlatList
@@ -146,6 +134,11 @@ const IssueDetailScreen = () => {
               ))}
             </View>
           )}
+        </View>
+
+        <View style={styles.countBadge}>
+          <Text style={styles.countLabel}>count</Text>
+          <Text style={styles.countValue}>{upvoteCount}</Text>
         </View>
 
         {/* Info Card */}

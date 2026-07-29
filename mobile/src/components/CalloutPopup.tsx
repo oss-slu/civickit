@@ -1,7 +1,7 @@
 //mobile/src/components/CalloutPopup.tsx
 
-import { View, Text, StyleSheet, ViewStyle, Animated, GestureResponderEvent, useAnimatedValue } from "react-native";
-import { borderRadius, colors, globalStyles, spacing, typography } from "../styles";
+import { View, Text, StyleSheet, ViewStyle, Animated, GestureResponderEvent, useAnimatedValue, TouchableOpacity } from "react-native";
+import { borderRadius, colors, globalStyles, palette, spacing, typography } from "../styles";
 import IssueCard from "./IssueCard";
 import IconButton from "./IconButton";
 import { CloseXIcon, RightArrowIcon } from "./Icons";
@@ -20,22 +20,28 @@ export default function CalloutPopup({ style, issue, onClosePress, onForwardPres
             <View style={{ ...styles.container, ...style, }}>
                 <IconButton style={styles.button}
                     onPress={onClosePress}>
-                    <CloseXIcon size={typography.sizeXl} color={colors.textPrimary} />
+                    <CloseXIcon size={typography.sizeXl + 4} color={colors.textPrimary} />
                 </IconButton>
-                <IssueCard
-                    issue={issue}
-                    variant="expanded"
-                    style={{
-                        borderRadius: 0,
-                        backgroundColor: colors.background,
+                <TouchableOpacity style={styles.touchable}
+                    onPress={onForwardPress}
+                    activeOpacity={0.6}
+                >
+                    <IssueCard
+                        issue={issue}
+                        variant="expanded"
+                        style={{
+                            borderRadius: 0,
+                            backgroundColor: colors.background,
 
-                    }}
-                    animated={false}
-                />
-                <IconButton style={styles.button}
-                    onPress={onForwardPress}>
-                    <RightArrowIcon size={typography.sizeXxl} color={colors.textPrimary} />
-                </IconButton>
+                        }}
+                        onPress={onForwardPress}
+                        animated={false}
+                    />
+                    <View style={styles.button}
+                    >
+                        <RightArrowIcon size={typography.sizeXxl} color={colors.textPrimary} />
+                    </View>
+                </TouchableOpacity>
             </View>
         )
     }
@@ -47,8 +53,16 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         backgroundColor: colors.background,
         borderRadius: borderRadius.lg,
+        // ...globalStyles.shadow
+        borderWidth: 1,
+        borderColor: palette.ckLightGray
+    },
+    touchable: {
+        flexDirection: "row",
+        width: "82%"
     },
     button: {
         backgroundColor: colors.background,
+        justifyContent: "center"
     }
 })

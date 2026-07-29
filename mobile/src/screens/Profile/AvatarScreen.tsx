@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
         height: "100%"
     },
     button: {
-        backgroundColor: palette.ckLightMediumGray,
+        backgroundColor: palette.ckGrayBlue,
         height: windowWidth / 2 - spacing.xs * 1.5,
         width: windowWidth / 2 - spacing.xs * 1.5,
         borderRadius: 0,

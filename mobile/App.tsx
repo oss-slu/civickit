@@ -7,8 +7,8 @@ import { StackParams } from './src/types/StackParams';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { TabParams } from './src/types/TabParams'
-import { colors, globalStyles, palette, size, spacing, typography } from './src/styles';
-import { View, StyleSheet } from 'react-native';
+import { borderRadius, colors, globalStyles, palette, size, spacing, typography } from './src/styles';
+import { View, StyleSheet, StatusBar } from 'react-native';
 import { BarGraphIcon, CalendarIcon, LineGraphIcon, MapIcon, PlusIcon, SearchIcon, UserIcon } from './src/components/Icons';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import FlashMessage from 'react-native-flash-message';
@@ -38,25 +38,31 @@ function MainTabNavigator() {
       <NearbyIssuesProvider>
         <Tab.Navigator screenOptions={{
           tabBarStyle: {
-            backgroundColor: colors.background,
-            elevation: 0
+            backgroundColor: palette.ckVeryLightGray,
+            height: size.xxl + spacing.sm,
+            elevation: 0,
           },
           tabBarShowLabel: false,
-
+          tabBarActiveTintColor: colors.textPrimary,
+          tabBarInactiveTintColor: colors.textPrimary,
           animation: "shift",
-          tabBarActiveBackgroundColor: colors.backgroundSecondary,
           headerTitleAlign: "left",
 
         }}
         >
           <Tab.Screen name="Map" component={LandingScreenNav}
             options={{
-              tabBarIcon: () => (
-                <MapIcon
-                  color={colors.textPrimary}
-                  size={size.lg}
-                  style={{ ...styles.icon, ...styles.navIcons }}
-                />
+              tabBarIcon: ({ color, focused }) => (
+                <View style={{
+                  ...styles.iconBackground,
+                  backgroundColor: focused ? palette.ckGrayBlue : palette.ckVeryLightGray
+                }}>
+                  <MapIcon
+                    color={color}
+                    size={size.lg}
+                    style={{ ...styles.icon, ...styles.navIcons }}
+                  />
+                </View>
               ),
               headerShown: false
             }} />
@@ -64,13 +70,16 @@ function MainTabNavigator() {
 
           <Tab.Screen name="ReportIssue" component={IssueCreationNav}
             options={{
-              tabBarIcon: () => (
+              tabBarIcon: ({ focused }) => (
                 <View
-                  style={styles.plusButton}>
+                  style={{
+                    ...styles.plusButton,
+                    backgroundColor: focused ? palette.ckYellow : palette.ckRed
+                  }}>
                   <PlusIcon
                     color={colors.textContrast}
                     size={size.xl}
-                    style={styles.icon}
+                    style={styles.plusIcon}
                   />
                 </View>
               ),
@@ -79,12 +88,17 @@ function MainTabNavigator() {
 
           <Tab.Screen name="Stats Nav" component={StatsNav}
             options={{
-              tabBarIcon: () => (
-                <LineGraphIcon
-                  color={colors.textPrimary}
-                  size={size.lg}
-                  style={{ ...styles.icon, ...styles.navIcons }}
-                />
+              tabBarIcon: ({ color, focused }) => (
+                <View style={{
+                  ...styles.iconBackground,
+                  backgroundColor: focused ? palette.ckGrayBlue : palette.ckVeryLightGray
+                }}>
+                  <LineGraphIcon
+                    color={color}
+                    size={size.lg}
+                    style={{ ...styles.icon, ...styles.navIcons }}
+                  />
+                </View>
               ),
               headerShown: false
             }} />
@@ -101,6 +115,9 @@ function AppNavigator() {
   if (isLoading) return <LoadingScreen />
   return (
     <NavigationContainer>
+      <StatusBar
+        backgroundColor={colors.background}
+        barStyle={"dark-content"} />
       <Stack.Navigator screenOptions={{ animation: 'slide_from_right' }}>
         {isLoggedIn ? (
           <>
@@ -146,25 +163,47 @@ export default function App() {
 
 const styles = StyleSheet.create({
   plusButton: {
-    ...globalStyles.button,
     position: "absolute",
     bottom: 0,
-    height: size.xxl,
-    width: size.xxl,
-    backgroundColor: palette.ckRed,
-    ...globalStyles.shadow
-  },
-  icon: {
-    display: "flex",
     height: size.xxl,
     width: size.xxl,
     textAlign: "center",
     justifyContent: "center",
     alignContent: "center",
     alignItems: "center",
-    marginTop: spacing.sd,
+    borderRadius: borderRadius.full,
+    ...globalStyles.shadow
+  },
+  icon: {
+    // display: "flex",
+    height: size.xl,
+    width: size.xl,
+    textAlign: "center",
+    justifyContent: "center",
+    alignContent: "center",
+    alignItems: "center",
+    marginTop: spacing.xs,
+    // borderWidth: 2
+  },
+  plusIcon: {
+    width: size.xl,
+    textAlign: "center",
+    justifyContent: "center",
+    alignContent: "center",
+    alignItems: "center"
   },
   navIcons: {
-    paddingTop: spacing.sm
+
+  },
+  iconBackground: {
+    marginTop: spacing.md,
+    borderRadius: borderRadius.full,
+    paddingHorizontal: spacing.md,
+    textAlign: "center",
+    justifyContent: "center",
+    alignContent: "center",
+    alignItems: "center",
+    paddingVertical: spacing.sd,
+    // borderWidth: 2
   }
 });
