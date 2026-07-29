@@ -103,6 +103,7 @@ function MainTabNavigator() {
               headerShown: false
             }} />
 
+
         </Tab.Navigator>
       </NearbyIssuesProvider>
     </LocationProvider>

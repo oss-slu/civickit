@@ -11,4 +11,3 @@ export const auth = betterAuth({
     },
     trustedOrigins: ["http://localhost:3001"],
 });
-
