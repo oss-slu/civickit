@@ -267,6 +267,7 @@ model Organization {
   memberships OrgMembership[]
 
   @@index([status])
+  @@index([geofence], type: Gist)
 }
 
 model OrgMembership {
