@@ -22,7 +22,7 @@ CREATE TABLE "Organization" (
     "tier" "OrgTier",
     "categoryScope" "IssueCategory"[],
     "boundarySource" "BoundarySource",
-    "geofence" geography(Polygon,4326),
+    "geofence" geography(MultiPolygon,4326),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 

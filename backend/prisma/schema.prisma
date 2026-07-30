@@ -253,16 +253,16 @@ model Verification {
 }
 
 model Organization {
-  id             String                                  @id @default(cuid())
+  id             String                                       @id @default(cuid())
   name           String
   type           OrgType
-  status         OrgStatus                               @default(PENDING)
+  status         OrgStatus                                    @default(PENDING)
   tier           OrgTier?
   categoryScope  IssueCategory[]
   boundarySource BoundarySource?
-  geofence       Unsupported("geography(Polygon,4326)")?
-  createdAt      DateTime                                @default(now())
-  updatedAt      DateTime                                @updatedAt
+  geofence       Unsupported("geography(MultiPolygon,4326)")?
+  createdAt      DateTime                                     @default(now())
+  updatedAt      DateTime                                     @updatedAt
 
   memberships OrgMembership[]
 
