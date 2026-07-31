@@ -2,26 +2,33 @@
 import { useCallback, useContext, useRef, useState } from "react";
 import { useAuth } from '../../contexts/AuthContext';
 import { MessageView } from "../../components/MessageView";
-import { View, Text, StyleSheet } from 'react-native';
-import { CategoryIcon, RecenterIcon, RefreshIcon, StatusIcon, WarningIcon } from '../../components/Icons';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { AccountIcon, DefaultCategoryIcon, FilterIcon, RecenterIcon, RefreshIcon, StatusIcon, WarningIcon } from '../../components/Icons';
 import { borderRadius, colors, globalStyles, palette, size, spacing, typography } from '../../styles';
 import { IssueCategoryArray } from "../../types/IssueCategoryArray";
 import { IssueStatusArray } from "../../types/IssueStatusArray";
 
-import FilterCheckList from "../../components/FilterCheckList";
-import IconButton from "../../components/IconButton";
+import CheckList from "../../components/CheckList";
+import WrapperButton from "../../components/WrapperButton";
 import LoadingScreen from "../Misc/LoadingScreen";
 import MapViewScreen from "./MapViewScreen";
 import { useNearbyIssues } from "../../contexts/NearbyIssuesContext";
 import MapView from "react-native-maps";
 import { useLocation } from "../../contexts/LocationContext";
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import ModalPopUp from "../../components/ModalPopup";
+import Button from "../../components/Button";
+import { StackNavigationProp } from "@react-navigation/stack";
+import { StackParams } from "../../types/StackParams";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function LandingScreen({ children }: any) {
+    const insets = useSafeAreaInsets()
     const [isMinLoading, setIsMinLoading] = useState(false) //to avoid quick ui flicker when refetching data
     const [refreshing, setRefreshing] = useState(false)
     const [visibleCategories, setVisibleCategories] = useState(IssueCategoryArray)
     const [visibleStatuses, setVisibleStatuses] = useState(IssueStatusArray)
+    const navigation = useNavigation<StackNavigationProp<StackParams>>()
 
     //get contexts from above layer(s)
     const { data, isLoading, isFetching, error, refetch } = useNearbyIssues()
@@ -71,10 +78,10 @@ export default function LandingScreen({ children }: any) {
         )
     }
 
-    const visibleIssues = data.issues.filter((issue: any) =>
-        visibleCategories.map(i => i.toLowerCase()).includes(issue.category.replace(/_/g, " ").toLowerCase()) &&
-        visibleStatuses.map(i => i.toUpperCase().replace(/ /g, "_")).includes(issue.status)
-    )
+    const resetFilter = () => {
+        setVisibleCategories(IssueCategoryArray)
+        setVisibleStatuses(IssueStatusArray)
+    }
 
     const recenterMap = () => {
         if (!location?.latitude || !location?.longitude) return;
@@ -87,6 +94,11 @@ export default function LandingScreen({ children }: any) {
         });
     };
 
+    const visibleIssues = data.issues.filter((issue: any) =>
+        visibleCategories.map(i => i.toLowerCase()).includes(issue.category.replace(/_/g, " ").toLowerCase()) &&
+        visibleStatuses.map(i => i.toUpperCase().replace(/ /g, "_")).includes(issue.status)
+    )
+
     return (
         <View style={{ flex: 1 }}>
 
@@ -96,39 +108,66 @@ export default function LandingScreen({ children }: any) {
                 refetch={refetch}
             />
 
-            <View style={styles.overlay}>
+            <View style={[styles.topBar, { top: insets.top }]}>
 
-                <View style={styles.buttonColLeft}>
-                    <FilterCheckList
-                        data={IssueCategoryArray}
+                <View style={styles.optionsBar}>
+
+                    <WrapperButton onPress={() => navigation.navigate("ProfileNav", {})}
+                        style={styles.button}>
+                        <AccountIcon size={styles.button.fontSize} color={styles.button.color} />
+                    </WrapperButton>
+
+                    {/* Will eventually be a dropdown of regions/neighbordhoods etc..
+                        Static label until then — the caret was removed because it
+                        read as tappable on a View with no press handler. */}
+                    <View style={styles.region}>
+                        <Text style={styles.regionText}
+                            numberOfLines={1}
+                            ellipsizeMode="tail">St. Louis, MO</Text>
+                    </View>
+
+                    <ModalPopUp
                         buttonStyle={styles.button}
-                        setSelectedValues={setVisibleCategories}
+                        buttonBody={<FilterIcon size={styles.button.fontSize} color={styles.button.color} />}
                     >
-                        <CategoryIcon size={size.xl} style={{ alignSelf: "center" }} />
-                    </FilterCheckList>
+                        <ScrollView contentContainerStyle={styles.filterBody} style={{ maxHeight: 600 }}>
+                            <Button text={"Reset"} onPress={resetFilter} style={styles.resetFilterButton} />
+                            <View>
+                                <Text style={styles.filterHeading}>Statuses</Text>
+                                <CheckList
+                                    data={IssueStatusArray}
+                                    buttonStyle={styles.button}
+                                    selectedValues={visibleStatuses}
+                                    setSelectedValues={setVisibleStatuses}
+                                    checkBoxColor={palette.ckYellow}
+                                />
+                            </View>
 
-                    <FilterCheckList
-                        data={IssueStatusArray}
-                        buttonStyle={styles.button}
-                        setSelectedValues={setVisibleStatuses}
-                    >
-                        <StatusIcon size={size.xl} style={{ alignSelf: "center" }} />
-                    </FilterCheckList>
+                            <View>
+                                <Text style={styles.filterHeading}>Categories</Text>
+                                <CheckList
+                                    data={IssueCategoryArray}
+                                    buttonStyle={styles.button}
+                                    selectedValues={visibleCategories}
+                                    setSelectedValues={setVisibleCategories}
+                                    checkBoxColor={palette.ckBlue}
+                                />
+                            </View>
+                        </ScrollView>
+                    </ModalPopUp>
 
-                    <IconButton onPress={handleRefresh}
+                    <WrapperButton onPress={handleRefresh}
                         style={styles.button}
                         loading={isFetching || isMinLoading}>
-                        <RefreshIcon size={size.xl} style={{ alignSelf: "center", marginBottom: 2 }} />
-                    </IconButton>
+                        <RefreshIcon size={styles.button.fontSize} color={styles.button.color} />
+                    </WrapperButton>
 
                 </View>
 
-                <View style={styles.buttonColRight}>
-                    <IconButton onPress={recenterMap}
-                        style={[styles.button]}>
-                        <RecenterIcon size={size.xl} style={{ alignSelf: "center" }} />
-                    </IconButton>
-                </View>
+                <WrapperButton onPress={recenterMap}
+                    style={styles.recenterButton}>
+                    <RecenterIcon size={styles.recenterButton.fontSize} color={styles.recenterButton.color} />
+                </WrapperButton>
             </View>
 
             <View style={[styles.textContainer,
@@ -148,21 +187,10 @@ export default function LandingScreen({ children }: any) {
 const styles = StyleSheet.create({
     button: {
         width: "auto",
-        ...globalStyles.shadow,
         backgroundColor: colors.background,
         color: colors.textPrimary,
-    },
-    contentContainer: {
-        flex: 1,
-        alignItems: 'center',
-    },
-    callout: {
-        height: "auto",
-        backgroundColor: colors.background
-    },
-    calloutText: {
-        fontSize: typography.sizeMd,
-        color: colors.textPrimary
+        fontSize: typography.sizeXxl,
+        padding: spacing.sm
     },
     textContainer: {
         backgroundColor: palette.ckDark,
@@ -182,44 +210,82 @@ const styles = StyleSheet.create({
         fontWeight: typography.weightBold,
         color: colors.textContrast,
     },
-    statusText: {
-        fontSize: typography.sizeSm,
-        fontWeight: typography.weightBold,
-        color: colors.textContrast,
-    },
-    overlay: {
+    //the options bar and the recenter button are laid out as one row so the gap
+    //between them is enforced by flexbox rather than by hoping two
+    //independently-positioned overlays never grow into each other.
+    //`top` is supplied inline from the safe-area inset.
+    topBar: {
         position: "absolute",
+        left: 0,
+        right: 0,
         flexDirection: "row",
+        alignItems: "center",
         justifyContent: "space-between",
-        alignItems: "flex-start",
-        width: "100%",
-        margin: spacing.sm,
-        columnGap: spacing.sm,
+        padding: spacing.sd,
+        columnGap: spacing.sd,
     },
-    buttonColLeft: {
+    optionsBar: {
+        //shrinks instead of pushing the recenter button off-screen
+        flexShrink: 1,
         flexDirection: "row",
-        columnGap: spacing.sm,
-        justifyContent: "flex-start",
-    },
-    buttonColRight: {
-        flexDirection: "row",
-        columnGap: spacing.sm,
-        justifyContent: "flex-end",
-        paddingHorizontal: spacing.md,
-    },
-    buttonCol: {
-        flexDirection: "row",
-        width: "auto",
-        columnGap: spacing.sm,
-        justifyContent: "flex-end",
-    },
-    logoutButton: {
+        alignItems: "center",
+        backgroundColor: colors.background,
+        borderRadius: borderRadius.full,
+        padding: spacing.xs,
         paddingHorizontal: spacing.sm,
-        paddingVertical: spacing.xs,
+        columnGap: spacing.xs,
+        ...globalStyles.shadow,
     },
-    logoutText: {
-        fontSize: typography.sizeSm,
+    recenterButton: {
+        //matches the options bar's height: spacing.xs of bar padding plus
+        //spacing.sm of button padding equals spacing.sd around the same 28pt icon
+        flexShrink: 0,
+        backgroundColor: colors.background,
         color: colors.textPrimary,
-        fontWeight: typography.weightBold,
+        padding: spacing.sd,
+        fontSize: typography.sizeXxl,
+        ...globalStyles.shadow,
     },
+
+    filterHeading: {
+        fontWeight: typography.weightMedium,
+        fontSize: typography.sizeMd
+    },
+
+    filterBody: {
+        flexDirection: "column",
+        rowGap: spacing.lg,
+        justifyContent: "center"
+    },
+
+    resetFilterButton: {
+        fontSize: typography.sizeMd,
+        alignSelf: "flex-start",
+        paddingHorizontal: spacing.lg,
+        position: "absolute",
+        right: 0
+    },
+
+    region: {
+        //the only child that can give up width when the bar is squeezed. RN
+        //defaults flexShrink to 0, so without this the icon buttons keep their
+        //full size and overflow the bar's rounded background instead.
+        flexShrink: 1,
+        alignContent: "center",
+        alignItems: "center",
+        columnGap: spacing.xs,
+        justifyContent: "center",
+        borderWidth: 2,
+        borderColor: colors.backgroundSecondary,
+        borderRadius: borderRadius.full,
+        paddingVertical: spacing.sm,
+        paddingHorizontal: spacing.md,
+        flexDirection: "row"
+    },
+
+    regionText: {
+        flexShrink: 1,
+        fontSize: typography.sizeLg,
+        fontWeight: typography.weightMedium
+    }
 })

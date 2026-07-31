@@ -18,6 +18,7 @@ export default function IssueMap({ latitude, longitude }: IssueMapProps) {
                 latitudeDelta: 0.01,
                 longitudeDelta: 0.01,
             }}
+            toolbarEnabled={false}
         >
             <Marker coordinate={{ latitude, longitude }} />
         </MapView>

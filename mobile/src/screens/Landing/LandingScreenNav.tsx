@@ -5,6 +5,9 @@ import { colors, typography } from '../../styles';
 import IssueDetailScreen from '../Misc/IssueDetailScreen';
 import ErrorScreen from '../Misc/ErrorScreen';
 import LandingScreen from './LandingScreen';
+import Header from '../../components/Header';
+import { Text } from 'react-native';
+import ProfileNav from '../Profile/ProfileNav';
 
 const Stack = createNativeStackNavigator<StackParams>();
 
@@ -16,15 +19,31 @@ export default function LandingScreenNav() {
                 backgroundColor: colors.background,
             },
             headerTintColor: colors.textPrimary,
-            headerTitleStyle: {
-                fontWeight: typography.weightRegular,
-            },
+            // headerTitleStyle: {
+            //     fontWeight: typography.weightRegular,
+            // },
             headerTitleAlign: "left"
-
+            // headerShown: false
         }}
         >
-            <Stack.Screen name="Nearby Issues" component={LandingScreen} />
-            <Stack.Screen name="Issue Details" component={IssueDetailScreen} />
+            <Stack.Screen name="Nearby Issues" component={LandingScreen}
+                options={{
+                    headerShown: false
+                }} />
+            <Stack.Screen name="ProfileNav" component={ProfileNav}
+                options={{
+                    headerShown: false
+                }} />
+            <Stack.Screen name="Issue Details" component={IssueDetailScreen}
+                options={({ route }) => ({
+                    headerShadowVisible: false,
+                    headerTitle: () => {
+                        return (
+                            <Header title={route.params.issue.title} numberOfLines={3} />
+                        )
+                    },
+                    headerShown: false
+                })} />
             <Stack.Screen name="Error" component={ErrorScreen} />
         </Stack.Navigator>
     );

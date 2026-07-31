@@ -17,8 +17,10 @@ import {
 } from 'react-native';
 import { globalStyles } from '../styles';
 import { borderRadius, colors, size, spacing, typography } from '../styles';
-import { BrokenIcon, ExclamationPointIcon, LightBulbIcon, LocationPinIcon, RoadIcon, SprayPaintIcon, TrafficConeIcon, TrafficLightIcon, TrashIcon, UpvoteIcon } from './Icons';
-import { statusColors } from '../styles/theme';
+import { BrokenIcon, DefaultCategoryIcon, ExclamationPointIcon, LightBulbIcon, LocationPinIcon, RoadIcon, SprayPaintIcon, TrafficConeIcon, TrafficLightIcon, TrashIcon, UpvoteIcon } from './Icons';
+import { palette, statusColors } from '../styles/theme';
+import StatusBadge from './StatusBadge';
+import CategoryIcon from './CategoryIcon';
 
 interface IssueCardProps {
   issue: GetNearbyIssueResponse;
@@ -30,29 +32,6 @@ interface IssueCardProps {
 
 export default function IssueCard({ issue, variant = 'compact', onPress, style, animated = true }: IssueCardProps) {
   const scale = useRef(new Animated.Value(1)).current;
-  const [icon, setIcon] = useState(<ExclamationPointIcon size={typography.sizeLg} color={colors.textPrimary} style={{ marginRight: spacing.xs }} />)
-
-  useEffect(() => {
-    if (issue.category == "POTHOLE") {
-      setIcon(<TrafficConeIcon size={typography.sizeLg} color={colors.textPrimary} />)
-    } else if (issue.category == "STREETLIGHT") {
-      setIcon(<LightBulbIcon size={typography.sizeLg} color={colors.textPrimary}
-        style={{ marginRight: spacing.xs }} />)
-    } else if (issue.category == "GRAFFITI") {
-      setIcon(<SprayPaintIcon size={typography.sizeXl} color={colors.textPrimary} />)
-    } else if (issue.category == "ILLEGAL_DUMPING") {
-      setIcon(<TrashIcon size={typography.sizeLg} color={colors.textPrimary}
-        style={{ marginRight: spacing.xs }} />)
-    } else if (issue.category == "BROKEN_SIDEWALK") {
-      setIcon(<BrokenIcon size={typography.sizeLg} color={colors.textPrimary}
-        style={{ marginRight: spacing.xs }} />)
-    } else if (issue.category == "TRAFFIC_SIGNAL") {
-      setIcon(<TrafficLightIcon size={typography.sizeLg} color={colors.textPrimary}
-        style={{ marginRight: spacing.xs }} />)
-    } else {
-      setIcon(<ExclamationPointIcon size={typography.sizeLg} color={colors.textPrimary} style={{ marginRight: spacing.xs }} />)
-    }
-  }, [issue])
 
   const handlePressIn = (event: GestureResponderEvent) => {
     if (animated) {
@@ -108,7 +87,7 @@ export default function IssueCard({ issue, variant = 'compact', onPress, style, 
         <View style={styles.content}>
           {/* Title + Category */}
           <View style={styles.row}>
-            {icon}
+            <CategoryIcon category={issue.category} />
             <Text
               style={globalStyles.heading2}
               numberOfLines={1}
@@ -134,18 +113,7 @@ export default function IssueCard({ issue, variant = 'compact', onPress, style, 
           <View style={styles.footer}>
 
             {/* Status badge */}
-            <View
-              style={{
-                ...styles.statusBadge,
-                backgroundColor: statusColor.background
-              }}
-            >
-              <Text style={{ ...styles.statusText, color: statusColor.text }}>
-                {issue.status.replace(/_/g, " ")}
-              </Text>
-            </View>
-
-
+            <StatusBadge status={issue.status} />
 
             <View style={{ flexDirection: "row", columnGap: spacing.xs }}>
               {!isExpanded && (
@@ -192,6 +160,7 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingRight: spacing.md
   },
   distance: {
     ...globalStyles.bodyText,
@@ -204,17 +173,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexWrap: "wrap"
   },
-  statusBadge: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderRadius: borderRadius.full,
-  },
-  statusText: {
-    fontSize: typography.sizeSm,
-    fontWeight: typography.weightBold,
-    color: colors.textPrimary,
-    textAlign: "center"
-  },
+
   upvotes: {
     flexDirection: 'row',
     alignItems: 'center',

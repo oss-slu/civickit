@@ -6,10 +6,10 @@ import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { StackParams } from "../types/StackParams";
 
-export default function Leaderboard({ issues }: any) {
+export default function Leaderboard({ issues, number = 5 }: any) {
 
     const navigation = useNavigation<StackNavigationProp<StackParams>>()
-    const issueComps = issues.slice(0, 5).map((issue: any, index: any) =>
+    const issueComps = issues.slice(0, number).map((issue: any, index: any) =>
         <IssueCard
             issue={issue}
             onPress={() => { navigation.navigate("Issue Details", { issue: issue }) }}

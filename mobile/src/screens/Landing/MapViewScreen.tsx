@@ -30,6 +30,7 @@ type MapElement = GetNearbyIssueResponse | IssueCluster
 function isCluster(element: MapElement): element is IssueCluster {
     return (element as IssueCluster).issues != undefined
 }
+import { showLocation } from 'react-native-map-link';
 
 export default function MapViewScreen({ ref, issues, refetch }: any) {
     const navigation = useNavigation<StackNavigationProp<StackParams>>();
@@ -63,7 +64,6 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
         setCurrentElement(element)
         openCallout()
     }
-
 
     const openCallout = () => {
         Animated.timing(fadeAnim, {
@@ -281,7 +281,9 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
                     style={{ paddingBottom: paddingBottom }}
                 />
             </BottomSheet>
+
+
+
         </View>
     );
 };
-

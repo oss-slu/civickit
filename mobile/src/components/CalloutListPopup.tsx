@@ -3,7 +3,7 @@
 import { View, Text, StyleSheet, ViewStyle, Animated, GestureResponderEvent, useAnimatedValue, ScrollView } from "react-native";
 import { borderRadius, colors, globalStyles, size, spacing, typography } from "../styles";
 import IssueCard from "./IssueCard";
-import IconButton from "./IconButton";
+import WrapperButton from "./WrapperButton";
 import { CloseXIcon, RightArrowIcon } from "./Icons";
 import { GetNearbyIssueResponse, Issue } from "@civickit/shared";
 import IssueSquare from "./IssueSquare";
@@ -20,10 +20,10 @@ export default function CalloutListPopup({ style, cluster, onClosePress }: any) 
         return (
             <View style={{ ...styles.container, ...style, }}>
 
-                <IconButton style={styles.button}
+                <WrapperButton style={styles.button}
                     onPress={onClosePress}>
                     <CloseXIcon size={typography.sizeXl} color={colors.textPrimary} />
-                </IconButton>
+                </WrapperButton>
 
                 <ScrollView contentContainerStyle={styles.issueList}
                     horizontal>

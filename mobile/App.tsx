@@ -8,13 +8,12 @@ import { StackParams } from './src/types/StackParams';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { TabParams } from './src/types/TabParams'
-import { colors, globalStyles, palette, size, spacing, typography } from './src/styles';
-import { View, StyleSheet } from 'react-native';
-import { CalendarIcon, MapIcon, PlusIcon, SearchIcon, UserIcon } from './src/components/Icons';
+import { borderRadius, colors, globalStyles, palette, size, spacing, typography } from './src/styles';
+import { View, StyleSheet, StatusBar, Dimensions } from 'react-native';
+import { BarGraphIcon, CalendarIcon, LineGraphIcon, MapIcon, PlusIcon, SearchIcon, UserIcon } from './src/components/Icons';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import FlashMessage from 'react-native-flash-message';
-import EventsScreen from './src/screens/Events/EventsScreen';
-import ProfileScreen from './src/screens/Profile/ProfileScreen';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import LoginScreen from './src/screens/Login/LoginScreen';
 import RegisterScreen from './src/screens/Login/RegisterScreen';
 import IssueCreationNav from './src/screens/IssueCreation/IssueCreationNav';
@@ -23,8 +22,6 @@ import { LocationProvider } from './src/contexts/LocationContext';
 import { NearbyIssuesProvider } from './src/contexts/NearbyIssuesContext';
 import LandingScreenNav from './src/screens/Landing/LandingScreenNav';
 import StatsNav from './src/screens/Stats/StatsNav';
-import Button from './src/components/Button';
-import ProfileNav from './src/screens/Profile/ProfileNav';
 import LoadingScreen from './src/screens/Misc/LoadingScreen';
 
 const Tab = createBottomTabNavigator<TabParams>();
@@ -46,89 +43,104 @@ const queryClient = new QueryClient({
 const Stack = createNativeStackNavigator<StackParams>();
 
 function MainTabNavigator() {
+  const { width, height } = Dimensions.get("window")
+  const insets = useSafeAreaInsets()
   return (
-    <LocationProvider>
-      <NearbyIssuesProvider>
-        <Tab.Navigator screenOptions={{
-          tabBarStyle: {
-            backgroundColor: colors.background,
-          },
-          tabBarShowLabel: false,
-          animation: "shift",
-          tabBarActiveBackgroundColor: colors.backgroundSecondary,
-          headerTitleAlign: "left"
-        }}
-        >
-          <Tab.Screen name="Map" component={LandingScreenNav}
-            options={{
-              tabBarIcon: () => (
-                <MapIcon
-                  color={colors.textPrimary}
-                  size={size.lg}
-                  style={{ ...styles.icon, ...styles.navIcons }}
-                />
-              ),
-              headerShown: false
-            }} />
-          <Tab.Screen name="Stats Nav" component={StatsNav}
-            options={{
-              tabBarIcon: () => (
-                <SearchIcon
-                  color={colors.textPrimary}
-                  size={size.lg}
-                  style={{ ...styles.icon, ...styles.navIcons }}
-                />
-              ),
-              headerShown: false
-            }} />
+    <View style={{
+      width,
+      height,
+    }}>
+      <LocationProvider>
+        <NearbyIssuesProvider>
+          <Tab.Navigator screenOptions={{
+            tabBarStyle: {
+              backgroundColor: palette.ckVeryLightGray,
+              //an explicit height makes getTabBarHeight return it verbatim and
+              //skip adding insets.bottom, but BottomTabBar still applies
+              //paddingBottom: insets.bottom — so the inset has to be added here
+              //or it eats the space the icons need.
+              height: size.xxl + spacing.sm + insets.bottom,
+              elevation: 0,
+            },
+            tabBarShowLabel: false,
+            tabBarActiveTintColor: colors.textPrimary,
+            tabBarInactiveTintColor: colors.textPrimary,
+            animation: "shift",
+            headerTitleAlign: "left",
 
-          <Tab.Screen name="ReportIssue" component={IssueCreationNav}
-            options={{
-              tabBarIcon: () => (
-                <View
-                  style={styles.plusButton}>
-                  <PlusIcon
-                    color={colors.textContrast}
-                    size={size.xl}
-                    style={styles.icon}
-                  />
-                </View>
-              ),
-              headerShown: false
-            }} />
-          <Tab.Screen name="Events" component={EventsScreen}
-            options={{
-              tabBarIcon: () => (
-                <CalendarIcon
-                  color={colors.textPrimary}
-                  size={size.lg}
-                  style={{ ...styles.icon, ...styles.navIcons }}
-                />
-              ),
-            }} />
-          <Tab.Screen name="Profile Nav" component={ProfileNav}
-            options={{
-              tabBarIcon: () => (
-                <UserIcon
-                  color={colors.textPrimary}
-                  size={size.lg}
-                  style={{ ...styles.icon, ...styles.navIcons }}
-                />
-              ),
-              headerShown: false
-            }} />
-        </Tab.Navigator>
-      </NearbyIssuesProvider>
-    </LocationProvider>
+          }}
+          >
+            <Tab.Screen name="Map" component={LandingScreenNav}
+              options={{
+                tabBarIcon: ({ color, focused }) => (
+                  <View style={{
+                    ...styles.iconBackground,
+                    backgroundColor: focused ? palette.ckGrayBlue : palette.ckVeryLightGray
+                  }}>
+                    <MapIcon
+                      color={color}
+                      size={size.lg}
+                      style={{ ...styles.icon, ...styles.navIcons }}
+                    />
+                  </View>
+                ),
+                headerShown: false
+              }} />
+
+
+            <Tab.Screen name="ReportIssue" component={IssueCreationNav}
+              options={{
+                tabBarIcon: ({ focused }) => (
+                  <View
+                    style={{
+                      ...styles.plusButton,
+                      backgroundColor: focused ? palette.ckYellow : palette.ckRed
+                    }}>
+                    <PlusIcon
+                      color={colors.textContrast}
+                      size={size.xl}
+                      style={styles.plusIcon}
+                    />
+                  </View>
+                ),
+                headerShown: false
+              }} />
+
+            <Tab.Screen name="Stats Nav" component={StatsNav}
+              options={{
+                tabBarIcon: ({ color, focused }) => (
+                  <View style={{
+                    ...styles.iconBackground,
+                    backgroundColor: focused ? palette.ckGrayBlue : palette.ckVeryLightGray
+                  }}>
+                    <LineGraphIcon
+                      color={color}
+                      size={size.lg}
+                      style={{ ...styles.icon, ...styles.navIcons }}
+                    />
+                  </View>
+                ),
+                headerShown: false
+              }} />
+
+
+          </Tab.Navigator>
+        </NearbyIssuesProvider>
+      </LocationProvider>
+    </View>
   )
 }
 
 function AppNavigator() {
   const { isLoggedIn, isLoading } = useAuth();
+  const insets = useSafeAreaInsets();
 
   if (isLoading) return <LoadingScreen />
   return (
     <NavigationContainer>
+      <StatusBar
+        backgroundColor={colors.background}
+        barStyle={"dark-content"} />
       <Stack.Navigator screenOptions={{ animation: 'slide_from_right' }}>
         {isLoggedIn ? (
           <>
@@ -145,7 +157,7 @@ function AppNavigator() {
           </>
         )}
       </Stack.Navigator>
-      {isLoggedIn && <FlashMessage position="top" style={{ paddingTop: 32 }} />}
+      {isLoggedIn && <FlashMessage position="top" style={{ paddingTop: insets.top }} />}
     </NavigationContainer>
   )
 }
@@ -153,12 +165,15 @@ function AppNavigator() {
 export default function App() {
   if (queryClient != null) {
     return (
-      <GestureHandlerRootView>
-        <QueryClientProvider client={queryClient}>
-          <AuthProvider>
-            <AppNavigator />
-          </AuthProvider>
-        </QueryClientProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        {/* SafeAreaProvider must fill the screen or useSafeAreaInsets reads 0 */}
+        <SafeAreaProvider>
+          <QueryClientProvider client={queryClient}>
+            <AuthProvider>
+              <AppNavigator />
+            </AuthProvider>
+          </QueryClientProvider>
+        </SafeAreaProvider>
       </GestureHandlerRootView>
     );
   } else {
@@ -174,25 +189,47 @@ export default function App() {
 
 const styles = StyleSheet.create({
   plusButton: {
-    ...globalStyles.button,
     position: "absolute",
     bottom: 0,
-    height: size.xxl,
-    width: size.xxl,
-    backgroundColor: palette.ckRed,
-    ...globalStyles.shadow
-  },
-  icon: {
-    display: "flex",
     height: size.xxl,
     width: size.xxl,
     textAlign: "center",
     justifyContent: "center",
     alignContent: "center",
     alignItems: "center",
-    marginTop: spacing.sd,
+    borderRadius: borderRadius.full,
+    ...globalStyles.shadow
+  },
+  icon: {
+    // display: "flex",
+    height: size.xl,
+    width: size.xl,
+    textAlign: "center",
+    justifyContent: "center",
+    alignContent: "center",
+    alignItems: "center",
+    marginTop: spacing.xs,
+    // borderWidth: 2
+  },
+  plusIcon: {
+    width: size.xl,
+    textAlign: "center",
+    justifyContent: "center",
+    alignContent: "center",
+    alignItems: "center"
   },
   navIcons: {
-    paddingTop: spacing.sm
+
+  },
+  iconBackground: {
+    marginTop: spacing.md,
+    borderRadius: borderRadius.full,
+    paddingHorizontal: spacing.md,
+    textAlign: "center",
+    justifyContent: "center",
+    alignContent: "center",
+    alignItems: "center",
+    paddingVertical: spacing.sd,
+    // borderWidth: 2
   }
 });

@@ -17,7 +17,7 @@ import { resolvePhotoMetadata } from '../../utils/photoMetadata';
 
 import LoadingScreen from '../Misc/LoadingScreen';
 import Button from '../../components/Button';
-import IconButton from '../../components/IconButton';
+import WrapperButton from '../../components/WrapperButton';
 import SelectedImage from '../../components/SelectedImage';
 import ModalDropdown from '../../components/ModalDropdown';
 import { NetworkError, issuesApi } from '../../api';
@@ -25,6 +25,7 @@ import { ImagesContext, PhotoMetadataContext, UserLocationContext, AddressContex
 import { userLocation } from '../../types/userLocation';
 import { PhotoMetadataSource } from '../../utils/photoMetadata';
 import { useNearbyIssues } from '../../contexts/NearbyIssuesContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function IssueCreationScreen() {
     const { images, setImages } = useContext(ImagesContext);
@@ -44,6 +45,9 @@ export default function IssueCreationScreen() {
     const [isLoadingLocal, setIsLoading] = useState(false)
     const navigation = useNavigation<StackNavigationProp<StackParams>>()
     const { authToken } = useAuth();
+    //must stay above the isLoadingLocal early return below — hooks cannot be
+    //called conditionally
+    const insets = useSafeAreaInsets();
 
     //get location
     useEffect(() => {
@@ -274,9 +278,9 @@ export default function IssueCreationScreen() {
 
 
     return (
-        <>
+        <View style={{ flex: 1 }}>
             <KeyboardAwareScrollView enableOnAndroid enableAutomaticScroll extraScrollHeight={100}
-                style={styles.container}
+                style={[styles.container, { paddingTop: insets.top + spacing.md }]}
                 contentContainerStyle={{ gap: spacing.sm }}>
 
                 <TextInput onChangeText={setTitle}
@@ -308,12 +312,12 @@ export default function IssueCreationScreen() {
                         />
                     </ScrollView>
 
-                    <IconButton onPress={() => { navigation.navigate("Camera", { uri: images }) }}
+                    <WrapperButton onPress={() => { navigation.navigate("Camera", { uri: images }) }}
                         style={images.length < 5 ? styles.photoButton : styles.disabledPhotoButton}
                         isDisabled={images.length >= 5}>
                         <PlusIcon color={colors.textContrast}
                             size={size.xl} />
-                    </IconButton>
+                    </WrapperButton>
                 </View>
 
                 <View style={styles.addressContainer}>
@@ -355,7 +359,7 @@ export default function IssueCreationScreen() {
                     text="Submit">
                 </Button>
             </View>
-        </>
+        </View>
 
     )
 
@@ -392,11 +396,16 @@ const styles = StyleSheet.create({
         position: "absolute",
         bottom: spacing.lg,
     },
+    //WrapperButton contributes borderRadius.full but no dimensions, so without
+    //an explicit size these collapse to the icon's own 32pt box with the glyph
+    //touching every edge. Sized to match the delete button on SelectedImage.
     photoButton: {
         backgroundColor: palette.ckBlue,
         position: "absolute",
         bottom: spacing.sm,
         right: spacing.sm,
+        width: size.xxl,
+        height: size.xxl,
         ...globalStyles.shadow
     },
     disabledPhotoButton: {
@@ -404,6 +413,8 @@ const styles = StyleSheet.create({
         position: "absolute",
         bottom: spacing.sm,
         right: spacing.sm,
+        width: size.xxl,
+        height: size.xxl,
         ...globalStyles.shadow
     },
     submitButton: {

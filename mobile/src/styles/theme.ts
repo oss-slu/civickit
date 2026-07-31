@@ -22,8 +22,9 @@ export const palette = {
     ckVeryDarkGray: "#1a1a1a",
     ckDarkGray: "#6B7280",
     ckMediumGray: "#9CA3AF",
-    ckLightMediumGray: "#b4bece",
+    ckGrayBlue: "#c1ccdf",
     ckLightGray: "#E5E7EB",
+    ckVeryLightGray: "#edeff3",
 
 }
 
@@ -101,6 +102,7 @@ export const size = {
     cardCompact: 80,
     cardExpanded: 120,
     longButton: 180,
+    imageMd: 240,
     imageLg: 340,
     navBar: 88
 };
