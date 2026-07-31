@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { View, Modal, Text, FlatList, StyleSheet, TouchableOpacity } from "react-native";
 import Button from "./Button";
 import { borderRadius, colors, palette, spacing, typography } from "../styles";
-import IconButton from "./IconButton";
+import WrapperButton from "./WrapperButton";
 import { CaretDownIcon } from "./Icons";
 
 export default function ModalDropdown({ data, onDataSelect, defaultText, buttonStyle, labelSuffix }: any) {
@@ -19,14 +19,14 @@ export default function ModalDropdown({ data, onDataSelect, defaultText, buttonS
 
     return (
         <View>
-            <IconButton style={{ ...styles.button, ...buttonStyle }}
+            <WrapperButton style={{ ...styles.button, ...buttonStyle }}
                 onPress={toggleModal}>
                 <Text style={{
                     color: buttonStyle.color,
                     fontSize: buttonStyle.fontSize,
                     fontStyle: buttonStyle.fontStyle
                 }}>{selectedValue || defaultText || "Select an option"} {labelSuffix}</Text>
-            </IconButton>
+            </WrapperButton>
 
             <Modal visible={isVisible} transparent animationType="fade">
                 <View style={styles.modalBackground}>
@@ -55,7 +55,9 @@ export default function ModalDropdown({ data, onDataSelect, defaultText, buttonS
 const styles = StyleSheet.create({
     button: {
         backgroundColor: palette.ckDarkGreen,
-        fontSize: typography.sizeLg
+        fontSize: typography.sizeLg,
+        paddingVertical: spacing.sm,
+        paddingHorizontal: spacing.sm + spacing.xs
     },
     modalBackground: {
         flex: 1,

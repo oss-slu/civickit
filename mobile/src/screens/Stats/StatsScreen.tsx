@@ -16,13 +16,14 @@ import { useLocation } from "../../contexts/LocationContext";
 import ENV from '../../config/env';
 import { FlatList } from "react-native-gesture-handler";
 import { GetNearbyIssueResponse } from "@civickit/shared/src/types/api";
-import IconButton from "../../components/IconButton";
+import WrapperButton from "../../components/WrapperButton";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { StackParams } from "../../types/StackParams";
 import { radiusOptions } from "../../types/RadiusOptions";
 import { timeOptions } from "../../types/TimeOptions";
 import Leaderboard from "../../components/Leaderboard";
+import Header from "../../components/Header";
 
 type record = Record<string, number>;
 
@@ -183,90 +184,99 @@ export default function StatsScreen() {
     }
 
     return (
-
-        <ScrollView
-            style={{ ...globalStyles.container }}
-            refreshControl={<RefreshControl
-                refreshing={refreshing}
-                onRefresh={refetch} />}
-        >
-
-            <View style={styles.buttonRow}>
-
-                <View style={styles.buttonSection}>
-                    <Text style={styles.headerText}>Within</Text>
-                    <ModalDropdown
-                        data={radiusOptions}
-                        onDataSelect={handleRadiusChange}
-                        defaultText={radius}
-                        buttonStyle={styles.modalButton}
-                        labelSuffix={<CaretDownIcon />} />
-                </View>
-
-                <View style={styles.buttonSection}>
-                    {time != "All Time" && <Text style={styles.headerText}>In the last</Text>}
-                    <ModalDropdown
-                        data={timeOptions}
-                        onDataSelect={setTime}
-                        defaultText={time}
-                        labelSuffix={<CaretDownIcon />}
-                        buttonStyle={styles.modalButton} />
-                </View>
-            </View>
+        <View
+            style={{ ...globalStyles.container, padding: 0 }}>
+            <ScrollView
+                contentContainerStyle={{ paddingBottom: spacing.xxxl + spacing.xxl }}
+                style={{ paddingTop: spacing.xxxl + spacing.xl }}
+                refreshControl={<RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={refetch} />}
+            >
 
 
-            {filteredData.length > 0 ?
-                <View>
-                    <Text style={{ ...styles.heading }}>
-                        Most Endorsed
-                    </Text>
+                {filteredData.length > 0 ?
+                    <View>
+                        <Text style={{ ...styles.heading }}>
+                            Most Endorsed
+                        </Text>
 
 
-                    <View style={{ ...styles.leaderboardContainer }}>
-                        <Leaderboard issues={filteredData} />
-                    </View>
+                        <View style={{ ...styles.leaderboardContainer }}>
+                            <Leaderboard issues={filteredData} />
+                        </View>
 
-                    <IconButton style={{
-                        ...styles.modalButton,
-                        flexDirection: "row",
-                        columnGap: spacing.xs,
-                    }}
-                        onPress={() => {
-                            navigation.navigate("Leaderboard", {
-                                issues: filteredData, endorsementsOption: true,
-                                dateReportedOption: true, dateUpdatedOption: true, distanceOption: true,
-                            })
+                        <WrapperButton style={{
+                            ...styles.modalButton,
+                            flexDirection: "row",
+                            columnGap: spacing.xs,
+                            padding: spacing.md,
+                            marginHorizontal: spacing.sm,
+                            paddingVertical: spacing.sm
                         }}
-                    >
-                        <Text style={{ fontSize: typography.sizeLg, ...styles.buttonText }}>More</Text>
-                        <RightArrowIcon
-                            color={colors.textSecondary}
-                            size={typography.sizeXl}
-                        />
-                    </IconButton>
+                            onPress={() => {
+                                navigation.navigate("Leaderboard", {
+                                    issues: filteredData, endorsementsOption: true,
+                                    dateReportedOption: true, dateUpdatedOption: true, distanceOption: true,
+                                })
+                            }}
+                        >
+                            <Text style={{ fontSize: typography.sizeLg, ...styles.buttonText }}>More</Text>
+                            <RightArrowIcon
+                                color={colors.textSecondary}
+                                size={typography.sizeXl}
+                            />
+                        </WrapperButton>
 
-                    <View style={{
-                        ...styles.sectionContainer,
-                        backgroundColor: colors.background
-                    }}>
-                        <CategoryPieChart categoryNumbers={categoryNumbers} />
+                        <View style={{
+                            ...styles.sectionContainer,
+                            backgroundColor: colors.background
+                        }}>
+                            <CategoryPieChart categoryNumbers={categoryNumbers} />
+                        </View>
+
+
+                        <View style={{ ...styles.sectionContainer }}>
+                            <StatusSummaryCard statusNumbers={statusNumbers} />
+                        </View>
+                    </View>
+                    :
+                    <MessageView>
+                        No Issues
+                    </MessageView>
+                }
+
+
+
+            </ScrollView>
+            <Header
+                title="Statistics in Your Area"
+                canGoBack={false}
+                style={styles.header}>
+                <View style={styles.buttonRow}>
+
+                    <View style={styles.buttonSection}>
+                        <Text style={styles.headerText}>Within</Text>
+                        <ModalDropdown
+                            data={radiusOptions}
+                            onDataSelect={handleRadiusChange}
+                            defaultText={radius}
+                            buttonStyle={styles.modalButton}
+                            labelSuffix={<CaretDownIcon />} />
                     </View>
 
-                    {/* <View style={{ ...styles.sectionContainer }}>
-                        <StatusBarGraph statusNumbers={statusNumbers} />
-                    </View> */}
-
-                    <View style={{ ...styles.sectionContainer }}>
-                        <StatusSummaryCard statusNumbers={statusNumbers} />
+                    <View style={styles.buttonSection}>
+                        {time != "All Time" && <Text style={styles.headerText}>In the last</Text>}
+                        <ModalDropdown
+                            data={timeOptions}
+                            onDataSelect={setTime}
+                            defaultText={time}
+                            labelSuffix={<CaretDownIcon />}
+                            buttonStyle={styles.modalButton} />
                     </View>
                 </View>
-                :
-                <MessageView>
-                    No Issues
-                </MessageView>
-            }
-
-        </ScrollView>
+            </Header>
+        </View>
     )
 }
 
@@ -276,6 +286,14 @@ const styles = StyleSheet.create({
         fontSize: typography.sizeLg,
         fontWeight: typography.weightBold,
         marginLeft: spacing.md
+    },
+    header: {
+        flexDirection: "column",
+        alignItems: "flex-start",
+        alignContent: 'flex-start',
+        rowGap: spacing.xs,
+        borderBottomWidth: 3,
+        borderColor: colors.backgroundSecondary
     },
     leaderboardContainer: {
         margin: spacing.sm,
@@ -293,19 +311,19 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         width: "100%",
         justifyContent: "space-between",
-        padding: spacing.sm,
+        marginHorizontal: spacing.sm
     },
     buttonSection: {
         flexDirection: "row",
         columnGap: spacing.sm,
         justifyContent: "center",
-        alignItems: "center"
+        alignItems: "center",
     },
     buttonText: {
         color: colors.textSecondary
     },
     headerText: {
-        fontSize: typography.sizeLg,
+        fontSize: typography.sizeMd,
         fontWeight: typography.weightMedium,
         color: colors.textPrimary
     },
@@ -313,6 +331,7 @@ const styles = StyleSheet.create({
         backgroundColor: colors.background,
         color: colors.textSecondary,
         borderWidth: 4,
+        paddingVertical: spacing.xs,
         borderColor: colors.backgroundSecondary
     }
 })

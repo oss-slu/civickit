@@ -3,7 +3,7 @@ import { useEffect, useRef } from 'react';
 import { globalStyles } from '../styles';
 import { TouchableOpacity, Animated, Easing } from 'react-native';
 
-export default function IconButton({ onPress, style, isDisabled = false, loading = false, children, }: any) {
+export default function WrapperButton({ onPress, style, isDisabled = false, loading = false, children, }: any) {
     const spinAnim = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {
@@ -38,7 +38,7 @@ export default function IconButton({ onPress, style, isDisabled = false, loading
             disabled={disabled}
             activeOpacity={0.6}
             style={[
-                disabled ? globalStyles.disabledbutton : globalStyles.button,
+                disabled ? globalStyles.disabledWrapperButton : globalStyles.wrapperButton,
                 style,
                 loading ? { opacity: 0.7 } : undefined,
             ]}

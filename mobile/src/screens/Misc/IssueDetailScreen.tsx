@@ -1,16 +1,20 @@
 // mobile/src/screens/Misc/IssueDetailScreen.tsx
 import React, { useState, useEffect } from 'react';
-import { Platform, Text, ScrollView, FlatList, Image, StyleSheet, View, TouchableOpacity, useWindowDimensions } from 'react-native';
+import { Platform, Text, ScrollView, FlatList, Image, StyleSheet, View, TouchableOpacity, useWindowDimensions, useAnimatedValue } from 'react-native';
 import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
 import { GetNearbyIssueResponse, Issue } from '@civickit/shared';
 import { format, formatDistanceToNow } from 'date-fns';
-import { CategoryIcon, ClockIcon, LocationPinIcon, TagIcon, WrenchIcon } from '../../components/Icons';
+import { DefaultCategoryIcon, CheckMarkCircleIcon, CheckMarkIcon, ClockIcon, LocationPinIcon, TagIcon, UpvoteIcon, WrenchIcon } from '../../components/Icons';
 import { borderRadius, colors, globalStyles, palette, size, spacing, typography } from '../../styles';
 import { useAuth } from '../../contexts/AuthContext';
 import { PROVIDER_GOOGLE } from 'react-native-maps/lib/ProviderConstants';
 import ENV from '../../config/env';
 import Pin from '../../components/Pin';
 import { showLocation } from 'react-native-map-link';
+import Header from '../../components/Header';
+import { Animated } from 'react-native';
+import StatusBadge from '../../components/StatusBadge';
+import CategoryIcon from '../../components/CategoryIcon';
 
 let MapView: any = null;
 let Marker: any = null;
@@ -28,6 +32,8 @@ type IssueDetailRouteProp = RouteProp<
 
 const IssueDetailScreen = () => {
   const route = useRoute<IssueDetailRouteProp>();
+
+  const [headerOffset, setHeaderOffset] = useState(0)
   const { issue } = route.params;
   const { width } = useWindowDimensions();
   const imageWidth = width - spacing.md * 2;
@@ -43,6 +49,18 @@ const IssueDetailScreen = () => {
 
   const resolvedAddress = issue.address || 'No address available';
   const formatSource = (source?: string) => source === 'exif' ? 'Photo metadata' : 'Device GPS';
+
+  //header collapse
+  const [lineNum, setLineNum] = useState(4)
+
+  const modifyHeader = ({ contentOffset }: any) => {
+    if (contentOffset.y > 0) {
+      setLineNum(1)
+    } else if (contentOffset.y == 0) {
+      setLineNum(4)
+    }
+  }
+
 
   useEffect(() => {
     const fetchUpvoteState = async () => {
@@ -102,8 +120,30 @@ const IssueDetailScreen = () => {
   const [category, setCategory] = useState<String>(issue.category.replace(/_/g, " ").toLowerCase())
 
   return (
-    <View style={styles.page}>
-      <ScrollView contentContainerStyle={styles.container}>
+    <View style={{ ...styles.page, }}>
+      <ScrollView contentContainerStyle={{ ...styles.container, paddingTop: headerOffset + spacing.xxl * (25 / headerOffset), rowGap: spacing.sm }}
+        onScroll={(e) => modifyHeader(e.nativeEvent)}>
+
+        {/* Image Caption/at a glance info */}
+        <View style={styles.imageCaption}>
+          <View style={styles.infoElement}>
+            <UpvoteIcon color={colors.textPrimary} size={typography.sizeXl} />
+            <Text style={styles.countValue}>{upvoteCount}</Text>
+          </View>
+
+          <View style={styles.infoElement}>
+            <CategoryIcon
+              category={issue.category}
+              size={typography.sizeXl}
+            />
+            <Text style={styles.catValue}>
+              {category}
+            </Text>
+          </View>
+
+          <StatusBadge status={issue.status} style={{ paddingHorizontal: spacing.md }} textStyle={{ fontSize: typography.sizeLg }} />
+
+        </View>
 
         {/* Image Gallery */}
         <View style={[styles.imageGallery, { width: imageWidth, height: imageHeight }]}>
@@ -136,9 +176,12 @@ const IssueDetailScreen = () => {
           )}
         </View>
 
-        <View style={styles.countBadge}>
-          <Text style={styles.countLabel}>count</Text>
-          <Text style={styles.countValue}>{upvoteCount}</Text>
+
+
+        {/* Description */}
+        <View style={styles.description}>
+          <Text style={styles.infoRowLabel}>Description</Text>
+          <Text style={styles.descriptionText}>{issue.description}</Text>
         </View>
 
         {/* Info Card */}
@@ -193,43 +236,9 @@ const IssueDetailScreen = () => {
               </TouchableOpacity>
             </View>
           </View>
-
-          <View style={styles.divider} />
-
-          {/* Tags */}
-          <View style={styles.infoRow}>
-            <TagIcon color={colors.textPrimary}
-              size={typography.sizeLg}
-              style={styles.icon} />
-            <View style={styles.infoTextColumn}>
-              <Text style={styles.infoRowLabel}>Status</Text>
-              <Text style={styles.infoRowText}>
-                {issue.status}
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.divider} />
-
-          {/* Category */}
-          <View style={styles.infoRow}>
-            <CategoryIcon
-              color={colors.textPrimary}
-              size={typography.sizeLg}
-              style={styles.icon}
-            />
-            <View style={styles.infoTextColumn}>
-              <Text style={styles.infoRowLabel}>Category</Text>
-              <Text style={styles.infoRowText}>
-                {category}
-              </Text>
-            </View>
-          </View>
-
         </View>
 
-        {/* Description */}
-        <Text style={styles.description}>{issue.description}</Text>
+
 
         {/* Map */}
         {Platform.OS !== 'web' && MapView && Marker ? (
@@ -262,9 +271,21 @@ const IssueDetailScreen = () => {
         </Text>
       </ScrollView>
 
+      <Header title={issue.title}
+        onBackPress={navigation.goBack}
+        lineNum={lineNum}
+        setOffset={(i: any) => setHeaderOffset(i)} />
+
       {/* Upvote / Endorse Button */}
-      <TouchableOpacity style={styles.endorseButton} onPress={handleEndorse}>
-        <Text style={styles.endorseText}>{hasEndorsed ? 'Endorsed ✓' : 'Endorse'}</Text>
+      <TouchableOpacity style={{ ...styles.endorseButton, backgroundColor: hasEndorsed ? palette.ckGreen : palette.ckRed }} onPress={handleEndorse}>
+        {hasEndorsed ?
+          <View style={{ flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
+            <Text style={styles.endorseText}>Endorsed</Text>
+            <CheckMarkIcon color={colors.textPrimary} size={typography.sizeXl} />
+          </View> :
+          <Text style={styles.endorseText}>Endorse</Text>
+        }
+
       </TouchableOpacity>
     </View>
   );
@@ -279,39 +300,19 @@ const styles = StyleSheet.create({
   },
 
   container: {
-    padding: spacing.md,
+    paddingHorizontal: spacing.md,
     paddingBottom: 120,
   },
 
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-  },
-
-  headerIcon: {
-    fontSize: 32,
-    marginRight: spacing.sm,
-  },
-
-  headerTitle: {
-    fontSize: typography.sizeXxl,
-    fontWeight: 'bold',
-    color: palette.ckRed,
-    flex: 1,
-  },
-
-  countBadge: {
+  infoElement: {
     backgroundColor: palette.ckLightGray,
     borderRadius: borderRadius.md,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
     alignItems: 'center',
-  },
-
-  countLabel: {
-    fontSize: typography.sizeXs,
-    color: colors.textPrimary,
+    flexDirection: "row",
+    columnGap: spacing.sm,
+    height: "100%"
   },
 
   countValue: {
@@ -319,11 +320,16 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 
+  catValue: {
+    fontSize: typography.sizeLg,
+    color: colors.textPrimary,
+    fontWeight: typography.weightMedium
+  },
+
   infoCard: {
     backgroundColor: palette.ckLightGray,
     borderRadius: borderRadius.ml,
     padding: spacing.sd,
-    marginBottom: spacing.md,
   },
 
   infoRowText: {
@@ -356,31 +362,20 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
   },
 
+  imageCaption: {
+    flexDirection: "row",
+    columnGap: spacing.sm,
+    alignItems: "center",
+    justifyContent: "flex-start"
+  },
+
   icon: {
-    marginTop: spacing.xs
   },
 
   divider: {
     height: 1,
     backgroundColor: palette.ckDarkGray,
     marginVertical: spacing.xs,
-  },
-
-  tagRow: {
-    flexDirection: 'row',
-    marginTop: spacing.sm,
-  },
-
-  tag: {
-    backgroundColor: palette.ckDark,
-    paddingHorizontal: spacing.sd,
-    paddingVertical: spacing.xs,
-    borderRadius: borderRadius.md,
-    marginRight: spacing.sm,
-  },
-
-  tagText: {
-    color: palette.ckLight,
   },
 
   image: {
@@ -390,7 +385,6 @@ const styles = StyleSheet.create({
   },
 
   imageGallery: {
-    marginBottom: spacing.md,
   },
 
   imageDots: {
@@ -422,8 +416,14 @@ const styles = StyleSheet.create({
   },
 
   description: {
+    backgroundColor: colors.backgroundSecondary,
+    padding: spacing.md,
+    borderRadius: borderRadius.lg
+  },
+
+  descriptionText: {
     fontSize: typography.sizeLg,
-    marginBottom: spacing.md,
+    color: colors.textSecondary
   },
 
   map: {
@@ -439,7 +439,6 @@ const styles = StyleSheet.create({
   },
 
   time: {
-    marginTop: spacing.sm,
     color: palette.ckDarkGray,
   },
 

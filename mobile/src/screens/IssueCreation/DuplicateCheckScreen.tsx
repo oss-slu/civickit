@@ -5,7 +5,7 @@ import { MessageView } from "../../components/MessageView";
 import IssueCard from "../../components/IssueCard";
 import { borderRadius, colors, globalStyles, palette, size, spacing, typography } from "../../styles";
 import { View, StyleSheet, RefreshControl } from "react-native";
-import IconButton from "../../components/IconButton";
+import WrapperButton from "../../components/WrapperButton";
 import { RightArrowIcon } from "../../components/Icons";
 import Button from "../../components/Button";
 import { StackParams } from "../../types/StackParams";
@@ -57,10 +57,10 @@ export default function DuplicateCheckScreen() {
                         <IssueCard issue={item}
                             onPress={() => navigation.navigate('Issue Details', { issue: item })}
                             animated={false} />
-                        <IconButton style={styles.button}
+                        <WrapperButton style={styles.button}
                             onPress={() => navigation.navigate('Issue Details', { issue: item })}>
                             <RightArrowIcon size={typography.sizeXxl} color={colors.textPrimary} />
-                        </IconButton>
+                        </WrapperButton>
                     </View>
                 )}
             />

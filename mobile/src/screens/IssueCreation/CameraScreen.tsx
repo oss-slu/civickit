@@ -10,7 +10,7 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { StackParams } from '../../types/StackParams';
 import { FlashlightOffIcon, FlashlightOnIcon, FlipCameraIcon, LightingFillIcon, LightingOutlineIcon, PictureIcon } from '../../components/Icons';
-import IconButton from '../../components/IconButton';
+import WrapperButton from '../../components/WrapperButton';
 import { FormStartedContext, ImagesContext, PhotoMetadataContext } from '../../contexts/FormContexts';
 import { useNearbyIssues } from '../../contexts/NearbyIssuesContext';
 import LoadingScreen from '../Misc/LoadingScreen';
@@ -120,7 +120,7 @@ export default function CameraScreen() {
             />
 
             <View style={styles.upperButtonRow}>
-                <IconButton onPress={() => { setEnableTorch(!enableTorch) }} style={{
+                <WrapperButton onPress={() => { setEnableTorch(!enableTorch) }} style={{
                     ...styles.roundButton,
                 }}>
                     {enableTorch ? (
@@ -131,9 +131,9 @@ export default function CameraScreen() {
                             size={size.lg} />
                     )}
 
-                </IconButton>
+                </WrapperButton>
 
-                <IconButton onPress={toggleFlash} style={{
+                <WrapperButton onPress={toggleFlash} style={{
                     ...styles.roundButton,
                 }}>
                     {flashOn == 'on' ? (
@@ -144,23 +144,23 @@ export default function CameraScreen() {
                             size={size.lg} />
                     )}
 
-                </IconButton>
+                </WrapperButton>
             </View>
             <View style={styles.lowerButtonRow}>
 
-                <IconButton onPress={pickImage} style={{
+                <WrapperButton onPress={pickImage} style={{
                     ...styles.squareButton,
                 }}>
                     <PictureIcon color={colors.textContrast}
                         size={size.lg} />
-                </IconButton>
+                </WrapperButton>
 
                 <Button style={styles.takePicButton} onPress={takePicture}>
                 </Button>
 
-                <IconButton style={styles.flipButton} onPress={toggleCameraFacing}>
+                <WrapperButton style={styles.flipButton} onPress={toggleCameraFacing}>
                     <FlipCameraIcon size={typography.sizeXxl} color={colors.textContrast} />
-                </IconButton>
+                </WrapperButton>
 
 
             </View>

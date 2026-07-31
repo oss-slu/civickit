@@ -102,6 +102,7 @@ export const size = {
     cardCompact: 80,
     cardExpanded: 120,
     longButton: 180,
+    imageMd: 240,
     imageLg: 340,
     navBar: 88
 };

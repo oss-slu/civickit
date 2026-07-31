@@ -3,7 +3,7 @@
 import { View, Text, StyleSheet, ViewStyle, Animated, GestureResponderEvent, useAnimatedValue, TouchableOpacity } from "react-native";
 import { borderRadius, colors, globalStyles, palette, spacing, typography } from "../styles";
 import IssueCard from "./IssueCard";
-import IconButton from "./IconButton";
+import WrapperButton from "./WrapperButton";
 import { CloseXIcon, RightArrowIcon } from "./Icons";
 import { GetNearbyIssueResponse, Issue } from "@civickit/shared";
 
@@ -18,10 +18,10 @@ export default function CalloutPopup({ style, issue, onClosePress, onForwardPres
     if (issue != undefined) {
         return (
             <View style={{ ...styles.container, ...style, }}>
-                <IconButton style={styles.button}
+                <WrapperButton style={styles.button}
                     onPress={onClosePress}>
                     <CloseXIcon size={typography.sizeXl + 4} color={colors.textPrimary} />
-                </IconButton>
+                </WrapperButton>
                 <TouchableOpacity style={styles.touchable}
                     onPress={onForwardPress}
                     activeOpacity={0.6}
@@ -51,6 +51,8 @@ const styles = StyleSheet.create({
     container: {
         margin: spacing.sm,
         flexDirection: "row",
+        alignContent: "center",
+        justifyContent: "center",
         backgroundColor: colors.background,
         borderRadius: borderRadius.lg,
         // ...globalStyles.shadow
@@ -59,7 +61,7 @@ const styles = StyleSheet.create({
     },
     touchable: {
         flexDirection: "row",
-        width: "82%"
+        width: "82%",
     },
     button: {
         backgroundColor: colors.background,

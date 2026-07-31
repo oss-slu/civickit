@@ -2,18 +2,20 @@
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useRef, useState } from 'react';
-import { View, Animated, useAnimatedValue } from 'react-native';
+import { View, Animated, useAnimatedValue, StyleSheet } from 'react-native';
 import { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { StackParams } from '../../types/StackParams';
 import { useLocation } from '../../contexts/LocationContext';
 import Pin from '../../components/Pin';
-import { colors, palette, size } from '../../styles';
+import { colors, globalStyles, palette, size, spacing, typography } from '../../styles';
 import MapView from "react-native-maps"
 import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet';
 import IssueListScreen from './IssueListScreen';
 import CalloutPopup from '../../components/CalloutPopup';
 import { GetNearbyIssueResponse } from '@civickit/shared';
 import { showLocation } from 'react-native-map-link';
+import WrapperButton from '../../components/WrapperButton';
+import { RecenterIcon } from '../../components/Icons';
 
 export default function MapViewScreen({ ref, issues, refetch }: any) {
     const navigation = useNavigation<StackNavigationProp<StackParams>>();
@@ -25,6 +27,7 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
     const posAnim = useAnimatedValue(0);
     const [paddingBottom, setPaddingBottom] = useState("110%")
 
+
     //get contexts from above layer(s)
     const location = useLocation().location
 
@@ -32,6 +35,17 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
         setCurrentIssue(issue)
         openCallout()
     }
+
+    const recenterMap = () => {
+        if (!location?.latitude || !location?.longitude) return;
+
+        ref.current?.animateToRegion({
+            latitude: location.latitude,
+            longitude: location.longitude,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+        });
+    };
 
     const openCallout = () => {
         Animated.timing(fadeAnim, {
@@ -101,6 +115,11 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
 
                 )}
             </MapView>
+
+            <WrapperButton onPress={recenterMap}
+                style={styles.recenterButton}>
+                <RecenterIcon size={styles.recenterButton.fontSize} color={styles.recenterButton.color} />
+            </WrapperButton>
 
             <Animated.View
                 style={[{
@@ -172,7 +191,23 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
                     style={{ paddingBottom: paddingBottom }}
                 />
             </BottomSheet>
+
+
+
         </View>
     );
 };
 
+const styles = StyleSheet.create({
+    recenterButton: {
+        position: "absolute",
+        top: 0 + 1,
+        right: 0,
+        margin: spacing.sd,
+        backgroundColor: colors.background,
+        ...globalStyles.shadow,
+        color: colors.textPrimary,
+        padding: spacing.sm + 2,
+        fontSize: typography.sizeXxl,
+    }
+})

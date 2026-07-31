@@ -86,7 +86,7 @@ export function TagIcon(props: IconProps) {
     )
 }
 
-export function CategoryIcon(props: IconProps) {
+export function DefaultCategoryIcon(props: IconProps) {
     return (
         <MaterialIcons name="category"
             color={props.color}
@@ -187,7 +187,7 @@ export function ExclamationPointIcon(props: IconProps) {
 
 export function RefreshIcon(props: IconProps) {
     return (
-        <Ionicons name="refresh-sharp"
+        <MaterialIcons name="refresh"
             color={props.color}
             size={props.size}
             style={props.style} />
@@ -196,7 +196,7 @@ export function RefreshIcon(props: IconProps) {
 
 export function FilterIcon(props: IconProps) {
     return (
-        <Ionicons name="filter-outline"
+        <Ionicons name="filter"
             color={props.color}
             size={props.size}
             style={props.style} />
@@ -238,6 +238,16 @@ export function RightArrowIcon(props: IconProps) {
             style={props.style} />
     )
 }
+
+export function LeftArrowIcon(props: IconProps) {
+    return (
+        <Feather name="arrow-left"
+            color={props.color}
+            size={props.size}
+            style={props.style} />
+    )
+}
+
 export function UpArrowIcon(props: IconProps) {
     return (
         <Feather name="arrow-up"
@@ -409,3 +419,20 @@ export function LineGraphIcon(props: IconProps) {
     )
 }
 
+export function CheckMarkIcon(props: IconProps) {
+    return (
+        <Entypo name="check"
+            color={props.color}
+            size={props.size}
+            style={props.style} />
+    )
+}
+
+export function AccountIcon(props: IconProps) {
+    return (
+        <MaterialIcons name="account-circle"
+            color={props.color}
+            size={props.size}
+            style={props.style} />
+    )
+}

@@ -17,7 +17,7 @@ import { resolvePhotoMetadata } from '../../utils/photoMetadata';
 
 import LoadingScreen from '../Misc/LoadingScreen';
 import Button from '../../components/Button';
-import IconButton from '../../components/IconButton';
+import WrapperButton from '../../components/WrapperButton';
 import SelectedImage from '../../components/SelectedImage';
 import ModalDropdown from '../../components/ModalDropdown';
 import ENV from '../../config/env';
@@ -279,7 +279,7 @@ export default function IssueCreationScreen() {
 
 
     return (
-        <>
+        <View style={{ flex: 1 }}>
             <KeyboardAwareScrollView enableOnAndroid enableAutomaticScroll extraScrollHeight={100}
                 style={styles.container}
                 contentContainerStyle={{ gap: spacing.sm }}>
@@ -313,12 +313,12 @@ export default function IssueCreationScreen() {
                         />
                     </ScrollView>
 
-                    <IconButton onPress={() => { navigation.navigate("Camera", { uri: images }) }}
+                    <WrapperButton onPress={() => { navigation.navigate("Camera", { uri: images }) }}
                         style={images.length < 5 ? styles.photoButton : styles.disabledPhotoButton}
                         isDisabled={images.length >= 5}>
                         <PlusIcon color={colors.textContrast}
                             size={size.xl} />
-                    </IconButton>
+                    </WrapperButton>
                 </View>
 
                 <View style={styles.addressContainer}>
@@ -360,7 +360,7 @@ export default function IssueCreationScreen() {
                     text="Submit">
                 </Button>
             </View>
-        </>
+        </View>
 
     )
 

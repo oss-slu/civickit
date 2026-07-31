@@ -43,16 +43,28 @@ export default function ProfileNav() {
         >
             <Stack.Screen name="Profile" component={ProfileScreen}
                 options={{
-                    headerShown: true,
+                    headerShown: false,
                 }}
             />
             <Stack.Screen name="Avatar" component={AvatarScreen} />
 
-            <Stack.Screen name="Settings" component={SettingsScreen} />
+            <Stack.Screen name="Settings" component={SettingsScreen}
+                options={{
+                    headerShown: false
+                }} />
             <Stack.Screen name="Error" component={ErrorScreen} />
-            <Stack.Screen name="Issue Details" component={IssueDetailScreen} />
-            <Stack.Screen name="My Issues" component={LeaderBoardScreen} />
-            <Stack.Screen name="My Endorsements" component={LeaderBoardScreen} />
+            <Stack.Screen name="Issue Details" component={IssueDetailScreen}
+                options={{
+                    headerShown: false
+                }} />
+            <Stack.Screen name="My Issues" component={LeaderBoardScreen}
+                options={{
+                    headerShown: false
+                }} />
+            <Stack.Screen name="My Endorsements" component={LeaderBoardScreen}
+                options={{
+                    headerShown: false
+                }} />
         </Stack.Navigator>
     );
 

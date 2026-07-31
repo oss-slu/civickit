@@ -8,12 +8,10 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { TabParams } from './src/types/TabParams'
 import { borderRadius, colors, globalStyles, palette, size, spacing, typography } from './src/styles';
-import { View, StyleSheet, StatusBar } from 'react-native';
+import { View, StyleSheet, StatusBar, Dimensions } from 'react-native';
 import { BarGraphIcon, CalendarIcon, LineGraphIcon, MapIcon, PlusIcon, SearchIcon, UserIcon } from './src/components/Icons';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import FlashMessage from 'react-native-flash-message';
-import EventsScreen from './src/screens/Events/EventsScreen';
-import ProfileScreen from './src/screens/Profile/ProfileScreen';
 import LoginScreen from './src/screens/Login/LoginScreen';
 import RegisterScreen from './src/screens/Login/RegisterScreen';
 import IssueCreationNav from './src/screens/IssueCreation/IssueCreationNav';
@@ -22,8 +20,6 @@ import { LocationProvider } from './src/contexts/LocationContext';
 import { NearbyIssuesProvider } from './src/contexts/NearbyIssuesContext';
 import LandingScreenNav from './src/screens/Landing/LandingScreenNav';
 import StatsNav from './src/screens/Stats/StatsNav';
-import Button from './src/components/Button';
-import ProfileNav from './src/screens/Profile/ProfileNav';
 import LoadingScreen from './src/screens/Misc/LoadingScreen';
 
 const Tab = createBottomTabNavigator<TabParams>();
@@ -33,80 +29,86 @@ const queryClient = new QueryClient();
 const Stack = createNativeStackNavigator<StackParams>();
 
 function MainTabNavigator() {
+  const { width, height } = Dimensions.get("window")
   return (
-    <LocationProvider>
-      <NearbyIssuesProvider>
-        <Tab.Navigator screenOptions={{
-          tabBarStyle: {
-            backgroundColor: palette.ckVeryLightGray,
-            height: size.xxl + spacing.sm,
-            elevation: 0,
-          },
-          tabBarShowLabel: false,
-          tabBarActiveTintColor: colors.textPrimary,
-          tabBarInactiveTintColor: colors.textPrimary,
-          animation: "shift",
-          headerTitleAlign: "left",
+    <View style={{
+      width,
+      height,
+    }}>
+      <LocationProvider>
+        <NearbyIssuesProvider>
+          <Tab.Navigator screenOptions={{
+            tabBarStyle: {
+              backgroundColor: palette.ckVeryLightGray,
+              height: size.xxl + spacing.sm,
+              elevation: 0,
+            },
+            tabBarShowLabel: false,
+            tabBarActiveTintColor: colors.textPrimary,
+            tabBarInactiveTintColor: colors.textPrimary,
+            animation: "shift",
+            headerTitleAlign: "left",
 
-        }}
-        >
-          <Tab.Screen name="Map" component={LandingScreenNav}
-            options={{
-              tabBarIcon: ({ color, focused }) => (
-                <View style={{
-                  ...styles.iconBackground,
-                  backgroundColor: focused ? palette.ckGrayBlue : palette.ckVeryLightGray
-                }}>
-                  <MapIcon
-                    color={color}
-                    size={size.lg}
-                    style={{ ...styles.icon, ...styles.navIcons }}
-                  />
-                </View>
-              ),
-              headerShown: false
-            }} />
-
-
-          <Tab.Screen name="ReportIssue" component={IssueCreationNav}
-            options={{
-              tabBarIcon: ({ focused }) => (
-                <View
-                  style={{
-                    ...styles.plusButton,
-                    backgroundColor: focused ? palette.ckYellow : palette.ckRed
+          }}
+          >
+            <Tab.Screen name="Map" component={LandingScreenNav}
+              options={{
+                tabBarIcon: ({ color, focused }) => (
+                  <View style={{
+                    ...styles.iconBackground,
+                    backgroundColor: focused ? palette.ckGrayBlue : palette.ckVeryLightGray
                   }}>
-                  <PlusIcon
-                    color={colors.textContrast}
-                    size={size.xl}
-                    style={styles.plusIcon}
-                  />
-                </View>
-              ),
-              headerShown: false
-            }} />
-
-          <Tab.Screen name="Stats Nav" component={StatsNav}
-            options={{
-              tabBarIcon: ({ color, focused }) => (
-                <View style={{
-                  ...styles.iconBackground,
-                  backgroundColor: focused ? palette.ckGrayBlue : palette.ckVeryLightGray
-                }}>
-                  <LineGraphIcon
-                    color={color}
-                    size={size.lg}
-                    style={{ ...styles.icon, ...styles.navIcons }}
-                  />
-                </View>
-              ),
-              headerShown: false
-            }} />
+                    <MapIcon
+                      color={color}
+                      size={size.lg}
+                      style={{ ...styles.icon, ...styles.navIcons }}
+                    />
+                  </View>
+                ),
+                headerShown: false
+              }} />
 
 
-        </Tab.Navigator>
-      </NearbyIssuesProvider>
-    </LocationProvider>
+            <Tab.Screen name="ReportIssue" component={IssueCreationNav}
+              options={{
+                tabBarIcon: ({ focused }) => (
+                  <View
+                    style={{
+                      ...styles.plusButton,
+                      backgroundColor: focused ? palette.ckYellow : palette.ckRed
+                    }}>
+                    <PlusIcon
+                      color={colors.textContrast}
+                      size={size.xl}
+                      style={styles.plusIcon}
+                    />
+                  </View>
+                ),
+                headerShown: false
+              }} />
+
+            <Tab.Screen name="Stats Nav" component={StatsNav}
+              options={{
+                tabBarIcon: ({ color, focused }) => (
+                  <View style={{
+                    ...styles.iconBackground,
+                    backgroundColor: focused ? palette.ckGrayBlue : palette.ckVeryLightGray
+                  }}>
+                    <LineGraphIcon
+                      color={color}
+                      size={size.lg}
+                      style={{ ...styles.icon, ...styles.navIcons }}
+                    />
+                  </View>
+                ),
+                headerShown: false
+              }} />
+
+
+          </Tab.Navigator>
+        </NearbyIssuesProvider>
+      </LocationProvider>
+    </View>
   )
 }
 
