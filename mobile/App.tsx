@@ -44,6 +44,7 @@ const Stack = createNativeStackNavigator<StackParams>();
 
 function MainTabNavigator() {
   const { width, height } = Dimensions.get("window")
+  const insets = useSafeAreaInsets()
   return (
     <View style={{
       width,
@@ -54,7 +55,11 @@ function MainTabNavigator() {
           <Tab.Navigator screenOptions={{
             tabBarStyle: {
               backgroundColor: palette.ckVeryLightGray,
-              height: size.xxl + spacing.sm,
+              //an explicit height makes getTabBarHeight return it verbatim and
+              //skip adding insets.bottom, but BottomTabBar still applies
+              //paddingBottom: insets.bottom — so the inset has to be added here
+              //or it eats the space the icons need.
+              height: size.xxl + spacing.sm + insets.bottom,
               elevation: 0,
             },
             tabBarShowLabel: false,

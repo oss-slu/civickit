@@ -15,6 +15,7 @@ import { FormStartedContext, ImagesContext, PhotoMetadataContext } from '../../c
 import { useNearbyIssues } from '../../contexts/NearbyIssuesContext';
 import LoadingScreen from '../Misc/LoadingScreen';
 import { extractPhotoMetadataFromExif } from '../../utils/photoMetadata';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 
 export default function CameraScreen() {
@@ -30,6 +31,9 @@ export default function CameraScreen() {
     const ref = useRef<CameraView>(null);
 
     const navigation = useNavigation<StackNavigationProp<StackParams>>()
+    //must stay above the permission/loading early returns below — hooks cannot
+    //be called conditionally
+    const insets = useSafeAreaInsets();
 
     //Permissions
     if (!permissions) {
@@ -119,7 +123,7 @@ export default function CameraScreen() {
                 enableTorch={enableTorch}
             />
 
-            <View style={styles.upperButtonRow}>
+            <View style={[styles.upperButtonRow, { top: insets.top }]}>
                 <WrapperButton onPress={() => { setEnableTorch(!enableTorch) }} style={{
                     ...styles.roundButton,
                 }}>
@@ -175,6 +179,9 @@ const styles = StyleSheet.create({
         height: "100%"
     },
     upperButtonRow: {
+        //`top` is supplied inline from the safe-area inset. Without it this row
+        //falls back to flow position y=0 and lands on the status bar, which is
+        //survivable on android (~24pt) but not on iphone (44-59pt).
         position: "absolute",
         padding: spacing.sm,
         marginTop: spacing.sm,
