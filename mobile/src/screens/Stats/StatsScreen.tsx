@@ -30,6 +30,9 @@ type record = Record<string, number>;
 export default function StatsScreen() {
 
     const [refreshing, setRefreshing] = useState(false);
+    //seeded with the old hardcoded value so the first frame is no worse than
+    //before; Header reports its real height on layout and corrects this
+    const [headerOffset, setHeaderOffset] = useState(spacing.xxxl + spacing.xl)
     const [radius, setRadius] = useState("1 mile")
     const [time, setTime] = useState("All Time")
     const [statusNumbers, setStatusNumbers] = useState<record>({})
@@ -191,7 +194,7 @@ export default function StatsScreen() {
             style={{ ...globalStyles.container, padding: 0 }}>
             <ScrollView
                 contentContainerStyle={{ paddingBottom: spacing.xxxl + spacing.xxl }}
-                style={{ paddingTop: spacing.xxxl + spacing.xl }}
+                style={{ paddingTop: headerOffset + spacing.md }}
                 refreshControl={<RefreshControl
                     refreshing={refreshing}
                     onRefresh={refetch} />}
@@ -255,6 +258,7 @@ export default function StatsScreen() {
             <Header
                 title="Statistics in Your Area"
                 canGoBack={false}
+                setOffset={(i: any) => setHeaderOffset(i)}
                 style={styles.header}>
                 <View style={styles.buttonRow}>
 

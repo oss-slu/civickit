@@ -2,33 +2,35 @@ import { View, Text, StyleSheet } from "react-native";
 import WrapperButton from "./WrapperButton";
 import { LeftArrowIcon } from "./Icons";
 import { colors, spacing, typography } from "../styles";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function Header({ title, onBackPress, lineNum, setOffset, style, children, canGoBack = true }: any) {
 
     const [numLines, setNumLine] = useState(lineNum)
     const insets = useSafeAreaInsets()
+    const lastReportedHeight = useRef(0)
 
     const calculateHeight = (lines: any) => {
-        let thisHeight = 0
-        lines.forEach((element: any) => {
-            thisHeight += element.height
-        });
-        if (setOffset != undefined) {
-            //the header grew by the status bar inset, so content below it has
-            //to shift down by the same amount or it renders underneath
-            setOffset(thisHeight + insets.top)
-        }
-
         setNumLine(lines.length)
+    }
 
+    //this header is position: absolute, so it takes up no room in the flow and
+    //every screen has to reserve space for it. Report the real rendered height
+    //rather than letting each screen hardcode a guess: measuring covers the
+    //safe-area inset, the padding, the back button and any children at once.
+    const reportHeight = (e: any) => {
+        const height = e.nativeEvent.layout.height
+        if (height !== lastReportedHeight.current && setOffset != undefined) {
+            lastReportedHeight.current = height
+            setOffset(height)
+        }
     }
 
 
 
     return (
-        <View style={{
+        <View onLayout={reportHeight} style={{
             ...styles.header,
             alignItems: numLines > 1 ? "flex-start" : "center",
             //the header is pinned to top: 0, so it must inset itself past the

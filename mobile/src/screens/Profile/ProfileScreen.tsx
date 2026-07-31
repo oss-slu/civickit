@@ -22,6 +22,9 @@ export default function ProfileScreen({ route }: any) {
     const { user } = useAuth();
     const queryClient = useQueryClient()
     const [refreshing, setRefreshing] = useState(false);
+    //seeded with the old hardcoded value so the first frame is no worse than
+    //before; Header reports its real height on layout and corrects this
+    const [headerOffset, setHeaderOffset] = useState(spacing.xxxl)
     let dateJoined = new Date()
 
     if (user != null) {
@@ -85,7 +88,7 @@ export default function ProfileScreen({ route }: any) {
 
     return (
         <View style={[globalStyles.container, { padding: 0 }]}>
-            <ScrollView contentContainerStyle={[styles.container]}
+            <ScrollView contentContainerStyle={[styles.container, { paddingTop: headerOffset + spacing.md }]}
                 refreshControl={<RefreshControl
                     refreshing={refreshing}
                     onRefresh={refetchQueries} />}
@@ -166,6 +169,7 @@ export default function ProfileScreen({ route }: any) {
 
             <Header
                 title={user?.name}
+                setOffset={(i: any) => setHeaderOffset(i)}
                 onBackPress={navigation.goBack}>
                 <WrapperButton style={{ ...styles.settingsButton, flexDirection: "row", columnGap: spacing.sm, alignSelf: "flex-end" }}
                     onPress={() => navigation.navigate("Settings", {})}>

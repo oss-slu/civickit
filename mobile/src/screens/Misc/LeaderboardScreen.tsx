@@ -35,7 +35,9 @@ export default function LeaderBoardScreen({ route }: Props) {
     const [sortOptions, setSortOptions] = useState<string[]>([])
     const [refreshing, setRefreshing] = useState(false)
     const navigation = useNavigation<StackNavigationProp<StackParams>>()
-    const [headerOffset, setHeaderOffset] = useState(0)
+    //seeded with the old hardcoded value so the first frame is no worse than
+    //before; Header reports its real height on layout and corrects this
+    const [headerOffset, setHeaderOffset] = useState(spacing.xxxl)
 
     useEffect(() => {
         let arr = []
@@ -121,7 +123,7 @@ export default function LeaderBoardScreen({ route }: Props) {
     return (
         <View style={globalStyles.container}>
             <ScrollView
-                style={{ ...styles.list, paddingTop: spacing.xxxl }}
+                style={{ ...styles.list, paddingTop: headerOffset + spacing.md }}
                 contentContainerStyle={styles.listContainter}>
                 {list}
             </ScrollView>
