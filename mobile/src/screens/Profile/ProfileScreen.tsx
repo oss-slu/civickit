@@ -116,24 +116,26 @@ export default function ProfileScreen({ route }: any) {
                                 <Leaderboard issues={issuesQuery.data.issues.reverse()} number={3} />
                             </View>
 
-                            <WrapperButton style={{
-                                ...styles.button,
-                                flexDirection: "row",
-                                columnGap: spacing.xs,
-                            }}
-                                onPress={() => {
-                                    navigation.navigate("My Issues", {
-                                        issues: issuesQuery.data.issues, endorsementsOption: true,
-                                        dateReportedOption: true, dateUpdatedOption: true, distanceOption: false,
-                                    })
+                            {issuesQuery.data.issues.length > 3 &&
+                                <WrapperButton style={{
+                                    ...styles.button,
+                                    flexDirection: "row",
+                                    columnGap: spacing.xs,
                                 }}
-                            >
-                                <Text style={{ fontSize: styles.button.fontSize, color: styles.button.color }}>More</Text>
-                                <RightArrowIcon
-                                    color={styles.button.color}
-                                    size={typography.sizeXl}
-                                />
-                            </WrapperButton>
+                                    onPress={() => {
+                                        navigation.navigate("My Issues", {
+                                            issues: issuesQuery.data.issues, endorsementsOption: true,
+                                            dateReportedOption: true, dateUpdatedOption: true, distanceOption: false,
+                                        })
+                                    }}
+                                >
+                                    <Text style={{ fontSize: styles.button.fontSize, color: styles.button.color }}>More</Text>
+                                    <RightArrowIcon
+                                        color={styles.button.color}
+                                        size={typography.sizeXl}
+                                    />
+                                </WrapperButton>
+                            }
                         </View>
                     }
                     {upvotesQuery.data.issues.length == 0 ?
@@ -143,24 +145,26 @@ export default function ProfileScreen({ route }: any) {
                             <View style={styles.leaderboardContainer}>
                                 <Leaderboard issues={upvotesQuery.data.issues.reverse()} number={3} />
                             </View>
-                            <WrapperButton style={{
-                                ...styles.button,
-                                flexDirection: "row",
-                                columnGap: spacing.xs,
-                            }}
-                                onPress={() => {
-                                    navigation.navigate("My Endorsements", {
-                                        issues: upvotesQuery.data.issues, endorsementsOption: true,
-                                        dateReportedOption: true, dateUpdatedOption: true, distanceOption: false,
-                                    })
+                            {upvotesQuery.data.issues.length > 3 &&
+                                <WrapperButton style={{
+                                    ...styles.button,
+                                    flexDirection: "row",
+                                    columnGap: spacing.xs,
                                 }}
-                            >
-                                <Text style={{ fontSize: styles.button.fontSize, color: styles.button.color }}>More</Text>
-                                <RightArrowIcon
-                                    color={styles.button.color}
-                                    size={typography.sizeXl}
-                                />
-                            </WrapperButton>
+                                    onPress={() => {
+                                        navigation.navigate("My Endorsements", {
+                                            issues: upvotesQuery.data.issues, endorsementsOption: true,
+                                            dateReportedOption: true, dateUpdatedOption: true, distanceOption: false,
+                                        })
+                                    }}
+                                >
+                                    <Text style={{ fontSize: styles.button.fontSize, color: styles.button.color }}>More</Text>
+                                    <RightArrowIcon
+                                        color={styles.button.color}
+                                        size={typography.sizeXl}
+                                    />
+                                </WrapperButton>
+                            }
                         </View>
                     }
                 </View>
