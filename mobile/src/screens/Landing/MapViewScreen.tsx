@@ -2,7 +2,6 @@
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useMemo, useRef, useState } from 'react';
-import { useRef, useState } from 'react';
 import { View, Animated, useAnimatedValue, StyleSheet } from 'react-native';
 import { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { StackParams } from '../../types/StackParams';
