@@ -3,10 +3,12 @@ import WrapperButton from "./WrapperButton";
 import { LeftArrowIcon } from "./Icons";
 import { colors, spacing, typography } from "../styles";
 import { useState } from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function Header({ title, onBackPress, lineNum, setOffset, style, children, canGoBack = true }: any) {
 
     const [numLines, setNumLine] = useState(lineNum)
+    const insets = useSafeAreaInsets()
 
     const calculateHeight = (lines: any) => {
         let thisHeight = 0
@@ -14,7 +16,9 @@ export default function Header({ title, onBackPress, lineNum, setOffset, style, 
             thisHeight += element.height
         });
         if (setOffset != undefined) {
-            setOffset(thisHeight)
+            //the header grew by the status bar inset, so content below it has
+            //to shift down by the same amount or it renders underneath
+            setOffset(thisHeight + insets.top)
         }
 
         setNumLine(lines.length)
@@ -24,7 +28,14 @@ export default function Header({ title, onBackPress, lineNum, setOffset, style, 
 
 
     return (
-        <View style={{ ...styles.header, alignItems: numLines > 1 ? "flex-start" : "center", ...style }}>
+        <View style={{
+            ...styles.header,
+            alignItems: numLines > 1 ? "flex-start" : "center",
+            //the header is pinned to top: 0, so it must inset itself past the
+            //status bar / Dynamic Island rather than render underneath it
+            paddingTop: insets.top + spacing.sm,
+            ...style
+        }}>
             {canGoBack &&
                 <WrapperButton style={styles.backButton}
                     onPress={onBackPress}>

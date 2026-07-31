@@ -13,6 +13,7 @@ import { View, StyleSheet, StatusBar, Dimensions } from 'react-native';
 import { BarGraphIcon, CalendarIcon, LineGraphIcon, MapIcon, PlusIcon, SearchIcon, UserIcon } from './src/components/Icons';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import FlashMessage from 'react-native-flash-message';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import LoginScreen from './src/screens/Login/LoginScreen';
 import RegisterScreen from './src/screens/Login/RegisterScreen';
 import IssueCreationNav from './src/screens/IssueCreation/IssueCreationNav';
@@ -127,6 +128,7 @@ function MainTabNavigator() {
 
 function AppNavigator() {
   const { isLoggedIn, isLoading } = useAuth();
+  const insets = useSafeAreaInsets();
 
   if (isLoading) return <LoadingScreen />
   return (
@@ -150,7 +152,7 @@ function AppNavigator() {
           </>
         )}
       </Stack.Navigator>
-      {isLoggedIn && <FlashMessage position="top" style={{ paddingTop: 32 }} />}
+      {isLoggedIn && <FlashMessage position="top" style={{ paddingTop: insets.top }} />}
     </NavigationContainer>
   )
 }
@@ -158,12 +160,15 @@ function AppNavigator() {
 export default function App() {
   if (queryClient != null) {
     return (
-      <GestureHandlerRootView>
-        <QueryClientProvider client={queryClient}>
-          <AuthProvider>
-            <AppNavigator />
-          </AuthProvider>
-        </QueryClientProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        {/* SafeAreaProvider must fill the screen or useSafeAreaInsets reads 0 */}
+        <SafeAreaProvider>
+          <QueryClientProvider client={queryClient}>
+            <AuthProvider>
+              <AppNavigator />
+            </AuthProvider>
+          </QueryClientProvider>
+        </SafeAreaProvider>
       </GestureHandlerRootView>
     );
   } else {
