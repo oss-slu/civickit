@@ -19,6 +19,11 @@ export interface IssueListResponse<T> {
     issues: T[];
 }
 
+export interface TimelineListResponse<T> {
+    timelineEntries: T[];
+}
+
+
 export interface UpvoteState {
     upvoted: boolean;
     upvoteCount: number;
@@ -107,5 +112,15 @@ export function addTimelineEntry(issueId: string, timelineEntry: PostUpdateDTO):
         method: 'POST',
         body: timelineEntry,
         auth: true,
+    });
+}
+
+export function getTimelineEntries(
+    issueId: string,
+    options: { limit?: number; signal?: AbortSignal } = {},
+): Promise<IssueListResponse<IssueListItem>> {
+    return apiFetch('/issues/updates', {
+        query: { id: issueId, limit: options.limit },
+        signal: options.signal,
     });
 }
