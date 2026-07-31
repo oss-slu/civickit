@@ -118,7 +118,13 @@ export function addTimelineEntry(issueId: string, timelineEntry: PostUpdateDTO):
 export function getTimelineEntries(
     issueId: string,
     options: { limit?: number; signal?: AbortSignal } = {},
-): Promise<IssueListResponse<IssueListItem>> {
+): Promise<TimelineListResponse<TimelineEntry>> {
+    const result = apiFetch('/issues/updates', {
+        query: { id: issueId, limit: options.limit },
+        signal: options.signal,
+    });
+
+    console.log(result)
     return apiFetch('/issues/updates', {
         query: { id: issueId, limit: options.limit },
         signal: options.signal,
