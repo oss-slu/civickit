@@ -2,6 +2,7 @@
 
 import { Request, Response, NextFunction } from 'express';
 import jwt, { JwtPayload } from 'jsonwebtoken';
+import { JWT_SECRET } from '../config/env';
 
 // Extend Express Request type
 declare global {
@@ -33,12 +34,7 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
     }
 
     //Verify Token
-    const secret = String(process.env.JWT_SECRET)
-    if (secret == undefined) {
-      return res.status(500).json({ error: 'JWT secret not configured' });
-    }
-
-    const tokenResponse = jwt.verify(token, secret) as JwtPayload
+    const tokenResponse = jwt.verify(token, JWT_SECRET) as JwtPayload
 
     //attach userId to request
     req.userId = tokenResponse.userId

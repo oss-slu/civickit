@@ -21,19 +21,12 @@ export class AuthRepository {
   }
 
   async findById(id: string) {
-
-    const user = await prisma.user.findUnique({
-      where: { id }
+    return prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true, email: true, name: true,
+        profileImage: true, createdAt: true, role: true,
+      },
     });
-
-    if (user != null) {
-      return {
-        id: user?.id, email: user?.email,
-        name: user?.name, passwordHash: user?.passwordHash,
-        profileImage: user?.profileImage, createdAt: user?.createdAt
-      }
-    }
-
-    return null
   }
 }

@@ -1,10 +1,11 @@
-Last updated 2/26/2026
+Last updated 7/21/2026
 # Development Setup
 
 ## Prerequisites
-- Node.js 18+
-- PostgreSQL 15+ with PostGIS
+- Node.js 20+ (matches CI)
+- Docker (runs the PostgreSQL 15 + PostGIS database)
 - Git
+- A free [Cloudinary](https://cloudinary.com) account (needed for image upload and database seeding)
 
 ### Backend .env Example
 ```bash
@@ -16,9 +17,11 @@ CLOUDINARY_API_KEY="your-api-key"
 CLOUDINARY_API_SECRET="your-api-secret"
 PORT=3000
 ```
+Notes:
+- `JWT_SECRET` must be at least 16 characters or the server refuses to start.
+- The `CLOUDINARY_*` values come from your Cloudinary dashboard. The server starts without them, but image upload and seeding will fail until they are filled in.
 
 ## Backend Setup
-Install docker
 1. Clone repo
 2. `cd backend`
 3. `cp .env.example .env` (copy `.env.example` to `.env`) then fill in values
@@ -40,52 +43,94 @@ npm run seed:clean
 *Reset (clean + seed)*
 npm run seed:reset
 
+Seeding creates 40 users and ~24 issues around Midtown St. Louis (photos are uploaded to your Cloudinary account). All seeded users share the password `password123` — e.g. log in as `alice@example.com` to test with an account that already has issues and endorsements.
+
 ### Testing Backend API
-1. Seed/create dev user(if needed) `npx prisma studio`
-2. Test APIs by creating an issue
+1. Seed the database (above), or browse/edit data with `npx prisma studio`
+2. Get nearby issues: `curl "http://localhost:3000/api/issues/nearby?lat=38.635&lng=-90.23&radius=5000"`
+3. Get issue by id: `curl http://localhost:3000/api/issues/<issue-id>`
+4. Creating an issue requires auth: log in first and pass the token
 ```bash
+curl -X POST http://localhost:3000/api/auth/login \
+-H "Content-Type: application/json" \
+-d '{"email": "alice@example.com", "password": "password123"}'
+# then use the returned token:
 curl -X POST http://localhost:3000/api/issues \
 -H "Content-Type: application/json" \
+-H "Authorization: Bearer <token>" \
 -d '{
   "title": "Broken sidewalk",
   "description": "Cracked pavement near campus",
   "category": "BROKEN_SIDEWALK",
-  "latitude": 41.8781,
-  "longitude": -87.6298,
+  "latitude": 38.6352,
+  "longitude": -90.2318,
   "images": []
 }'
 ```
-3. Get nearby issues: `curl "http://localhost:3000/api/issues/nearby?lat=41.8781&lng=-87.6298"`
-4. Get issue by id `curl http://localhost:3000/api/issues/<issue-id>`
 
 ## Mobile Setup
+The app derives the backend address from whichever address Metro is served on —
+the same machine that runs the backend — so testing on a physical phone needs no
+IP configuration. To point it somewhere else, such as a deployed backend, set
+`EXPO_PUBLIC_API_URL` (see `mobile/.env.example`).
+
 1. From the `mobile/` directory
 ```bash
 cd mobile
 npm install
 ```
-2. In the `mobile/` directory, choose `startWin.sh` for Windows os or `startMac.sh` for Mac os
-   1. In a bash terminal, set permissions with `chmod +x startWin.sh` or `chmod +x startMac.sh` (You only need to do this once)
-   2. To start using your ipv4 address as the domain (necessary for mobile development), run `./startWin.sh ip` or `./startMac.sh ip`
-   3. To start on localhost (only for local development), run `./startWin.sh localhost` or `./startWin.sh localhost`
-      
+2. In the `mobile/` directory, start Metro:
+```bash
+npm start
+```
+
 * Press `i` to open iOS simulator (macOS only)
 * Press `a` to open Android emulator
 * Press `w` to run in the browser (web)
-  
-To run on a physical device from Windows, use production mode:
+
+3. Then scan the QR code using the Camera app (iOS) or Expo Go (Android). Expo
+Go must be installed on the device. From Windows you may need production mode:
 ```bash
 npx expo start --no-dev --minify
 ```
-3. Then scan the QR code using the Camera app (iOS) or Expo Go(Android)
-* In both cases the app, Expo Go, must be installed on the device
 
-If the mobile is loading but it is failing to fetch, we can proxy the backend via cloudflare
-1. ensure dependencies are up to date in backend `npm install`
-2. in `backend/` run `npm run dev`
-3. in `backend/` run `npm run dev:proxy` which generates a cloudflare public link. Put that link in `env.ts` in as apiUrl
-4. in `mobile/` run `npx expo --tunnel` 
+### When the phone can't reach your laptop
 
-## Web Setup (not created yet)
-1. `cd web && npm install`
-2. `npm run dev`
+`npm start` needs the phone and the laptop on the same wifi, with
+client-to-client traffic allowed. It fails when you are on cellular data, or on
+guest/"sandboxed" wifi that isolates clients from each other. The symptom is the
+app loading but every request failing.
+
+Use Tailscale instead. It puts the phone and the laptop on a private network of
+your own, so they reach each other regardless of the wifi in between — including
+networks that block direct traffic, where it relays over port 443.
+
+1. Install Tailscale on the laptop and the phone, signed into the same account.
+2. Start the backend as usual: `cd backend && npm run dev`
+3. Start Metro bound to the Tailscale address:
+```bash
+cd mobile
+npm run start:tailscale
+```
+
+That is the whole setup. Metro is served from the laptop's Tailscale address, so
+the app derives the backend from it automatically — nothing to configure, and no
+URL to re-paste, because the address never changes.
+
+On Windows the npm script's shell syntax will not run; use:
+```
+set REACT_NATIVE_PACKAGER_HOSTNAME=<your tailscale ip> && npx expo start
+```
+
+Image uploads go from the phone straight to Cloudinary, so they keep working on
+cellular either way.
+
+## Web Setup
+```bash
+cd web
+npm install
+npm run dev
+```
+* `npm run build` builds for production
+* `npm run deploy` builds and deploys to Cloudflare Workers (requires Wrangler access)
+* `npm run check` formats and lints

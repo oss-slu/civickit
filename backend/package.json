@@ -4,10 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "migrate:dev": "npx prisma migrate dev --name init --schema ./src/prisma/schema.prisma --config ./src/prisma.config.ts",
+    "migrate:dev": "npx prisma migrate dev --name init --schema ./prisma/schema.prisma --config ./prisma.config.ts",
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
@@ -23,8 +24,7 @@
     "db:test:setup": "DATABASE_URL=$TEST_DATABASE_URL npx prisma migrate deploy",
     "db:up": "docker compose up -d",
     "db:down": "docker compose down",
-    "db:setup": "docker compose up -d && sleep 2 && npx prisma db push && npx prisma generate",
-    "dev:proxy": "cloudflared tunnel --url http://localhost:3000"
+    "db:setup": "docker compose up -d && sleep 2 && npx prisma db push && npx prisma generate"
   },
   "keywords": [],
   "author": "",
@@ -32,7 +32,6 @@
   "type": "module",
   "dependencies": {
     "@better-auth/prisma-adapter": "^1.6.23",
-    "@cloudinary/react": "^1.14.4",
     "@cloudinary/url-gen": "^1.22.0",
     "@prisma/adapter-pg": "^7.3.0",
     "@prisma/client": "^7.4.1",
@@ -48,12 +47,8 @@
     "express-rate-limit": "^8.2.1",
     "express-validator": "^7.3.1",
     "geolib": "^3.3.4",
-    "jq": "^1.7.2",
-    "json-server": "^1.0.0-beta.5",
     "jsonwebtoken": "^9.0.3",
-    "leaflet": "^1.9.4",
     "pg": "^8.18.0",
-    "react-leaflet": "^5.0.0",
     "zod": "^4.3.5"
   },
   "devDependencies": {
@@ -69,7 +64,6 @@
     "@types/pg": "^8.16.0",
     "@types/supertest": "^6.0.3",
     "@vitest/coverage-v8": "^4.0.18",
-    "cloudflared": "^0.7.1",
     "dotenv": "^17.3.1",
     "prisma": "^7.4.1",
     "supertest": "^7.2.2",

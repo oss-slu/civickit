@@ -5,7 +5,6 @@ import { AuthRepository } from "../repositories/auth.repository";
 import { CreateAuthDTO } from "@civickit/shared";
 import { SafeUser } from '../types/auth.types'
 import { z } from 'zod';
-import jwt, { JwtPayload } from 'jsonwebtoken';
 import { AppError } from "../utils/errors";
 
 export class AuthService {
@@ -25,6 +24,15 @@ export class AuthService {
       throw new AppError("Password too short (min 8 characters)", 400);
     }
 
+    // Validate name: trim, reject empty/whitespace-only, bound the length.
+    const trimmedName = typeof name === "string" ? name.trim() : "";
+    if (trimmedName.length < 2) {
+      throw new AppError("Name is required (min 2 characters)", 400);
+    }
+    if (trimmedName.length > 100) {
+      throw new AppError("Name too long (max 100 characters)", 400);
+    }
+
     // Check for existing user
     const existingUser = await this.authRepository.findByEmail(email);
     if (existingUser) {
@@ -34,10 +42,11 @@ export class AuthService {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create user in database
+    // Create user in database (store the trimmed name so stray whitespace never
+    // persists).
     const newUser = await this.authRepository.createUser({
       email,
-      name,
+      name: trimmedName,
       passwordHash: hashedPassword,
     });
 
@@ -46,23 +55,11 @@ export class AuthService {
     return safeUser;
   }
 
-  async getUserByToken(token: string) {
-    const secret = String(process.env.JWT_SECRET)
-    if (secret == undefined) {
-      throw new AppError("JWT secret not configured", 500);
+  async getUserById(id: string) {
+    const user = await this.authRepository.findById(id);
+    if (!user) {
+      throw new AppError('User not found', 404);
     }
-    try {
-      const tokenResponse = jwt.verify(token, secret) as JwtPayload
-      const id = tokenResponse.userId
-
-      const user = await this.authRepository.findById(id);
-      if (!user) {
-        throw new AppError('User not found', 404);
-      }
-      return user
-    } catch (error) {
-      throw new AppError("Invalid token", 401)
-    }
-
+    return user
   }
 }

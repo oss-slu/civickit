@@ -34,7 +34,7 @@ function log(level: 'info' | 'warn' | 'error', message: string, data?: unknown) 
 }
 
 /**
- * Clean all data from the database (issues, comments, upvotes, events, users)
+ * Clean all data from the database (issues, timeline entries, upvotes, events, users)
  * Deletes in reverse FK order to respect foreign key constraints
  */
 export async function cleanupDatabase() {
@@ -47,7 +47,7 @@ export async function cleanupDatabase() {
 
     // Delete in reverse FK order
     await prisma.upvote.deleteMany();
-    await prisma.comment.deleteMany();
+    await prisma.timelineEntry.deleteMany();
     await prisma.eventRsvp.deleteMany();
     await prisma.event.deleteMany();
     await prisma.issue.deleteMany();

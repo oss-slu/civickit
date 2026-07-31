@@ -26,6 +26,12 @@ export interface CreateIssueDTO {
     photoTakenAtSource?: PhotoMetadataSource;
 }
 
+export interface PostUpdateDTO {
+    message: string;
+    status: IssueStatus;
+    images?: string[];
+}
+
 export interface GetNearbyIssueResponse {
     title: string;
     description: string;
