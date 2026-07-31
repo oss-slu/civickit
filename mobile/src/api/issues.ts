@@ -119,14 +119,8 @@ export function getTimelineEntries(
     issueId: string,
     options: { limit?: number; signal?: AbortSignal } = {},
 ): Promise<TimelineListResponse<TimelineEntry>> {
-    const result = apiFetch('/issues/updates', {
-        query: { id: issueId, limit: options.limit },
-        signal: options.signal,
-    });
-
-    console.log(result)
-    return apiFetch('/issues/updates', {
-        query: { id: issueId, limit: options.limit },
-        signal: options.signal,
+    return apiFetch(`/issues/${encodeURIComponent(issueId)}/updates`, {
+        method: 'GET',
+        auth: true
     });
 }
