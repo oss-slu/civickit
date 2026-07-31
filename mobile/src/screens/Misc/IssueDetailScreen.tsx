@@ -40,6 +40,7 @@ const IssueDetailScreen = () => {
 
   const [hasEndorsed, setHasEndorsed] = useState(false);
   const [upvoteCount, setUpvoteCount] = useState(issue.upvoteCount ?? 0);
+  const [timelineEntries, setTimelineEntries] = useState([])
   const [loading, setLoading] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
@@ -73,6 +74,8 @@ const IssueDetailScreen = () => {
         if (controller.signal.aborted) return;
         console.error('Failed to fetch upvote state:', err);
       });
+
+    // setTimelineEntries(issuesApi.)
 
     return () => controller.abort();
   }, [issue.id]);
