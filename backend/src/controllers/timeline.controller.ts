@@ -14,6 +14,7 @@ const issueService = new IssueService(new IssueRepository, new UpvoteRepository)
 export class TimelineController {
 
   async postUpdate(req: Request, res: Response, next: NextFunction) {
+    console.log("controller")
     try {
       const { issueId } = req.params;
       const userId = String(req.userId);

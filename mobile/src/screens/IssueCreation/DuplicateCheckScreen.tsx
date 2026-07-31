@@ -42,12 +42,13 @@ export default function DuplicateCheckScreen() {
         navigation.popTo("Camera", {})
     }
 
+
     return (
-        <View style={{ height: "100%" }}>
+        <View style={{ height: "100%", }}>
             <FlatList
                 data={issues}
-                style={{ margin: spacing.sm }}
-                contentContainerStyle={{ gap: spacing.sm }}
+                style={{ margin: spacing.sm, }}
+                contentContainerStyle={{ gap: spacing.sm, paddingBottom: spacing.xxxl + spacing.xl }}
                 keyExtractor={(item, index) => index.toString()}
                 refreshControl={<RefreshControl
                     refreshing={refreshing}
@@ -92,6 +93,7 @@ const styles = StyleSheet.create({
     },
     button: {
         backgroundColor: colors.backgroundSecondary,
+        paddingHorizontal: spacing.sm
     },
     buttonRow: {
         paddingHorizontal: spacing.md,

@@ -170,7 +170,8 @@ export default function IssueCreationScreen() {
             });
 
             if (!authToken) {
-                navigation.navigate('Error', { errorMessage: 'Not authenticated' });
+                setIsLoading(false)
+                navigation.push('Error', { errorMessage: 'Not authenticated' });
                 throw new Error('No auth token available');
             }
 
@@ -197,7 +198,7 @@ export default function IssueCreationScreen() {
                     performanceLog.times.imageUploadMs = Date.now() - imageUploadStartTime;
                 } catch (uploadError) {
                     setIsLoading(false);
-                    navigation.navigate('Error', { errorMessage: 'Image upload to Cloudinary failed' });
+                    navigation.push('Error', { errorMessage: 'Image upload to Cloudinary failed' });
                     throw uploadError;
                 }
             }
@@ -225,16 +226,14 @@ export default function IssueCreationScreen() {
                 issue = await issuesApi.createIssue(requestBody);
             } catch (submitError) {
                 setIsLoading(false);
-                navigation.navigate('Error', { errorMessage: 'Upload Failed' });
+                navigation.push('Error', { errorMessage: 'Upload Failed' });
                 throw submitError;
             }
             performanceLog.times.backendSubmitMs = Date.now() - backendStartTime;
-
-            setIsLoading(false);
-
             performanceLog.times.totalMs = Date.now() - totalStartTime;
             console.log('Issue Creation Performance:', performanceLog);
 
+            setIsLoading(false);
             showMessage({
                 message: "Issue reported! Thank you for making your community better",
                 backgroundColor: palette.ckGreen,
@@ -255,6 +254,7 @@ export default function IssueCreationScreen() {
 
         } catch (error: any) {
             const message = String(error?.message ?? error)
+            setIsLoading(false)
             if (message.includes("latitude") || message.includes("longitude")) {
                 navigation.navigate('Error', { errorMessage: 'Location permission denied' })
                 throw new Error("Location permission denied")
@@ -397,6 +397,7 @@ const styles = StyleSheet.create({
         position: "absolute",
         bottom: spacing.sm,
         right: spacing.sm,
+        padding: spacing.xs,
         ...globalStyles.shadow
     },
     disabledPhotoButton: {
@@ -404,6 +405,7 @@ const styles = StyleSheet.create({
         position: "absolute",
         bottom: spacing.sm,
         right: spacing.sm,
+        padding: spacing.xs,
         ...globalStyles.shadow
     },
     submitButton: {

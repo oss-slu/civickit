@@ -4,7 +4,7 @@ import { Platform, Text, ScrollView, FlatList, Image, StyleSheet, View, Touchabl
 import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
 import { GetNearbyIssueResponse, Issue } from '@civickit/shared';
 import { format, formatDistanceToNow } from 'date-fns';
-import { DefaultCategoryIcon, CheckMarkCircleIcon, CheckMarkIcon, ClockIcon, LocationPinIcon, TagIcon, UpvoteIcon, WrenchIcon } from '../../components/Icons';
+import { DefaultCategoryIcon, CheckMarkCircleIcon, CheckMarkIcon, ClockIcon, LocationPinIcon, TagIcon, UpvoteIcon, WrenchIcon, TextIcon } from '../../components/Icons';
 import { borderRadius, colors, globalStyles, palette, size, spacing, typography } from '../../styles';
 import { PROVIDER_GOOGLE } from 'react-native-maps/lib/ProviderConstants';
 import { issuesApi } from '../../api';
@@ -107,22 +107,27 @@ const IssueDetailScreen = () => {
 
         {/* Image Caption/at a glance info */}
         <View style={styles.imageCaption}>
+
+          <View style={{ flexDirection: "row", columnGap: spacing.sm }}>
+
+            <StatusBadge status={issue.status} style={{ paddingHorizontal: spacing.md }} textStyle={{ fontSize: typography.sizeLg }} />
+
+            <View style={styles.infoElement}>
+              <CategoryIcon
+                category={issue.category}
+                size={typography.sizeXl}
+              />
+              <Text style={styles.catValue}>
+                {category}
+              </Text>
+            </View>
+          </View>
+
+
           <View style={styles.infoElement}>
             <UpvoteIcon color={colors.textPrimary} size={typography.sizeXl} />
             <Text style={styles.countValue}>{upvoteCount}</Text>
           </View>
-
-          <View style={styles.infoElement}>
-            <CategoryIcon
-              category={issue.category}
-              size={typography.sizeXl}
-            />
-            <Text style={styles.catValue}>
-              {category}
-            </Text>
-          </View>
-
-          <StatusBadge status={issue.status} style={{ paddingHorizontal: spacing.md }} textStyle={{ fontSize: typography.sizeLg }} />
 
         </View>
 
@@ -157,13 +162,41 @@ const IssueDetailScreen = () => {
           )}
         </View>
 
-
-
         {/* Description */}
-        <View style={styles.description}>
-          <Text style={styles.infoRowLabel}>Description</Text>
-          <Text style={styles.descriptionText}>{issue.description}</Text>
+        <View style={{ ...styles.infoBlock, flexDirection: "row", columnGap: spacing.sm }}>
+          <TextIcon color={colors.textPrimary}
+            size={typography.sizeLg}
+            style={{ ...styles.icon, marginTop: spacing.xs }} />
+          {/* <Text style={styles.infoRowLabel}>Description</Text> */}
+          <Text style={styles.infoRowText}>{issue.description}</Text>
         </View>
+
+        {/* Location */}
+        <View style={styles.infoBlock}>
+
+          <TouchableOpacity onPress={() => showLocation({
+            latitude: issue.latitude,
+            longitude: issue.longitude,
+            googleForceLatLon: true
+          })}
+          >
+            <View style={{ flexDirection: "row", columnGap: spacing.xs }}>
+              <LocationPinIcon color={colors.textPrimary}
+                size={typography.sizeLg}
+                style={{ ...styles.icon, marginTop: spacing.xs }} />
+              <Text style={{ ...styles.infoRowText, textDecorationLine: 'underline' }}>
+                {resolvedAddress}
+              </Text>
+            </View>
+
+            <Text style={styles.infoRowMeta}>Source: {formatSource(issue.locationSource)}</Text>
+          </TouchableOpacity>
+
+        </View>
+
+
+
+
 
         {/* Info Card */}
         <View style={styles.infoCard}>
@@ -197,26 +230,7 @@ const IssueDetailScreen = () => {
           </View>
           <View style={styles.divider} />
 
-          {/* Location */}
-          <View style={styles.infoRow}>
-            <LocationPinIcon color={colors.textPrimary}
-              size={typography.sizeLg}
-              style={styles.icon} />
-            <View style={styles.infoTextColumn}>
-              <TouchableOpacity onPress={() => showLocation({
-                latitude: issue.latitude,
-                longitude: issue.longitude,
-                googleForceLatLon: true
-              })}>
-                <Text style={styles.infoRowLabel}>Location</Text>
-                <Text style={{ ...styles.infoRowText, textDecorationLine: 'underline' }}>
-                  {resolvedAddress}
-                </Text>
 
-                <Text style={styles.infoRowMeta}>Source: {formatSource(issue.locationSource)}</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
         </View>
 
 
@@ -315,7 +329,7 @@ const styles = StyleSheet.create({
 
   infoRowText: {
     fontSize: typography.sizeLg,
-    color: colors.textSecondary,
+    color: colors.textPrimary,
     //textTransform: 'capitalize' causes region to lowercase, and Pm to act weird, need to fix categories without doing this line because now tags is all lowercase
   },
 
@@ -347,7 +361,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     columnGap: spacing.sm,
     alignItems: "center",
-    justifyContent: "flex-start"
+    justifyContent: "space-between"
   },
 
   icon: {
@@ -396,15 +410,10 @@ const styles = StyleSheet.create({
     opacity: 0.45,
   },
 
-  description: {
+  infoBlock: {
     backgroundColor: colors.backgroundSecondary,
     padding: spacing.md,
     borderRadius: borderRadius.lg
-  },
-
-  descriptionText: {
-    fontSize: typography.sizeLg,
-    color: colors.textSecondary
   },
 
   map: {

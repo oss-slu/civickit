@@ -31,6 +31,7 @@ export default function CameraScreen() {
 
     const navigation = useNavigation<StackNavigationProp<StackParams>>()
 
+
     //Permissions
     if (!permissions) {
         return <View />

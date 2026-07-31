@@ -26,8 +26,8 @@ export default function SelectedImage({ source, onDeletePressed, width, height, 
         button: {
             backgroundColor: palette.ckRed,
             fontWeight: typography.weightBold,
-            height: size.xxl,
             borderWidth: 0,
+            padding: spacing.sm,
             ...globalStyles.shadow
         }
     });

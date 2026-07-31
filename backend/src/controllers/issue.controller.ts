@@ -3,11 +3,15 @@ import { Request, Response, NextFunction } from 'express';
 import { IssueService } from '../services/issue.service';
 import { IssueRepository } from '../repositories/issue.repository';
 import { UpvoteRepository } from '../repositories/upvote.repository';
+import { PostUpdateDTO } from '@civickit/shared';
+import { TimelineController } from './timeline.controller';
+import { TimelineService } from '../services/timeline.service';
+import { TimelineRepository } from '../repositories/timeline.repository';
 
 const issueRepository = new IssueRepository();
 const upvoteRepository = new UpvoteRepository();
 const issueService = new IssueService(issueRepository, upvoteRepository);
-
+const timelineService = new TimelineService(new TimelineRepository())
 // Parses an optional `limit` query param, clamped to [1, 200], defaulting to 100.
 function parseLimit(raw: unknown): number {
   const DEFAULT_LIMIT = 100;
@@ -43,6 +47,23 @@ export class IssueController {
           longitude: parseFloat(req.body.longitude),
         }, userId);
       res.status(201).json(issue);
+
+      //post cooresponding updates
+      const reported: PostUpdateDTO = {
+        message: "Report Submitted",
+        createdAt: issue.createdAt,
+        status: issue.status,
+        images: issue.images
+      }
+      await timelineService.postUpdate(reported, String(issue.id), userId);
+
+      const photoTaken: PostUpdateDTO = {
+        message: "Photo Taken",
+        createdAt: issue.photoTakenAt != null ? issue.photoTakenAt : issue.createdAt,
+        status: issue.status,
+        images: issue.images
+      }
+      await timelineService.postUpdate(photoTaken, String(issue.id), userId);
     } catch (error) {
       next(error);
     }

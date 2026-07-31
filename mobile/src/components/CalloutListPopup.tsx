@@ -52,7 +52,8 @@ const styles = StyleSheet.create({
     button: {
         backgroundColor: colors.background,
         height: size.cardExpanded,
-        alignSelf: "center"
+        alignSelf: "center",
+        paddingHorizontal: spacing.sm
     },
     issueList: {
         flexDirection: "row",
