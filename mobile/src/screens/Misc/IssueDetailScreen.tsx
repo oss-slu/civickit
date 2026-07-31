@@ -75,11 +75,19 @@ const IssueDetailScreen = () => {
         console.error('Failed to fetch upvote state:', err);
       });
 
-    const timeline = issuesApi.getTimelineEntries(issue.id)
-    console.log(timeline)
+    return () => controller.abort();
+  }, [issue.id]);
+
+  useEffect(() => {
+    const getEntries = async () => {
+      const timeline = await issuesApi.getTimelineEntries(issue.id)
+      console.log(timeline)
+    }
+
+    getEntries()
+
     // setTimelineEntries(timeline)
 
-    return () => controller.abort();
   }, [issue.id]);
 
 
