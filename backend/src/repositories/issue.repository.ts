@@ -92,10 +92,6 @@ export class IssueRepository {
             profileImage: true,
           },
         },
-<<<<<<< HEAD
-
-=======
->>>>>>> 317507314138c007c4b35b9c15b633feba10dadb
         _count: {
           select: {
             upvotes: true,
