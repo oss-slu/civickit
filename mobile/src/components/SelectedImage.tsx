@@ -26,6 +26,10 @@ export default function SelectedImage({ source, onDeletePressed, width, height, 
         button: {
             backgroundColor: palette.ckRed,
             fontWeight: typography.weightBold,
+            //width must match height: WrapperButton contributes borderRadius.full
+            //but no dimensions, so a height-only box collapses to the icon's
+            //width and the pill radius renders it as an oval
+            width: size.xxl,
             height: size.xxl,
             borderWidth: 0,
             ...globalStyles.shadow

@@ -17,6 +17,7 @@ import { StackParams } from '../../types/StackParams';
 import { registerUser } from '../../services/AuthService';
 import { useAuth } from '../../contexts/AuthContext';
 import { globalStyles } from '../../styles';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, spacing, typography, borderRadius } from '../../styles/theme';
 // Validation
 const isValidEmail = (email: string) =>
@@ -25,6 +26,7 @@ const isValidEmail = (email: string) =>
 // Component
 export default function RegisterScreen() {
     const navigation = useNavigation<StackNavigationProp<StackParams>>();
+    const insets = useSafeAreaInsets();
 
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -109,7 +111,7 @@ export default function RegisterScreen() {
             style={styles.flex}
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
             <ScrollView
-                contentContainerStyle={styles.container}
+                contentContainerStyle={[styles.container, { paddingTop: insets.top + spacing.lg }]}
                 keyboardShouldPersistTaps="handled">
 
                 <Text style={styles.heading}>Create an account</Text>
@@ -215,9 +217,9 @@ const styles = StyleSheet.create({
         backgroundColor: colors.surface,
     },
     container: {
+        //paddingTop is supplied inline from the safe-area inset
         ...globalStyles.container,
         padding: spacing.lg,
-        paddingTop: spacing.xxxl,
         flexGrow: 1,
     },
     heading: {

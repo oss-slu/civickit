@@ -19,6 +19,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { loginUser } from '../../services/AuthService';
 import { colors, spacing, typography, borderRadius } from '../../styles/theme';
 import { globalStyles } from '../../styles';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 
 
@@ -29,6 +30,7 @@ const isValidEmail = (email: string) =>
 
 export default function LoginScreen() {
     const navigation = useNavigation<StackNavigationProp<StackParams>>();
+    const insets = useSafeAreaInsets();
 
     //tracks user input and loading state while loggin in
     const [email, setEmail] = useState('');
@@ -90,7 +92,7 @@ export default function LoginScreen() {
             style={styles.flex}
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
             <ScrollView
-                contentContainerStyle={styles.container}
+                contentContainerStyle={[styles.container, { paddingTop: insets.top + spacing.lg }]}
                 keyboardShouldPersistTaps="handled">
 
                 <Text style={styles.heading}>Welcome back</Text>
@@ -165,9 +167,9 @@ const styles = StyleSheet.create({
         backgroundColor: colors.surface,
     },
     container: {
+        //paddingTop is supplied inline from the safe-area inset
         ...globalStyles.container,
         padding: spacing.lg,
-        paddingTop: spacing.xxxl,
         flexGrow: 1,
     },
     heading: {
