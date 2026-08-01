@@ -51,7 +51,7 @@ export class IssueController {
       //post cooresponding updates
       const reported: PostUpdateDTO = {
         message: "Report Submitted",
-        createdAt: issue.createdAt,
+        createdAt: new Date(issue.createdAt),
         status: issue.status,
         images: issue.images
       }
