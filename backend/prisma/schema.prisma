@@ -253,16 +253,21 @@ model Verification {
 }
 
 model Organization {
-  id             String                                       @id @default(cuid())
-  name           String
-  type           OrgType
-  status         OrgStatus                                    @default(PENDING)
-  tier           OrgTier?
-  categoryScope  IssueCategory[]
-  boundarySource BoundarySource?
-  geofence       Unsupported("geography(MultiPolygon,4326)")?
-  createdAt      DateTime                                     @default(now())
-  updatedAt      DateTime                                     @updatedAt
+  id               String                                       @id @default(cuid())
+  name             String
+  slug             String                                       @unique
+  type             OrgType
+  status           OrgStatus                                    @default(PENDING)
+  tier             OrgTier?
+  categoryScope    IssueCategory[]
+  // How the geofence was defined, and a reference back to its source so
+  // official boundaries can be re-synced when a city redistricts.
+  boundarySource   BoundarySource?
+  boundaryRef      String?
+  boundarySyncedAt DateTime?
+  geofence         Unsupported("geography(MultiPolygon,4326)")?
+  createdAt        DateTime                                     @default(now())
+  updatedAt        DateTime                                     @updatedAt
 
   memberships OrgMembership[]
 
@@ -276,6 +281,7 @@ model OrgMembership {
   organizationId String
   role           OrgRole  @default(ORG_MEMBER)
   createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
