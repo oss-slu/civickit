@@ -17,5 +17,6 @@ router.use(limiter)
 
 router.post("/register", authController.register.bind(authController));
 router.get('/user', authMiddleware, authController.getCurrentUser);
+router.get('/:userId/user', authMiddleware, authController.getUserById)
 
 export default router;

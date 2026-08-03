@@ -20,7 +20,7 @@ export interface IssueListResponse<T> {
 }
 
 export interface TimelineListResponse<T> {
-    timelineEntries: T[];
+    updates: T[];
 }
 
 
@@ -118,7 +118,7 @@ export function addTimelineEntry(issueId: string, timelineEntry: PostUpdateDTO):
 export function getTimelineEntries(
     issueId: string,
     options: { limit?: number; signal?: AbortSignal } = {},
-): Promise<TimelineListResponse<TimelineEntry>> {
+): Promise<TimelineListResponse<TimelineEntry[]>> {
     return apiFetch(`/issues/${encodeURIComponent(issueId)}/updates`, {
         method: 'GET',
         auth: true

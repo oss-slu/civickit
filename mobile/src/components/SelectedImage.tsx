@@ -7,7 +7,6 @@ import { CloseXIcon } from './Icons';
 export default function SelectedImage({ source, onDeletePressed, width, height, style }: any) {
     const styles = StyleSheet.create({
         container: {
-
             justifyContent: "center",
             alignItems: "center",
         },
@@ -15,13 +14,13 @@ export default function SelectedImage({ source, onDeletePressed, width, height, 
             width: width,
             height: height,
             borderRadius: borderRadius.md,
-            resizeMode: "center",
+            resizeMode: "contain",
         },
         buttonContainer: {
             position: 'absolute',
             justifyContent: "center",
             alignItems: "center",
-            top: spacing.sm,
+            bottom: spacing.xxl,
         },
         button: {
             backgroundColor: palette.ckRed,

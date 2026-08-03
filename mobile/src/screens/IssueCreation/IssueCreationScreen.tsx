@@ -2,7 +2,7 @@
 import * as Location from 'expo-location';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { uploadImagesToCloudinary } from '../../services/cloudinaryService';
-import { View, StyleSheet, ScrollView, TextInput, Text, FlatList } from 'react-native';
+import { View, StyleSheet, ScrollView, TextInput, Text, FlatList, useWindowDimensions } from 'react-native';
 import { useFocusEffect, useNavigation, } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -25,6 +25,7 @@ import { ImagesContext, PhotoMetadataContext, UserLocationContext, AddressContex
 import { userLocation } from '../../types/userLocation';
 import { PhotoMetadataSource } from '../../utils/photoMetadata';
 import { useNearbyIssues } from '../../contexts/NearbyIssuesContext';
+import SelectedImageGallery from '../../components/SelectedImageGallery';
 
 export default function IssueCreationScreen() {
     const { images, setImages } = useContext(ImagesContext);
@@ -44,6 +45,9 @@ export default function IssueCreationScreen() {
     const [isLoadingLocal, setIsLoading] = useState(false)
     const navigation = useNavigation<StackNavigationProp<StackParams>>()
     const { authToken } = useAuth();
+
+    const imageWidth = size.imageLg;
+    const imageHeight = size.imageLg;
 
     //get location
     useEffect(() => {
@@ -133,6 +137,8 @@ export default function IssueCreationScreen() {
             <LoadingScreen />
         )
     }
+
+    console.log(photoMetadata)
 
     const handleCancel = () => {
         setImages([])
@@ -272,7 +278,6 @@ export default function IssueCreationScreen() {
 
     const locationSourceLabel = locationSource === 'exif' ? 'From photo EXIF' : 'From phone GPS';
 
-
     return (
         <View style={{ flex: 1 }}>
             <KeyboardAwareScrollView enableOnAndroid enableAutomaticScroll extraScrollHeight={100}
@@ -285,32 +290,23 @@ export default function IssueCreationScreen() {
                     style={styles.titleTextBox}
                     maxLength={100} />
 
-                <View style={styles.imageContainer}>
+                <View style={{ ...styles.imageContainer, height: imageHeight + spacing.sm * 2 }}>
 
-                    <ScrollView >
+                    <View style={{ alignItems: "center" }}>
                         <PictureIcon color={colors.textMuted}
                             size={size.imageLg} style={[styles.defaultImage,
                             images.length > 0 ? { display: "none" } : { display: "flex" }]} />
 
-                        <FlatList
-                            data={images}
-                            horizontal
-                            style={{ alignSelf: "center" }}
-                            keyExtractor={(item, index) => index.toString()}
-                            renderItem={({ item }) => (
-                                <SelectedImage source={item}
-                                    width={size.imageLg}
-                                    height={size.imageLg}
-                                    onDeletePressed={onImageDeletePressed}
-                                    style={{ marginHorizontal: spacing.sm }}
-                                />
-                            )}
-                        />
-                    </ScrollView>
+
+                        <SelectedImageGallery images={images} onDeletePressed={onImageDeletePressed}
+                            width={imageWidth} height={imageHeight} />
+                    </View>
+
+
 
                     <WrapperButton onPress={() => { navigation.navigate("Camera", { uri: images }) }}
                         style={images.length < 5 ? styles.photoButton : styles.disabledPhotoButton}
-                        isDisabled={images.length >= 5}>
+                        isDisabled={images.length >= 3}>
                         <PlusIcon color={colors.textContrast}
                             size={size.xl} />
                     </WrapperButton>
@@ -327,9 +323,9 @@ export default function IssueCreationScreen() {
                 <ModalDropdown
                     data={IssueCategoryArray}
                     onDataSelect={handleSetCategory}
-                    defaultText="Choose a category"
+                    defaultText="Choose a Category"
                     labelSuffix={<CaretDownIcon color={colors.textContrast} />}
-                    buttonStyle={{ color: colors.textContrast, fontSize: typography.sizeLg }} />
+                    buttonStyle={{ color: colors.textContrast, fontSize: typography.sizeLg, backgroundColor: palette.ckGreen, fontWeight: typography.weightMedium }} />
 
                 <TextInput onChangeText={setDescription}
                     value={description}
@@ -367,7 +363,8 @@ const styles = StyleSheet.create({
         ...globalStyles.container,
         flex: 1,
         gap: spacing.md,
-        padding: spacing.md
+        padding: spacing.md,
+        paddingTop: spacing.xl
     },
     imageContainer: {
         backgroundColor: colors.backgroundSecondary,
@@ -376,7 +373,6 @@ const styles = StyleSheet.create({
         alignContent: "center",
         paddingVertical: spacing.sm,
         gap: spacing.sm,
-        height: "auto",
 
     },
     defaultImage: {
@@ -397,7 +393,7 @@ const styles = StyleSheet.create({
         position: "absolute",
         bottom: spacing.sm,
         right: spacing.sm,
-        padding: spacing.xs,
+        padding: spacing.sm,
         ...globalStyles.shadow
     },
     disabledPhotoButton: {
@@ -405,7 +401,7 @@ const styles = StyleSheet.create({
         position: "absolute",
         bottom: spacing.sm,
         right: spacing.sm,
-        padding: spacing.xs,
+        padding: spacing.sm,
         ...globalStyles.shadow
     },
     submitButton: {
@@ -418,13 +414,16 @@ const styles = StyleSheet.create({
     titleTextBox: {
         ...globalStyles.textBox,
         ...globalStyles.heading1,
+        fontSize: typography.sizeXxl,
         textAlign: "center"
     },
     descTextBox: {
         ...globalStyles.textBox,
         ...globalStyles.bodyText,
+        minHeight: size.x4l,
+        justifyContent: "flex-start",
         height: "auto",
-        color: colors.textPrimary
+        color: colors.textPrimary,
     },
 
     addressText: {

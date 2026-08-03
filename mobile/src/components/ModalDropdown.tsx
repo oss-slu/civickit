@@ -1,3 +1,4 @@
+//mobile/src/components/ModalDropdown.tsx
 import React, { useState } from "react";
 import { View, Modal, Text, FlatList, StyleSheet, TouchableOpacity } from "react-native";
 import Button from "./Button";
@@ -24,7 +25,8 @@ export default function ModalDropdown({ data, onDataSelect, defaultText, buttonS
                 <Text style={{
                     color: buttonStyle.color,
                     fontSize: buttonStyle.fontSize,
-                    fontStyle: buttonStyle.fontStyle
+                    fontStyle: buttonStyle.fontStyle,
+                    fontWeight: buttonStyle.fontWeight
                 }}>{selectedValue || defaultText || "Select an option"} {labelSuffix}</Text>
             </WrapperButton>
 

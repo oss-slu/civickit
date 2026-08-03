@@ -44,7 +44,7 @@ export default function DuplicateCheckScreen() {
 
 
     return (
-        <View style={{ height: "100%", }}>
+        <View style={{ height: "100%", backgroundColor: colors.background }}>
             <FlatList
                 data={issues}
                 style={{ margin: spacing.sm, }}

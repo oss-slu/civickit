@@ -14,6 +14,9 @@ import Header from '../../components/Header';
 import { Animated } from 'react-native';
 import StatusBadge from '../../components/StatusBadge';
 import CategoryIcon from '../../components/CategoryIcon';
+import TimelineEntry from '../../components/TimelineEntry';
+import ImageGallery from '../../components/ImageGallery';
+import Timeline from '../../components/Timeline';
 
 let MapView: any = null;
 let Marker: any = null;
@@ -40,7 +43,7 @@ const IssueDetailScreen = () => {
 
   const [hasEndorsed, setHasEndorsed] = useState(false);
   const [upvoteCount, setUpvoteCount] = useState(issue.upvoteCount ?? 0);
-  const [timelineEntries, setTimelineEntries] = useState([])
+  const [timelineEntries, setTimelineEntries] = useState<any[]>()
   const [loading, setLoading] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
@@ -81,12 +84,10 @@ const IssueDetailScreen = () => {
   useEffect(() => {
     const getEntries = async () => {
       const timeline = await issuesApi.getTimelineEntries(issue.id)
-      console.log(timeline)
+      setTimelineEntries(timeline.updates)
     }
 
     getEntries()
-
-    // setTimelineEntries(timeline)
 
   }, [issue.id]);
 
@@ -145,35 +146,10 @@ const IssueDetailScreen = () => {
         </View>
 
         {/* Image Gallery */}
-        <View style={[styles.imageGallery, { width: imageWidth, height: imageHeight }]}>
-          <FlatList
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            data={issue.images}
-            keyExtractor={(_, idx) => idx.toString()}
-            onMomentumScrollEnd={(event) => {
-              const nextIndex = Math.round(event.nativeEvent.contentOffset.x / imageWidth);
-              setActiveImageIndex(nextIndex);
-            }}
-            renderItem={({ item }) => (
-              <Image source={{ uri: item }} style={[styles.image, { width: imageWidth, height: imageHeight }]} />
-            )}
-          />
-          {issue.images.length > 1 && (
-            <View style={styles.imageDots}>
-              {issue.images.map((_, index) => (
-                <View
-                  key={index}
-                  style={[
-                    styles.imageDot,
-                    index === activeImageIndex ? styles.imageDotActive : styles.imageDotInactive
-                  ]}
-                />
-              ))}
-            </View>
-          )}
-        </View>
+        <ImageGallery
+          images={issue.images}
+          height={imageHeight}
+          width={imageWidth} />
 
         {/* Description */}
         <View style={{ ...styles.infoBlock, flexDirection: "row", columnGap: spacing.sm }}>
@@ -207,46 +183,7 @@ const IssueDetailScreen = () => {
 
         </View>
 
-
-
-
-
-        {/* Info Card */}
-        <View style={styles.infoCard}>
-
-          {/* Date/Time */}
-          <View style={styles.infoRow}>
-            <ClockIcon color={colors.textPrimary}
-              size={typography.sizeLg}
-              style={styles.icon} />
-            <View style={styles.infoTextColumn}>
-              <Text style={styles.infoRowLabel}>Report submitted</Text>
-              <Text style={styles.infoRowText}>
-                {format(new Date(issue.createdAt), 'PPP p')}
-              </Text>
-            </View>
-          </View>
-          <View style={styles.divider} />
-
-          {/* Photo Date/Time */}
-          <View style={styles.infoRow}>
-            <ClockIcon color={colors.textPrimary}
-              size={typography.sizeLg}
-              style={styles.icon} />
-            <View style={styles.infoTextColumn}>
-              <Text style={styles.infoRowLabel}>Photo taken</Text>
-              <Text style={styles.infoRowText}>
-                {format(new Date(issue.photoTakenAt ?? issue.createdAt), 'PPP p')}
-              </Text>
-              <Text style={styles.infoRowMeta}>Source: {formatSource(issue.photoTakenAtSource)}</Text>
-            </View>
-          </View>
-          <View style={styles.divider} />
-
-
-        </View>
-
-
+        <Timeline entries={timelineEntries} />
 
         {/* Map */}
         {Platform.OS !== 'web' && MapView && Marker ? (
@@ -289,7 +226,7 @@ const IssueDetailScreen = () => {
         {hasEndorsed ?
           <View style={{ flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
             <Text style={styles.endorseText}>Endorsed</Text>
-            <CheckMarkIcon color={colors.textPrimary} size={typography.sizeXl} />
+            <CheckMarkIcon color={colors.textContrast} size={typography.sizeXl} />
           </View> :
           <Text style={styles.endorseText}>Endorse</Text>
         }
@@ -392,37 +329,6 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
   },
 
-  imageGallery: {
-  },
-
-  imageDots: {
-    position: 'absolute',
-    bottom: spacing.sm,
-    alignSelf: 'center',
-    flexDirection: 'row',
-    gap: spacing.xs,
-    backgroundColor: 'rgba(17, 24, 39, 0.35)',
-    borderRadius: borderRadius.full,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-  },
-
-  imageDot: {
-    width: spacing.sm,
-    height: spacing.sm,
-    borderRadius: borderRadius.full,
-  },
-
-  imageDotActive: {
-    backgroundColor: colors.textContrast,
-    opacity: 0.95,
-  },
-
-  imageDotInactive: {
-    backgroundColor: colors.textContrast,
-    opacity: 0.45,
-  },
-
   infoBlock: {
     backgroundColor: colors.backgroundSecondary,
     padding: spacing.md,
@@ -460,6 +366,6 @@ const styles = StyleSheet.create({
   endorseText: {
     fontSize: typography.sizeXl,
     fontWeight: 'bold',
-    color: palette.ckDark,
+    color: colors.textContrast
   }
 },);

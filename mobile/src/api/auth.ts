@@ -17,3 +17,7 @@ export function register(name: string, email: string, password: string): Promise
 export function getCurrentUser(token?: string | null, signal?: AbortSignal): Promise<User> {
     return apiFetch('/auth/user', { auth: true, token, signal });
 }
+
+export function getUserById(userId: string, token?: string | null, signal?: AbortSignal): Promise<User> {
+    return apiFetch(`/auth/${encodeURIComponent(userId)}/user`, { auth: true, token, signal });
+}

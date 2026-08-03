@@ -9,7 +9,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { TabParams } from './src/types/TabParams'
 import { borderRadius, colors, globalStyles, palette, size, spacing, typography } from './src/styles';
-import { View, StyleSheet, StatusBar, Dimensions } from 'react-native';
+import { View, StyleSheet, Dimensions } from 'react-native';
 import { BarGraphIcon, CalendarIcon, LineGraphIcon, MapIcon, PlusIcon, SearchIcon, UserIcon } from './src/components/Icons';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import FlashMessage from 'react-native-flash-message';
@@ -22,6 +22,9 @@ import { NearbyIssuesProvider } from './src/contexts/NearbyIssuesContext';
 import LandingScreenNav from './src/screens/Landing/LandingScreenNav';
 import StatsNav from './src/screens/Stats/StatsNav';
 import LoadingScreen from './src/screens/Misc/LoadingScreen';
+import { StatusBar } from "expo-status-bar";
+import Constants from 'expo-constants';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const Tab = createBottomTabNavigator<TabParams>();
 
@@ -44,10 +47,15 @@ const Stack = createNativeStackNavigator<StackParams>();
 function MainTabNavigator() {
   const { width, height } = Dimensions.get("window")
   return (
-    <View style={{
+    <SafeAreaView style={{
       width,
       height,
+      flex: 1,
     }}>
+      <StatusBar style="dark"
+        translucent={true}
+        hidden={false}
+      />
       <LocationProvider>
         <NearbyIssuesProvider>
           <Tab.Navigator screenOptions={{
@@ -121,7 +129,7 @@ function MainTabNavigator() {
           </Tab.Navigator>
         </NearbyIssuesProvider>
       </LocationProvider>
-    </View>
+    </SafeAreaView>
   )
 }
 
@@ -131,9 +139,6 @@ function AppNavigator() {
   if (isLoading) return <LoadingScreen />
   return (
     <NavigationContainer>
-      <StatusBar
-        backgroundColor={colors.background}
-        barStyle={"dark-content"} />
       <Stack.Navigator screenOptions={{ animation: 'slide_from_right' }}>
         {isLoggedIn ? (
           <>
