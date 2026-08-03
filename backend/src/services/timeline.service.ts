@@ -7,7 +7,6 @@ export class TimelineService {
   constructor(private readonly timelineRepository: TimelineRepository) { }
 
   async postUpdate(data: PostUpdateDTO, issueId: string, userId: string) {
-    console.log("service")
     try {
       return await this.timelineRepository.createUpdate({ ...data, issueId, userId });
     } catch (error) {
