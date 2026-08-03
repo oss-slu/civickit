@@ -4,7 +4,6 @@ import prisma from "../prisma";
 
 export class TimelineRepository {
   async createUpdate(data: PostUpdateDTO & { issueId: string, userId: string }) {
-    console.log("repository")
     return prisma.timelineEntry.create({
       data: {
         message: data.message,
