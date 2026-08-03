@@ -285,7 +285,7 @@ export default function IssueCreationScreen() {
     return (
         <View style={{ flex: 1 }}>
             <KeyboardAwareScrollView enableOnAndroid enableAutomaticScroll extraScrollHeight={100}
-                style={[styles.container, { paddingTop: insets.top + spacing.md }]}
+                style={[styles.container, { paddingTop: spacing.md }]}
                 contentContainerStyle={{ gap: spacing.sm }}>
 
                 <TextInput onChangeText={setTitle}

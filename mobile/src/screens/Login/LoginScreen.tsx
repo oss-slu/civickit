@@ -92,7 +92,7 @@ export default function LoginScreen() {
             style={styles.flex}
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
             <ScrollView
-                contentContainerStyle={[styles.container, { paddingTop: insets.top + spacing.lg }]}
+                contentContainerStyle={[styles.container, { paddingTop: spacing.lg }]}
                 keyboardShouldPersistTaps="handled">
 
                 <Text style={styles.heading}>Welcome back</Text>

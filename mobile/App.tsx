@@ -47,7 +47,6 @@ const Stack = createNativeStackNavigator<StackParams>();
 
 function MainTabNavigator() {
   const { width, height } = Dimensions.get("window")
-  const insets = useSafeAreaInsets()
   return (
     <SafeAreaView style={{
       width,
@@ -67,7 +66,7 @@ function MainTabNavigator() {
               //skip adding insets.bottom, but BottomTabBar still applies
               //paddingBottom: insets.bottom — so the inset has to be added here
               //or it eats the space the icons need.
-              height: size.xxl + spacing.sm + insets.bottom,
+              height: size.xxl + spacing.sm,
               elevation: 0,
             },
             tabBarShowLabel: false,
@@ -162,7 +161,7 @@ function AppNavigator() {
           </>
         )}
       </Stack.Navigator>
-      {isLoggedIn && <FlashMessage position="top" style={{ paddingTop: insets.top }} />}
+      {isLoggedIn && <FlashMessage position="top" />}
     </NavigationContainer>
   )
 }

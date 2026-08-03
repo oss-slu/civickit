@@ -108,7 +108,7 @@ export default function LandingScreen({ children }: any) {
                 refetch={refetch}
             />
 
-            <View style={[styles.topBar, { top: insets.top }]}>
+            <View style={[styles.topBar]}>
 
                 <View style={styles.optionsBar}>
 
