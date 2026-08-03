@@ -35,7 +35,9 @@ type IssueDetailRouteProp = RouteProp<
 const IssueDetailScreen = () => {
   const route = useRoute<IssueDetailRouteProp>();
 
-  const [headerOffset, setHeaderOffset] = useState(0)
+  //seeded with a sensible default so the first frame is reasonable; Header
+  //reports its real height on layout and corrects this
+  const [headerOffset, setHeaderOffset] = useState(spacing.xxxl)
   const { issue } = route.params;
   const { width } = useWindowDimensions();
   const imageWidth = width - spacing.md * 2;
@@ -116,7 +118,7 @@ const IssueDetailScreen = () => {
 
   return (
     <View style={{ ...styles.page, }}>
-      <ScrollView contentContainerStyle={{ ...styles.container, paddingTop: headerOffset + spacing.xxl * (25 / headerOffset), rowGap: spacing.sm }}
+      <ScrollView contentContainerStyle={{ ...styles.container, paddingTop: headerOffset + spacing.md, rowGap: spacing.sm }}
         onScroll={(e) => modifyHeader(e.nativeEvent)}>
 
         {/* Image Caption/at a glance info */}

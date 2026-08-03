@@ -3,7 +3,7 @@ import { useCallback, useContext, useRef, useState } from "react";
 import { useAuth } from '../../contexts/AuthContext';
 import { MessageView } from "../../components/MessageView";
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { AccountIcon, CaretDownIcon, DefaultCategoryIcon, FilterIcon, RecenterIcon, RefreshIcon, StatusIcon, WarningIcon } from '../../components/Icons';
+import { AccountIcon, DefaultCategoryIcon, FilterIcon, RecenterIcon, RefreshIcon, StatusIcon, WarningIcon } from '../../components/Icons';
 import { borderRadius, colors, globalStyles, palette, size, spacing, typography } from '../../styles';
 import { IssueCategoryArray } from "../../types/IssueCategoryArray";
 import { IssueStatusArray } from "../../types/IssueStatusArray";
@@ -20,8 +20,10 @@ import ModalPopUp from "../../components/ModalPopup";
 import Button from "../../components/Button";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { StackParams } from "../../types/StackParams";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function LandingScreen({ children }: any) {
+    const insets = useSafeAreaInsets()
     const [isMinLoading, setIsMinLoading] = useState(false) //to avoid quick ui flicker when refetching data
     const [refreshing, setRefreshing] = useState(false)
     const [visibleCategories, setVisibleCategories] = useState(IssueCategoryArray)
@@ -81,6 +83,17 @@ export default function LandingScreen({ children }: any) {
         setVisibleStatuses(IssueStatusArray)
     }
 
+    const recenterMap = () => {
+        if (!location?.latitude || !location?.longitude) return;
+
+        mapRef.current?.animateToRegion({
+            latitude: location.latitude,
+            longitude: location.longitude,
+            latitudeDelta: 0.01,
+            longitudeDelta: 0.01,
+        });
+    };
+
     const visibleIssues = data.issues.filter((issue: any) =>
         visibleCategories.map(i => i.toLowerCase()).includes(issue.category.replace(/_/g, " ").toLowerCase()) &&
         visibleStatuses.map(i => i.toUpperCase().replace(/ /g, "_")).includes(issue.status)
@@ -95,59 +108,66 @@ export default function LandingScreen({ children }: any) {
                 refetch={refetch}
             />
 
-            <View style={styles.optionsBar}>
+            <View style={[styles.topBar, { top: insets.top }]}>
 
-                <WrapperButton onPress={() => navigation.navigate("ProfileNav", {})}
-                    style={styles.button}>
-                    <AccountIcon size={styles.button.fontSize} color={styles.button.color} />
-                </WrapperButton>
+                <View style={styles.optionsBar}>
 
-                {/* Will eventually be a dropdown of regions/neighbordhoods etc.. */}
-                <View style={styles.region}>
-                    <Text style={styles.regionText}>St. Louis, MO</Text>
-                    <CaretDownIcon color={colors.textPrimary} size={typography.sizeLg} />
+                    <WrapperButton onPress={() => navigation.navigate("ProfileNav", {})}
+                        style={styles.button}>
+                        <AccountIcon size={styles.button.fontSize} color={styles.button.color} />
+                    </WrapperButton>
+
+                    {/* Will eventually be a dropdown of regions/neighbordhoods etc..
+                        Static label until then — the caret was removed because it
+                        read as tappable on a View with no press handler. */}
+                    <View style={styles.region}>
+                        <Text style={styles.regionText}
+                            numberOfLines={1}
+                            ellipsizeMode="tail">St. Louis, MO</Text>
+                    </View>
+
+                    <ModalPopUp
+                        buttonStyle={styles.button}
+                        buttonBody={<FilterIcon size={styles.button.fontSize} color={styles.button.color} />}
+                    >
+                        <ScrollView contentContainerStyle={styles.filterBody} style={{ maxHeight: 600 }}>
+                            <Button text={"Reset"} onPress={resetFilter} style={styles.resetFilterButton} />
+                            <View>
+                                <Text style={styles.filterHeading}>Statuses</Text>
+                                <CheckList
+                                    data={IssueStatusArray}
+                                    buttonStyle={styles.button}
+                                    selectedValues={visibleStatuses}
+                                    setSelectedValues={setVisibleStatuses}
+                                    checkBoxColor={palette.ckYellow}
+                                />
+                            </View>
+
+                            <View>
+                                <Text style={styles.filterHeading}>Categories</Text>
+                                <CheckList
+                                    data={IssueCategoryArray}
+                                    buttonStyle={styles.button}
+                                    selectedValues={visibleCategories}
+                                    setSelectedValues={setVisibleCategories}
+                                    checkBoxColor={palette.ckBlue}
+                                />
+                            </View>
+                        </ScrollView>
+                    </ModalPopUp>
+
+                    <WrapperButton onPress={handleRefresh}
+                        style={styles.button}
+                        loading={isFetching || isMinLoading}>
+                        <RefreshIcon size={styles.button.fontSize} color={styles.button.color} />
+                    </WrapperButton>
+
                 </View>
 
-                <ModalPopUp
-                    buttonStyle={styles.button}
-                    buttonBody={<FilterIcon size={styles.button.fontSize} color={styles.button.color} />}
-                >
-                    <ScrollView contentContainerStyle={styles.filterBody} style={{ maxHeight: 600 }}>
-                        <Button text={"Reset"} onPress={resetFilter} style={styles.resetFilterButton} />
-                        <View>
-                            <Text style={styles.filterHeading}>Statuses</Text>
-                            <CheckList
-                                data={IssueStatusArray}
-                                buttonStyle={styles.button}
-                                selectedValues={visibleStatuses}
-                                setSelectedValues={setVisibleStatuses}
-                                checkBoxColor={palette.ckYellow}
-                            />
-                        </View>
-
-                        <View>
-                            <Text style={styles.filterHeading}>Categories</Text>
-                            <CheckList
-                                data={IssueCategoryArray}
-                                buttonStyle={styles.button}
-                                selectedValues={visibleCategories}
-                                setSelectedValues={setVisibleCategories}
-                                checkBoxColor={palette.ckBlue}
-                            />
-                        </View>
-                    </ScrollView>
-                </ModalPopUp>
-
-                <WrapperButton onPress={handleRefresh}
-                    style={styles.button}
-                    loading={isFetching || isMinLoading}>
-                    <RefreshIcon size={styles.button.fontSize} color={styles.button.color} />
+                <WrapperButton onPress={recenterMap}
+                    style={styles.recenterButton}>
+                    <RecenterIcon size={styles.recenterButton.fontSize} color={styles.recenterButton.color} />
                 </WrapperButton>
-
-
-
-
-
             </View>
 
             <View style={[styles.textContainer,
@@ -190,18 +210,40 @@ const styles = StyleSheet.create({
         fontWeight: typography.weightBold,
         color: colors.textContrast,
     },
-    optionsBar: {
+    //the options bar and the recenter button are laid out as one row so the gap
+    //between them is enforced by flexbox rather than by hoping two
+    //independently-positioned overlays never grow into each other.
+    //`top` is supplied inline from the safe-area inset.
+    topBar: {
         position: "absolute",
         left: 0,
+        right: 0,
         flexDirection: "row",
         alignItems: "center",
-        alignSelf: "center",
-        margin: spacing.sd,
+        justifyContent: "space-between",
+        padding: spacing.sd,
+        columnGap: spacing.sd,
+    },
+    optionsBar: {
+        //shrinks instead of pushing the recenter button off-screen
+        flexShrink: 1,
+        flexDirection: "row",
+        alignItems: "center",
         backgroundColor: colors.background,
         borderRadius: borderRadius.full,
         padding: spacing.xs,
         paddingHorizontal: spacing.sm,
         columnGap: spacing.xs,
+        ...globalStyles.shadow,
+    },
+    recenterButton: {
+        //matches the options bar's height: spacing.xs of bar padding plus
+        //spacing.sm of button padding equals spacing.sd around the same 28pt icon
+        flexShrink: 0,
+        backgroundColor: colors.background,
+        color: colors.textPrimary,
+        padding: spacing.sd,
+        fontSize: typography.sizeXxl,
         ...globalStyles.shadow,
     },
 
@@ -225,6 +267,10 @@ const styles = StyleSheet.create({
     },
 
     region: {
+        //the only child that can give up width when the bar is squeezed. RN
+        //defaults flexShrink to 0, so without this the icon buttons keep their
+        //full size and overflow the bar's rounded background instead.
+        flexShrink: 1,
         alignContent: "center",
         alignItems: "center",
         columnGap: spacing.xs,
@@ -238,6 +284,7 @@ const styles = StyleSheet.create({
     },
 
     regionText: {
+        flexShrink: 1,
         fontSize: typography.sizeLg,
         fontWeight: typography.weightMedium
     }

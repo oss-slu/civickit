@@ -36,9 +36,43 @@ enum EventStatus {
   CANCELLED
 }
 
-enum Role{
+enum Role {
   REPORTER
   ADMIN
+}
+
+enum OrgType {
+  WARD_OFFICE
+  CID
+  BID
+  SBD
+  CDC
+  NONPROFIT
+  CITY_DEPARTMENT
+  OTHER
+}
+
+enum OrgStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+}
+
+enum OrgRole {
+  ORG_ADMIN
+  ORG_MEMBER
+}
+
+enum OrgTier {
+  STARTER
+  GROWTH
+  FULLSCALE
+}
+
+enum BoundarySource {
+  OFFICIAL
+  UPLOADED
+  FREEHAND
 }
 
 model User {
@@ -51,27 +85,28 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  issues     Issue[]
-  events     Event[]
-  timelineEntries    TimelineEntry[]
-  upvotes    Upvote[]
-  eventRsvps EventRsvp[]
+  issues          Issue[]
+  events          Event[]
+  timelineEntries TimelineEntry[]
+  upvotes         Upvote[]
+  eventRsvps      EventRsvp[]
 
-  emailVerified Boolean   @default(false)
+  emailVerified Boolean         @default(false)
   image         String?
   sessions      Session[]
   accounts      Account[]
+  memberships   OrgMembership[]
 
   @@index([email])
   @@map("user")
 }
 
 model Issue {
-  id                 String        @id @default(cuid())
+  id                 String          @id @default(cuid())
   title              String
   description        String
   category           IssueCategory
-  status             IssueStatus   @default(REPORTED)
+  status             IssueStatus     @default(REPORTED)
   // Location data
   latitude           Float
   longitude          Float
@@ -82,14 +117,14 @@ model Issue {
   // Media
   images             String[] // Array of Cloudinary URLs
   // Metadata
-  createdAt          DateTime      @default(now())
-  updatedAt          DateTime      @updatedAt
-  locationSource     String        @default("device")
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  locationSource     String          @default("device")
   photoTakenAt       DateTime?
-  photoTakenAtSource String        @default("device")
+  photoTakenAtSource String          @default("device")
   // Relationships
   userId             String
-  user               User          @relation(fields: [userId], references: [id])
+  user               User            @relation(fields: [userId], references: [id])
   timelineEntries    TimelineEntry[]
   upvotes            Upvote[]
   events             Event[]
@@ -103,14 +138,14 @@ model Issue {
 }
 
 model TimelineEntry {
-  id        String   @id @default(cuid())
+  id        String      @id @default(cuid())
   message   String
-  createdAt DateTime @default(now())
+  createdAt DateTime    @default(now())
   issueId   String
-  issue     Issue    @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  issue     Issue       @relation(fields: [issueId], references: [id], onDelete: Cascade)
   userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  status    IssueStatus   @default(REPORTED)
+  user      User        @relation(fields: [userId], references: [id])
+  status    IssueStatus @default(REPORTED)
   images    String[] // Array of Cloudinary URLs
 
   @@index([issueId])
@@ -215,4 +250,43 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+model Organization {
+  id               String                                       @id @default(cuid())
+  name             String
+  slug             String                                       @unique
+  type             OrgType
+  status           OrgStatus                                    @default(PENDING)
+  tier             OrgTier?
+  categoryScope    IssueCategory[]
+  // How the geofence was defined, and a reference back to its source so
+  // official boundaries can be re-synced when a city redistricts.
+  boundarySource   BoundarySource?
+  boundaryRef      String?
+  boundarySyncedAt DateTime?
+  geofence         Unsupported("geography(MultiPolygon,4326)")?
+  createdAt        DateTime                                     @default(now())
+  updatedAt        DateTime                                     @updatedAt
+
+  memberships OrgMembership[]
+
+  @@index([status])
+  @@index([geofence], type: Gist)
+}
+
+model OrgMembership {
+  id             String   @id @default(cuid())
+  userId         String
+  organizationId String
+  role           OrgRole  @default(ORG_MEMBER)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, organizationId])
+  @@index([organizationId])
+  @@index([userId])
 }

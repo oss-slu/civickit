@@ -9,6 +9,14 @@ export {
 } from './enums/issue'
 
 export {
+    OrgType,
+    OrgStatus,
+    OrgRole,
+    OrgTier,
+    BoundarySource
+} from './enums/organization'
+
+export {
     ApiResponse,
     CreateIssueDTO,
     PostUpdateDTO,
