@@ -16,7 +16,8 @@ const loginService = new LoginService(loginRepository);
 export class AuthController {
   async register(req: Request<{}, {}, CreateAuthDTO>, res: Response, next: NextFunction) {
     try {
-      const { email, password, name } = req.body;
+      const { password, name } = req.body;
+      const email = req.body.email.toLowerCase()
       await authService.registerUser({ email, password, name });
       const loginResponse = await loginService.login({ email, password }); //lets the user login immediately after registering, instead of having to call the login endpoint separately
       return res.status(201).json(loginResponse);
@@ -28,6 +29,16 @@ export class AuthController {
   async getCurrentUser(req: Request, res: Response, next: NextFunction) {
     try {
       const user = await authService.getUserById(String(req.userId));
+      res.json(user);
+    } catch (error: any) {
+      next(error);
+    }
+  }
+
+  async getUserById(req: Request, res: Response, next: NextFunction) {
+    try {
+      console.log(req.params.userId)
+      const user = await authService.getUserById(String(req.params.userId));
       res.json(user);
     } catch (error: any) {
       next(error);

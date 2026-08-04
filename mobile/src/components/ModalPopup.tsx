@@ -7,19 +7,19 @@ import Checkbox from "expo-checkbox";
 import { palette, typography, colors, borderRadius, spacing } from "../styles";
 import Button from "./Button";
 
-export default function ModalPopUp({ buttonStyle, buttonBody, children }: any) {
+export default function ModalPopUp({ buttonStyle, buttonBody, style, children }: any) {
     const [isVisible, setIsVisible] = useState(false)
     const toggleModal = () => setIsVisible(!isVisible)
 
     return (
-        <View>
+        <View >
             <WrapperButton onPress={toggleModal} style={buttonStyle}>
                 {buttonBody}
             </WrapperButton>
 
             <Modal visible={isVisible} transparent animationType="fade">
-                <View style={styles.modalBackground}>
-                    <View style={styles.modalContent}>
+                <View style={{ ...styles.modalBackground, }}>
+                    <View style={{ ...styles.modalContent, ...style }}>
                         {children}
                         <Button style={styles.closeButton} onPress={toggleModal}
                             text="Close">

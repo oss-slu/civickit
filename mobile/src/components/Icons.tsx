@@ -436,3 +436,12 @@ export function AccountIcon(props: IconProps) {
             style={props.style} />
     )
 }
+
+export function TextIcon(props: IconProps) {
+    return (
+        <Entypo name="text"
+            color={props.color}
+            size={props.size}
+            style={props.style} />
+    )
+}

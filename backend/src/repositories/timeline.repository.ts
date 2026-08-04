@@ -10,7 +10,8 @@ export class TimelineRepository {
         status: data.status,
         images: data.images,
         userId: data.userId,
-        issueId: data.issueId
+        issueId: data.issueId,
+        createdAt: data.createdAt
       },
     });
   }

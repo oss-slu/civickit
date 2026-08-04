@@ -35,6 +35,7 @@ export default function CameraScreen() {
     //be called conditionally
     const insets = useSafeAreaInsets();
 
+
     //Permissions
     if (!permissions) {
         return <View />
@@ -123,7 +124,7 @@ export default function CameraScreen() {
                 enableTorch={enableTorch}
             />
 
-            <View style={[styles.upperButtonRow, { top: insets.top }]}>
+            <View style={[styles.upperButtonRow]}>
                 <WrapperButton onPress={() => { setEnableTorch(!enableTorch) }} style={{
                     ...styles.roundButton,
                 }}>

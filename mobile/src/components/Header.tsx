@@ -35,7 +35,7 @@ export default function Header({ title, onBackPress, lineNum, setOffset, style, 
             alignItems: numLines > 1 ? "flex-start" : "center",
             //the header is pinned to top: 0, so it must inset itself past the
             //status bar / Dynamic Island rather than render underneath it
-            paddingTop: insets.top + spacing.sm,
+            paddingTop: spacing.sm,
             ...style
         }}>
             {canGoBack &&

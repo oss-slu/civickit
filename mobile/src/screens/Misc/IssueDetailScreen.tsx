@@ -4,7 +4,7 @@ import { Platform, Text, ScrollView, FlatList, Image, StyleSheet, View, Touchabl
 import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
 import { GetNearbyIssueResponse, Issue } from '@civickit/shared';
 import { format, formatDistanceToNow } from 'date-fns';
-import { DefaultCategoryIcon, CheckMarkCircleIcon, CheckMarkIcon, ClockIcon, LocationPinIcon, TagIcon, UpvoteIcon, WrenchIcon } from '../../components/Icons';
+import { DefaultCategoryIcon, CheckMarkCircleIcon, CheckMarkIcon, ClockIcon, LocationPinIcon, TagIcon, UpvoteIcon, WrenchIcon, TextIcon } from '../../components/Icons';
 import { borderRadius, colors, globalStyles, palette, size, spacing, typography } from '../../styles';
 import { PROVIDER_GOOGLE } from 'react-native-maps/lib/ProviderConstants';
 import { issuesApi } from '../../api';
@@ -14,6 +14,9 @@ import Header from '../../components/Header';
 import { Animated } from 'react-native';
 import StatusBadge from '../../components/StatusBadge';
 import CategoryIcon from '../../components/CategoryIcon';
+import TimelineEntry from '../../components/TimelineEntry';
+import ImageGallery from '../../components/ImageGallery';
+import Timeline from '../../components/Timeline';
 
 let MapView: any = null;
 let Marker: any = null;
@@ -42,6 +45,7 @@ const IssueDetailScreen = () => {
 
   const [hasEndorsed, setHasEndorsed] = useState(false);
   const [upvoteCount, setUpvoteCount] = useState(issue.upvoteCount ?? 0);
+  const [timelineEntries, setTimelineEntries] = useState<any[]>()
   const [loading, setLoading] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
@@ -79,6 +83,16 @@ const IssueDetailScreen = () => {
     return () => controller.abort();
   }, [issue.id]);
 
+  useEffect(() => {
+    const getEntries = async () => {
+      const timeline = await issuesApi.getTimelineEntries(issue.id)
+      setTimelineEntries(timeline.updates)
+    }
+
+    getEntries()
+
+  }, [issue.id]);
+
 
   const handleEndorse = async () => {
     if (loading) return;
@@ -109,119 +123,69 @@ const IssueDetailScreen = () => {
 
         {/* Image Caption/at a glance info */}
         <View style={styles.imageCaption}>
+
+          <View style={{ flexDirection: "row", columnGap: spacing.sm }}>
+
+            <StatusBadge status={issue.status} style={{ paddingHorizontal: spacing.md }} textStyle={{ fontSize: typography.sizeLg }} />
+
+            <View style={styles.infoElement}>
+              <CategoryIcon
+                category={issue.category}
+                size={typography.sizeXl}
+              />
+              <Text style={styles.catValue}>
+                {category}
+              </Text>
+            </View>
+          </View>
+
+
           <View style={styles.infoElement}>
             <UpvoteIcon color={colors.textPrimary} size={typography.sizeXl} />
             <Text style={styles.countValue}>{upvoteCount}</Text>
           </View>
 
-          <View style={styles.infoElement}>
-            <CategoryIcon
-              category={issue.category}
-              size={typography.sizeXl}
-            />
-            <Text style={styles.catValue}>
-              {category}
-            </Text>
-          </View>
-
-          <StatusBadge status={issue.status} style={{ paddingHorizontal: spacing.md }} textStyle={{ fontSize: typography.sizeLg }} />
-
         </View>
 
         {/* Image Gallery */}
-        <View style={[styles.imageGallery, { width: imageWidth, height: imageHeight }]}>
-          <FlatList
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            data={issue.images}
-            keyExtractor={(_, idx) => idx.toString()}
-            onMomentumScrollEnd={(event) => {
-              const nextIndex = Math.round(event.nativeEvent.contentOffset.x / imageWidth);
-              setActiveImageIndex(nextIndex);
-            }}
-            renderItem={({ item }) => (
-              <Image source={{ uri: item }} style={[styles.image, { width: imageWidth, height: imageHeight }]} />
-            )}
-          />
-          {issue.images.length > 1 && (
-            <View style={styles.imageDots}>
-              {issue.images.map((_, index) => (
-                <View
-                  key={index}
-                  style={[
-                    styles.imageDot,
-                    index === activeImageIndex ? styles.imageDotActive : styles.imageDotInactive
-                  ]}
-                />
-              ))}
-            </View>
-          )}
-        </View>
-
-
+        <ImageGallery
+          images={issue.images}
+          height={imageHeight}
+          width={imageWidth} />
 
         {/* Description */}
-        <View style={styles.description}>
-          <Text style={styles.infoRowLabel}>Description</Text>
-          <Text style={styles.descriptionText}>{issue.description}</Text>
+        <View style={{ ...styles.infoBlock, flexDirection: "row", columnGap: spacing.sm }}>
+          <TextIcon color={colors.textPrimary}
+            size={typography.sizeLg}
+            style={{ ...styles.icon, marginTop: spacing.xs }} />
+          {/* <Text style={styles.infoRowLabel}>Description</Text> */}
+          <Text style={styles.infoRowText}>{issue.description}</Text>
         </View>
 
-        {/* Info Card */}
-        <View style={styles.infoCard}>
+        {/* Location */}
+        <View style={styles.infoBlock}>
 
-          {/* Date/Time */}
-          <View style={styles.infoRow}>
-            <ClockIcon color={colors.textPrimary}
-              size={typography.sizeLg}
-              style={styles.icon} />
-            <View style={styles.infoTextColumn}>
-              <Text style={styles.infoRowLabel}>Report submitted</Text>
-              <Text style={styles.infoRowText}>
-                {format(new Date(issue.createdAt), 'PPP p')}
+          <TouchableOpacity onPress={() => showLocation({
+            latitude: issue.latitude,
+            longitude: issue.longitude,
+            googleForceLatLon: true
+          })}
+          >
+            <View style={{ flexDirection: "row", columnGap: spacing.xs }}>
+              <LocationPinIcon color={colors.textPrimary}
+                size={typography.sizeLg}
+                style={{ ...styles.icon, marginTop: spacing.xs }} />
+              <Text style={{ ...styles.infoRowText, textDecorationLine: 'underline' }}>
+                {resolvedAddress}
               </Text>
             </View>
-          </View>
-          <View style={styles.divider} />
 
-          {/* Photo Date/Time */}
-          <View style={styles.infoRow}>
-            <ClockIcon color={colors.textPrimary}
-              size={typography.sizeLg}
-              style={styles.icon} />
-            <View style={styles.infoTextColumn}>
-              <Text style={styles.infoRowLabel}>Photo taken</Text>
-              <Text style={styles.infoRowText}>
-                {format(new Date(issue.photoTakenAt ?? issue.createdAt), 'PPP p')}
-              </Text>
-              <Text style={styles.infoRowMeta}>Source: {formatSource(issue.photoTakenAtSource)}</Text>
-            </View>
-          </View>
-          <View style={styles.divider} />
+            <Text style={styles.infoRowMeta}>Source: {formatSource(issue.locationSource)}</Text>
+          </TouchableOpacity>
 
-          {/* Location */}
-          <View style={styles.infoRow}>
-            <LocationPinIcon color={colors.textPrimary}
-              size={typography.sizeLg}
-              style={styles.icon} />
-            <View style={styles.infoTextColumn}>
-              <TouchableOpacity onPress={() => showLocation({
-                latitude: issue.latitude,
-                longitude: issue.longitude,
-                googleForceLatLon: true
-              })}>
-                <Text style={styles.infoRowLabel}>Location</Text>
-                <Text style={{ ...styles.infoRowText, textDecorationLine: 'underline' }}>
-                  {resolvedAddress}
-                </Text>
-
-                <Text style={styles.infoRowMeta}>Source: {formatSource(issue.locationSource)}</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
         </View>
 
-
+        <Timeline entries={timelineEntries} />
 
         {/* Map */}
         {Platform.OS !== 'web' && MapView && Marker ? (
@@ -264,7 +228,7 @@ const IssueDetailScreen = () => {
         {hasEndorsed ?
           <View style={{ flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
             <Text style={styles.endorseText}>Endorsed</Text>
-            <CheckMarkIcon color={colors.textPrimary} size={typography.sizeXl} />
+            <CheckMarkIcon color={colors.textContrast} size={typography.sizeXl} />
           </View> :
           <Text style={styles.endorseText}>Endorse</Text>
         }
@@ -317,7 +281,7 @@ const styles = StyleSheet.create({
 
   infoRowText: {
     fontSize: typography.sizeLg,
-    color: colors.textSecondary,
+    color: colors.textPrimary,
     //textTransform: 'capitalize' causes region to lowercase, and Pm to act weird, need to fix categories without doing this line because now tags is all lowercase
   },
 
@@ -349,7 +313,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     columnGap: spacing.sm,
     alignItems: "center",
-    justifyContent: "flex-start"
+    justifyContent: "space-between"
   },
 
   icon: {
@@ -367,46 +331,10 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
   },
 
-  imageGallery: {
-  },
-
-  imageDots: {
-    position: 'absolute',
-    bottom: spacing.sm,
-    alignSelf: 'center',
-    flexDirection: 'row',
-    gap: spacing.xs,
-    backgroundColor: 'rgba(17, 24, 39, 0.35)',
-    borderRadius: borderRadius.full,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-  },
-
-  imageDot: {
-    width: spacing.sm,
-    height: spacing.sm,
-    borderRadius: borderRadius.full,
-  },
-
-  imageDotActive: {
-    backgroundColor: colors.textContrast,
-    opacity: 0.95,
-  },
-
-  imageDotInactive: {
-    backgroundColor: colors.textContrast,
-    opacity: 0.45,
-  },
-
-  description: {
+  infoBlock: {
     backgroundColor: colors.backgroundSecondary,
     padding: spacing.md,
     borderRadius: borderRadius.lg
-  },
-
-  descriptionText: {
-    fontSize: typography.sizeLg,
-    color: colors.textSecondary
   },
 
   map: {
@@ -440,6 +368,6 @@ const styles = StyleSheet.create({
   endorseText: {
     fontSize: typography.sizeXl,
     fontWeight: 'bold',
-    color: palette.ckDark,
+    color: colors.textContrast
   }
 },);

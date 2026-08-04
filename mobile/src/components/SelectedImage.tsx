@@ -7,7 +7,6 @@ import { CloseXIcon } from './Icons';
 export default function SelectedImage({ source, onDeletePressed, width, height, style }: any) {
     const styles = StyleSheet.create({
         container: {
-
             justifyContent: "center",
             alignItems: "center",
         },
@@ -15,23 +14,19 @@ export default function SelectedImage({ source, onDeletePressed, width, height, 
             width: width,
             height: height,
             borderRadius: borderRadius.md,
-            resizeMode: "center",
+            resizeMode: "contain",
         },
         buttonContainer: {
             position: 'absolute',
             justifyContent: "center",
             alignItems: "center",
-            top: spacing.sm,
+            bottom: spacing.xxl,
         },
         button: {
             backgroundColor: palette.ckRed,
             fontWeight: typography.weightBold,
-            //width must match height: WrapperButton contributes borderRadius.full
-            //but no dimensions, so a height-only box collapses to the icon's
-            //width and the pill radius renders it as an oval
-            width: size.xxl,
-            height: size.xxl,
             borderWidth: 0,
+            padding: spacing.sm,
             ...globalStyles.shadow
         }
     });
