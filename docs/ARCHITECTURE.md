@@ -13,7 +13,7 @@ around them. It is a **monorepo** with four workspaces:
 
 | Workspace | What it is | Stack |
 |-----------|------------|-------|
-| `backend/` | REST API + database access | Node.js, Express 5, TypeScript, Prisma, PostgreSQL + PostGIS |
+| `backend/` | REST API + database access | Node.js, Express 5, TypeScript, Drizzle ORM, PostgreSQL + PostGIS |
 | `mobile/`  | The primary client | React Native (Expo), React Navigation, TanStack Query |
 | `web/`     | Marketing / web client | React, TanStack Start + Vite, deployed to Cloudflare Workers |
 | `shared/`  | Types shared across clients | TypeScript package (`@civickit/shared`) |
@@ -44,7 +44,7 @@ flowchart TD
     M -->|HTTP / JSON| MW
     W -->|HTTP / JSON| MW
     MW --> R
-    R -->|Prisma| DB
+    R -->|Drizzle| DB
     R --> BA
     BA --> DB
     M -->|direct upload| CL
@@ -61,7 +61,7 @@ Each backend request flows through a consistent set of layers. This keeps HTTP
 concerns, business logic, and data access separate and testable.
 
 ```
-Route → Middleware → Controller → Service → Repository → Prisma → PostgreSQL/PostGIS
+Route → Middleware → Controller → Service → Repository → Drizzle → PostgreSQL/PostGIS
 ```
 
 - **Routes** (`backend/src/routes/`) — declare endpoints and attach middleware
@@ -91,7 +91,8 @@ immediately) and gates sensitive actions such as `update:issue_status`.
 
 ## Data model
 
-The schema lives in `backend/prisma/schema.prisma`. Core entities:
+The schema lives in `backend/src/db/schema.ts`, with migrations in
+`backend/drizzle/`. Core entities:
 
 ```mermaid
 erDiagram
@@ -104,6 +105,8 @@ erDiagram
     Issue ||--o{ TimelineEntry : has
     Issue ||--o{ Event : "may link"
     Event ||--o{ EventRsvp : has
+    User ||--o{ OrgMembership : joins
+    Organization ||--o{ OrgMembership : has
 
     User {
         string id PK
@@ -183,7 +186,7 @@ change appended as a `TimelineEntry`.
 ```
 civickit/
 ├── backend/          Express API (routes, controllers, services, repositories)
-│   ├── prisma/       schema.prisma + migrations
+│   ├── drizzle/      generated migrations + PostGIS extensions.sql
 │   └── src/          app code (see layered architecture above)
 ├── mobile/           React Native (Expo) app
 ├── web/              React + TanStack Start web app

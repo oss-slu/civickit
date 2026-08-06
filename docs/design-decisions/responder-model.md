@@ -3,7 +3,8 @@
 How organization members get their abilities and why it works that way.
 
 **Status:** the schema groundwork is in place — `Organization` and `OrgMembership`
-exist, with slug, boundary provenance, and membership timestamps. **The permission work
+exist, with slug, boundary provenance, and membership timestamps, and are now defined in
+`backend/src/db/schema.ts` on Drizzle. **The permission work
 described here is not built yet**, so today an org member still cannot update an issue's
 status. That is the gap this document exists to close.
 
@@ -149,7 +150,7 @@ conservancies, or campuses. "Service area" is neutral across every org type.
 `BoundarySource { OFFICIAL, UPLOADED, FREEHAND }` records *how* a geofence was created
 but not *which* source it came from. Two columns, now present on `Organization`:
 
-```prisma
+```ts
 boundaryRef      String?    // OFFICIAL: "stl-open-data:wards-2023:ward-17"
                             // UPLOADED: file URL or storage key
                             // FREEHAND: null
@@ -215,7 +216,12 @@ Still to enforce in code:
 - An empty `categoryScope` means **routes nothing**, and org setup must require at least
   one category. Defining empty as "all" would flood a misconfigured org.
 
-## Notes for the Drizzle migration
+## Notes for the Drizzle migration (done)
+
+Carried over in `plans/013-drizzle-org-parity.md`. The column type and the GIST
+index are asserted against a real database by
+`backend/src/db/__tests__/schema.integration.test.ts`, since either failing is
+silent at runtime.
 
 The geofence is the fragile part. Carry these over deliberately:
 
@@ -231,8 +237,13 @@ The geofence is the fragile part. Carry these over deliberately:
   `geofence::geometry` produces a different expression than the indexed one and silently
   falls back to a sequential scan.
 
-Drizzle can express both the custom column type and the GIST index directly, so the
-Prisma `Unsupported(...)` workaround does not need to carry over.
+Drizzle expresses the GIST index directly, so that part of the Prisma
+`Unsupported(...)` workaround did not carry over. **The column type still needs one
+manual step.** `drizzle-kit` quotes any type missing from its hardcoded native list,
+and that list has `geometry` but not `geography` — so `db:generate` emits
+`"geofence" "geography(MultiPolygon,4326)"`, which Postgres reads as a type *named*
+that. The quotes have to come off in the generated SQL. The failure is loud (the
+migration aborts), and `schema.ts` carries a note at the type declaration.
 
 ## Known gaps
 
