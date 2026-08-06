@@ -1,11 +1,11 @@
 //mobile/src/screens/ProfileScreen.tsx
-import IconButton from "../../components/IconButton";
+import WrapperButton from "../../components/WrapperButton";
 import { MessageView } from "../../components/MessageView";
 import { Text, View, StyleSheet, TouchableOpacity, ScrollView, RefreshControl } from "react-native"
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { palette, colors, globalStyles, size, spacing, typography, borderRadius } from "../../styles";
 import { useAuth } from "../../contexts/AuthContext";
-import { EditIcon, RightArrowIcon, SettingsIcon, TrashIcon, UserIcon } from "../../components/Icons";
+import { AccountIcon, EditIcon, RightArrowIcon, SettingsIcon, TrashIcon, UserIcon } from "../../components/Icons";
 import Button from "../../components/Button";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { StackParams } from "../../types/StackParams";
@@ -14,12 +14,17 @@ import { Image } from "expo-image";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { issuesApi, queryKeys } from "../../api";
 import LoadingScreen from "../Misc/LoadingScreen";
+import Header from "../../components/Header";
+import Leaderboard from "../../components/Leaderboard";
 
 export default function ProfileScreen({ route }: any) {
     const { logout } = useAuth();
     const { user } = useAuth();
     const queryClient = useQueryClient()
     const [refreshing, setRefreshing] = useState(false);
+    //seeded with the old hardcoded value so the first frame is no worse than
+    //before; Header reports its real height on layout and corrects this
+    const [headerOffset, setHeaderOffset] = useState(spacing.xxxl)
     let dateJoined = new Date()
 
     if (user != null) {
@@ -82,114 +87,131 @@ export default function ProfileScreen({ route }: any) {
     }
 
     return (
-        <ScrollView contentContainerStyle={[styles.container]}
-            refreshControl={<RefreshControl
-                refreshing={refreshing}
-                onRefresh={refetchQueries} />}
-        >
-            <IconButton style={{ ...styles.button, flexDirection: "row", columnGap: spacing.sm, alignSelf: "flex-end" }}
-                onPress={() => navigation.navigate("Settings", {})}>
-                <SettingsIcon color={styles.button.color} size={styles.button.fontSize} />
-                <Text style={{ color: styles.button.color, fontSize: styles.button.fontSize }}>Settings</Text>
-            </IconButton>
+        <View style={[globalStyles.container, { padding: 0 }]}>
+            <ScrollView contentContainerStyle={[styles.container, { paddingTop: headerOffset + spacing.md }]}
+                refreshControl={<RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={refetchQueries} />}
+            >
 
-            <View style={styles.profilePicContainer}>
+                <View>
+                    <AccountIcon size={size.imageMd} color={palette.ckMediumGray} />
+                </View>
 
-                <Image
-                    source={require("../../../assets/avatars/greenAvatar.png")}
-                    style={styles.profilePic} />
+                <View style={styles.stats}>
 
-            </View>
+                    {issuesQuery.data.issues.length == 0 ?
+                        <Text style={styles.statsText}>You haven't reported anything yet</Text> :
+                        <View style={styles.statRow}>
+                            <Text style={styles.statsText}>Issues Reported: {issuesQuery.data.issues.length}</Text>
+                            <View style={styles.leaderboardContainer}>
+                                <Leaderboard issues={issuesQuery.data.issues.reverse()} number={3} />
+                            </View>
 
-            <Text style={globalStyles.heading1}>{user?.name}</Text>
-
-            <View style={styles.stats}>
+                            {issuesQuery.data.issues.length > 3 &&
+                                <WrapperButton style={{
+                                    ...styles.button,
+                                    flexDirection: "row",
+                                    columnGap: spacing.xs,
+                                }}
+                                    onPress={() => {
+                                        navigation.navigate("My Issues", {
+                                            issues: issuesQuery.data.issues, endorsementsOption: true,
+                                            dateReportedOption: true, dateUpdatedOption: true, distanceOption: false,
+                                        })
+                                    }}
+                                >
+                                    <Text style={{ fontSize: styles.button.fontSize, color: styles.button.color }}>More</Text>
+                                    <RightArrowIcon
+                                        color={styles.button.color}
+                                        size={typography.sizeXl}
+                                    />
+                                </WrapperButton>
+                            }
+                        </View>
+                    }
+                    {upvotesQuery.data.issues.length == 0 ?
+                        <Text style={styles.statsText}>You haven't endorsed anything yet</Text> :
+                        <View style={styles.statRow}>
+                            <Text style={styles.statsText}>Issues Endorsed: {upvotesQuery.data.issues.length}</Text>
+                            <View style={styles.leaderboardContainer}>
+                                <Leaderboard issues={upvotesQuery.data.issues.reverse()} number={3} />
+                            </View>
+                            {upvotesQuery.data.issues.length > 3 &&
+                                <WrapperButton style={{
+                                    ...styles.button,
+                                    flexDirection: "row",
+                                    columnGap: spacing.xs,
+                                }}
+                                    onPress={() => {
+                                        navigation.navigate("My Endorsements", {
+                                            issues: upvotesQuery.data.issues, endorsementsOption: true,
+                                            dateReportedOption: true, dateUpdatedOption: true, distanceOption: false,
+                                        })
+                                    }}
+                                >
+                                    <Text style={{ fontSize: styles.button.fontSize, color: styles.button.color }}>More</Text>
+                                    <RightArrowIcon
+                                        color={styles.button.color}
+                                        size={typography.sizeXl}
+                                    />
+                                </WrapperButton>
+                            }
+                        </View>
+                    }
+                </View>
 
                 <Text style={styles.statsText}>Joined {dateJoined.toLocaleDateString()}</Text>
-                {issuesQuery.data.issues.length == 0 ?
-                    <Text style={styles.statsText}>You haven't reported anything yet</Text> :
-                    <View style={styles.statRow}>
-                        <Text style={styles.statsText}>Issues Reported: {issuesQuery.data.issues.length}</Text>
-                        <IconButton style={{
-                            ...globalStyles.outlinedButton,
-                            flexDirection: "row",
-                            columnGap: spacing.xs,
-                        }}
-                            onPress={() => {
-                                navigation.navigate("My Issues", {
-                                    issues: issuesQuery.data.issues, endorsementsOption: true,
-                                    dateReportedOption: true, dateUpdatedOption: true, distanceOption: false,
-                                })
-                            }}
-                        >
-                            <Text style={{ fontSize: globalStyles.outlinedButton.fontSize, color: globalStyles.outlinedButton.color }}>My Issues</Text>
-                            <RightArrowIcon
-                                color={globalStyles.outlinedButton.color}
-                                size={typography.sizeXl}
-                            />
-                        </IconButton>
-                    </View>
-                }
-                {upvotesQuery.data.issues.length == 0 ?
-                    <Text style={styles.statsText}>You haven't endorsed anything yet</Text> :
-                    <View style={styles.statRow}>
-                        <Text style={styles.statsText}>Issues Endorsed: {upvotesQuery.data.issues.length}</Text>
-                        <IconButton style={{
-                            ...globalStyles.outlinedButton,
-                            flexDirection: "row",
-                            columnGap: spacing.xs,
-                        }}
-                            onPress={() => {
-                                navigation.navigate("My Endorsements", {
-                                    issues: upvotesQuery.data.issues, endorsementsOption: true,
-                                    dateReportedOption: true, dateUpdatedOption: true, distanceOption: false,
-                                })
-                            }}
-                        >
-                            <Text style={{ fontSize: globalStyles.outlinedButton.fontSize, color: globalStyles.outlinedButton.color }}>My Endorsements</Text>
-                            <RightArrowIcon
-                                color={globalStyles.outlinedButton.color}
-                                size={typography.sizeXl}
-                            />
-                        </IconButton>
-                    </View>
-                }
-                <View style={styles.statRow}>
-                    <Text style={styles.statsText}>Events Attended:</Text>
-                    <Text style={styles.statsText}>Coming Soon</Text>
-                    {/* <IconButton style={{
-                        ...globalStyles.outlinedButton,
-                        flexDirection: "row",
-                        columnGap: spacing.xs,
-                    }}
-                    >
-                        <Text style={{ fontSize: globalStyles.outlinedButton.fontSize, color: globalStyles.outlinedButton.color }}>My Events</Text>
-                        <RightArrowIcon
-                            color={globalStyles.outlinedButton.color}
-                            size={typography.sizeXl}
-                        />
-                    </IconButton> */}
-                </View>
-            </View>
+                <Button text="Logout" onPress={logout} style={[styles.logoutButton]} />
 
 
-            <Button text="Logout" onPress={logout} style={[styles.button, { backgroundColor: palette.ckRed }]} />
+            </ScrollView>
 
-
-        </ScrollView>
+            <Header
+                title={user?.name}
+                setOffset={(i: any) => setHeaderOffset(i)}
+                onBackPress={navigation.goBack}>
+                <WrapperButton style={{ ...styles.settingsButton, flexDirection: "row", columnGap: spacing.sm, alignSelf: "flex-end" }}
+                    onPress={() => navigation.navigate("Settings", {})}>
+                    <SettingsIcon color={styles.settingsButton.color} size={typography.sizeXl} />
+                    <Text style={{ color: styles.settingsButton.color, fontSize: styles.settingsButton.fontSize, fontWeight: typography.weightMedium }}>Settings</Text>
+                </WrapperButton>
+            </Header>
+        </View>
     )
 }
 
 const styles = StyleSheet.create({
     container: {
-        ...globalStyles.container,
+        // ...globalStyles.container,
         alignItems: 'center',
-        rowGap: spacing.md
+        rowGap: spacing.sm,
+        paddingTop: spacing.xxxl,
+        paddingBottom: spacing.lg
     },
     button: {
-        ...globalStyles.button,
-        backgroundColor: palette.ckMediumGray,
+        backgroundColor: colors.background,
+        color: colors.textSecondary,
         fontSize: typography.sizeLg,
+        paddingVertical: spacing.xs,
+        borderWidth: 4,
+        borderColor: colors.backgroundSecondary,
+        paddingHorizontal: spacing.md,
+        width: "100%"
+    },
+    settingsButton: {
+        ...globalStyles.button,
+        backgroundColor: colors.background,
+        borderWidth: 4,
+        borderColor: colors.backgroundSecondary,
+        fontSize: typography.sizeLg,
+        color: colors.textSecondary
+    },
+    logoutButton: {
+        ...globalStyles.button,
+        backgroundColor: palette.ckRed,
+        fontSize: typography.sizeLg,
+        color: colors.textContrast
     },
     statsText: {
         fontSize: typography.sizeLg,
@@ -201,25 +223,21 @@ const styles = StyleSheet.create({
         alignItems: "center",
         width: "100%",
         paddingHorizontal: spacing.md,
-        rowGap: spacing.sm
+        rowGap: spacing.sm,
     },
     statRow: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        width: "100%"
+        flexDirection: "column",
+        alignItems: "flex-start",
+        width: "100%",
+        backgroundColor: colors.background,
+        borderRadius: borderRadius.lg,
+        padding: spacing.sm,
+        rowGap: spacing.sm
     },
     profilePicContainer: {
 
     },
-    profilePic: {
-        width: 200,
-        height: 200,
-        borderRadius: borderRadius.full,
-    },
-    editButton: {
-        position: "absolute",
-        bottom: 10,
-        right: 10
-    },
+    leaderboardContainer: {
+        width: "100%",
+    }
 })

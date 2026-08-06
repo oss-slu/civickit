@@ -51,6 +51,19 @@ export const globalStyles = StyleSheet.create({
         textAlign: "center",
     },
 
+    wrapperButton: {
+        fontSize: typography.sizeMd,
+        color: colors.textContrast,
+        fontWeight: typography.weightMedium,
+        backgroundColor: colors.primary,
+        borderRadius: borderRadius.full,
+
+        justifyContent: "center",
+        alignContent: "center",
+        alignItems: "center",
+        textAlign: "center",
+    },
+
     outlinedButton: {
         backgroundColor: colors.background,
         color: colors.textSecondary,
@@ -67,6 +80,19 @@ export const globalStyles = StyleSheet.create({
         borderRadius: borderRadius.full,
         paddingVertical: spacing.sm,
         paddingHorizontal: spacing.md,
+
+        justifyContent: "center",
+        alignContent: "center",
+        alignItems: "center",
+        textAlign: "center"
+    },
+
+    disabledWrapperButton: {
+        fontSize: typography.sizeMd,
+        color: colors.textMuted,
+        fontWeight: typography.weightMedium,
+        backgroundColor: colors.backgroundSecondary,
+        borderRadius: borderRadius.full,
 
         justifyContent: "center",
         alignContent: "center",

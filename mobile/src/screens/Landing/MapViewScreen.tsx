@@ -1,7 +1,7 @@
 // mobile/src/screens/Landing/MapViewScreen.tsx
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { View, Animated, useAnimatedValue } from 'react-native';
 import { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { StackParams } from '../../types/StackParams';
@@ -12,7 +12,24 @@ import MapView from "react-native-maps"
 import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet';
 import IssueListScreen from './IssueListScreen';
 import CalloutPopup from '../../components/CalloutPopup';
+import Cluster from '../../components/Cluster';
+import { getDistance } from 'geolib';
+import CalloutListPopup from '../../components/CalloutListPopup';
 import { GetNearbyIssueResponse } from '@civickit/shared';
+
+interface IssueCluster {
+    issues: GetNearbyIssueResponse[]
+    latitude: number,
+    longitude: number
+}
+
+//a marker on the map is either a lone issue or a cluster standing in for several
+type MapElement = GetNearbyIssueResponse | IssueCluster
+
+//only a cluster carries a member list, which is what every call site branches on
+function isCluster(element: MapElement): element is IssueCluster {
+    return (element as IssueCluster).issues != undefined
+}
 import { showLocation } from 'react-native-map-link';
 
 export default function MapViewScreen({ ref, issues, refetch }: any) {
@@ -20,16 +37,31 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
     const bottomSheetRef = useRef<BottomSheet>(null);
     const snapPoints = [36, "30%", "80%"]
     const [bottomSheetInd, setBottomSheetInd] = useState<number>(0);
-    const [currentIssue, setCurrentIssue] = useState<GetNearbyIssueResponse | undefined>(undefined)
+    const [currentElement, setCurrentElement] = useState<MapElement | undefined>(undefined)
     const fadeAnim = useAnimatedValue(0);
     const posAnim = useAnimatedValue(0);
     const [paddingBottom, setPaddingBottom] = useState("110%")
+    //initial value matches the initialRegion delta (0.05) with the same
+    //zoom factor used in onRegionChange, so the first render clusters the
+    //same way as every render after the map settles
+    const [pinTolerance, setPinTolerance] = useState(0.05 * 111 * 1000 * 0.05)
+    const currentRegion = useRef<any>(null)
 
     //get contexts from above layer(s)
     const location = useLocation().location
 
-    const onMarkerPress = (issue: GetNearbyIssueResponse) => {
-        setCurrentIssue(issue)
+    const onMarkerPress = (element: MapElement) => {
+        //large clusters zoom the map in instead of rendering a huge callout (#174)
+        if (isCluster(element) && element.issues.length > 10) {
+            ref?.current?.animateToRegion({
+                latitude: element.latitude,
+                longitude: element.longitude,
+                latitudeDelta: (currentRegion.current?.latitudeDelta ?? 0.05) / 3,
+                longitudeDelta: (currentRegion.current?.longitudeDelta ?? 0.05) / 3,
+            }, 300)
+            return
+        }
+        setCurrentElement(element)
         openCallout()
     }
 
@@ -67,10 +99,89 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
 
     }
 
-    if (currentIssue != undefined && bottomSheetInd == 2) {
+    if (currentElement != undefined && bottomSheetInd == 2) {
         closeCallout()
-    } else if (currentIssue != undefined && bottomSheetInd < 2) {
+    } else if (currentElement != undefined && bottomSheetInd < 2) {
         openCallout()
+    }
+
+    // clusters
+    // greedy pass: each unclaimed issue seeds a cluster and absorbs every
+    // remaining issue within pinTolerance of it. Distances are always
+    // measured from the seed pin (not a moving center), so results are
+    // deterministic and every issue lands in exactly one marker.
+    const createClusters = (): MapElement[] => {
+        if (issues == undefined) return []
+        const remaining: GetNearbyIssueResponse[] = [...issues]
+        const viewList: MapElement[] = []
+
+        while (remaining.length > 0) {
+            //the loop condition guarantees an element
+            const seed = remaining.shift()!
+            const members: GetNearbyIssueResponse[] = [seed]
+
+            for (let k = remaining.length - 1; k >= 0; k--) {
+                const distance = getDistance(
+                    { latitude: seed.latitude, longitude: seed.longitude },
+                    { latitude: remaining[k].latitude, longitude: remaining[k].longitude }
+                )
+                if (distance < pinTolerance) {
+                    members.push(remaining[k])
+                    remaining.splice(k, 1)
+                }
+            }
+
+            if (members.length == 1) {
+                viewList.push(seed)
+            } else {
+                //anchor the cluster at its seed pin rather than the member
+                //centroid: seeds are always >= pinTolerance apart, so no two
+                //markers can render fully on top of each other
+                const cluster: IssueCluster = {
+                    issues: members,
+                    latitude: seed.latitude,
+                    longitude: seed.longitude
+                }
+                viewList.push(cluster)
+            }
+        }
+
+        return viewList
+    }
+
+    const markerList = useMemo(() => {
+        return createClusters().map((entry: MapElement) => {
+            if (isCluster(entry)) {
+                //key by the seed (issues[0], where the marker is anchored) so
+                //a marker keeps its native view across zoom changes instead of
+                //remounting — rapid unmount/mount can drop markers on iOS
+                return <Marker
+                    key={entry.issues[0].id}
+                    coordinate={{ latitude: entry.latitude, longitude: entry.longitude }}
+                    style={{}}
+                    onPress={() => { onMarkerPress(entry) }}
+                >
+                    <Cluster issues={entry.issues} />
+                </Marker>
+            } else {
+                return <Marker
+                    key={entry.id}
+                    coordinate={{ latitude: entry.latitude, longitude: entry.longitude }}
+                    style={{}}
+                    onPress={() => { onMarkerPress(entry) }}
+                >
+                    <Pin issue={entry} />
+                </Marker>
+            }
+        })
+    }, [issues, pinTolerance])
+
+    const onRegionChange = (Region: any) => {
+        currentRegion.current = Region
+        const newTolerance = Region.latitudeDelta * 111 * 1000 * 0.05
+        if (newTolerance != pinTolerance) {
+            setPinTolerance(newTolerance)
+        }
     }
 
     return (
@@ -80,7 +191,10 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
                 ref={ref}
                 showsUserLocation={true}
                 showsMyLocationButton={false}
+                followsUserLocation={true}
                 style={{ flex: 1 }}
+                toolbarEnabled={false}
+                onRegionChangeComplete={(Region) => onRegionChange(Region)}
                 initialRegion={location ? {
                     latitude: location.latitude,
                     longitude: location.longitude,
@@ -88,17 +202,7 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
                     longitudeDelta: 0.05,
                 } : undefined}
             >
-                {issues.map((issue: any) =>
-                    <Marker
-                        key={issue.id}
-                        coordinate={{ latitude: issue.latitude, longitude: issue.longitude }}
-                        style={{}}
-                        onPress={() => { onMarkerPress(issue) }}
-                    >
-                        <Pin issue={issue} />
-                    </Marker>
-
-                )}
+                {markerList}
             </MapView>
 
             <Animated.View
@@ -111,23 +215,29 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
                     position: "absolute",
 
                 },
-                currentIssue != undefined ? { display: undefined } : { display: "none" }]}
+                currentElement != undefined ? { display: undefined } : { display: "none" }]}
             >
-                <CalloutPopup
-                    issue={currentIssue}
+                {currentElement != undefined && isCluster(currentElement) ?
+                    <CalloutListPopup
+                        cluster={currentElement}
+                        onClosePress={() => {
+                            closeCallout(() => {
+                                setCurrentElement(undefined)
+                            })
+                        }}
+                    /> : <CalloutPopup
+                        issue={currentElement}
+                        onClosePress={() => {
+                            closeCallout(() => {
+                                setCurrentElement(undefined)
+                            })
+                        }}
+                        onForwardPress={() => {
+                            navigation.navigate("Issue Details", { issue: currentElement! })
+                        }}
+                    />
+                }
 
-                    onClosePress={() => {
-                        closeCallout(() => {
-
-                            setCurrentIssue(undefined)
-                        })
-
-
-                    }}
-                    onForwardPress={() => {
-                        navigation.navigate("Issue Details", { issue: currentIssue! })
-                    }}
-                />
             </Animated.View>
 
             <BottomSheet
@@ -171,7 +281,9 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
                     style={{ paddingBottom: paddingBottom }}
                 />
             </BottomSheet>
+
+
+
         </View>
     );
 };
-

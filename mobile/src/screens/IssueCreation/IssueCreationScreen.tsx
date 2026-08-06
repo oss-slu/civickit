@@ -2,7 +2,7 @@
 import * as Location from 'expo-location';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { uploadImagesToCloudinary } from '../../services/cloudinaryService';
-import { View, StyleSheet, ScrollView, TextInput, Text, FlatList } from 'react-native';
+import { View, StyleSheet, ScrollView, TextInput, Text, FlatList, useWindowDimensions } from 'react-native';
 import { useFocusEffect, useNavigation, } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -17,7 +17,7 @@ import { resolvePhotoMetadata } from '../../utils/photoMetadata';
 
 import LoadingScreen from '../Misc/LoadingScreen';
 import Button from '../../components/Button';
-import IconButton from '../../components/IconButton';
+import WrapperButton from '../../components/WrapperButton';
 import SelectedImage from '../../components/SelectedImage';
 import ModalDropdown from '../../components/ModalDropdown';
 import { NetworkError, issuesApi } from '../../api';
@@ -25,6 +25,8 @@ import { ImagesContext, PhotoMetadataContext, UserLocationContext, AddressContex
 import { userLocation } from '../../types/userLocation';
 import { PhotoMetadataSource } from '../../utils/photoMetadata';
 import { useNearbyIssues } from '../../contexts/NearbyIssuesContext';
+import SelectedImageGallery from '../../components/SelectedImageGallery';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function IssueCreationScreen() {
     const { images, setImages } = useContext(ImagesContext);
@@ -44,6 +46,12 @@ export default function IssueCreationScreen() {
     const [isLoadingLocal, setIsLoading] = useState(false)
     const navigation = useNavigation<StackNavigationProp<StackParams>>()
     const { authToken } = useAuth();
+    //must stay above the isLoadingLocal early return below — hooks cannot be
+    //called conditionally
+    const insets = useSafeAreaInsets();
+
+    const imageWidth = size.imageLg;
+    const imageHeight = size.imageLg;
 
     //get location
     useEffect(() => {
@@ -134,6 +142,8 @@ export default function IssueCreationScreen() {
         )
     }
 
+    console.log(photoMetadata)
+
     const handleCancel = () => {
         setImages([])
         setPhotoMetadata([])
@@ -170,7 +180,8 @@ export default function IssueCreationScreen() {
             });
 
             if (!authToken) {
-                navigation.navigate('Error', { errorMessage: 'Not authenticated' });
+                setIsLoading(false)
+                navigation.push('Error', { errorMessage: 'Not authenticated' });
                 throw new Error('No auth token available');
             }
 
@@ -197,7 +208,7 @@ export default function IssueCreationScreen() {
                     performanceLog.times.imageUploadMs = Date.now() - imageUploadStartTime;
                 } catch (uploadError) {
                     setIsLoading(false);
-                    navigation.navigate('Error', { errorMessage: 'Image upload to Cloudinary failed' });
+                    navigation.push('Error', { errorMessage: 'Image upload to Cloudinary failed' });
                     throw uploadError;
                 }
             }
@@ -225,16 +236,14 @@ export default function IssueCreationScreen() {
                 issue = await issuesApi.createIssue(requestBody);
             } catch (submitError) {
                 setIsLoading(false);
-                navigation.navigate('Error', { errorMessage: 'Upload Failed' });
+                navigation.push('Error', { errorMessage: 'Upload Failed' });
                 throw submitError;
             }
             performanceLog.times.backendSubmitMs = Date.now() - backendStartTime;
-
-            setIsLoading(false);
-
             performanceLog.times.totalMs = Date.now() - totalStartTime;
             console.log('Issue Creation Performance:', performanceLog);
 
+            setIsLoading(false);
             showMessage({
                 message: "Issue reported! Thank you for making your community better",
                 backgroundColor: palette.ckGreen,
@@ -255,6 +264,7 @@ export default function IssueCreationScreen() {
 
         } catch (error: any) {
             const message = String(error?.message ?? error)
+            setIsLoading(false)
             if (message.includes("latitude") || message.includes("longitude")) {
                 navigation.navigate('Error', { errorMessage: 'Location permission denied' })
                 throw new Error("Location permission denied")
@@ -272,11 +282,10 @@ export default function IssueCreationScreen() {
 
     const locationSourceLabel = locationSource === 'exif' ? 'From photo EXIF' : 'From phone GPS';
 
-
     return (
-        <>
+        <View style={{ flex: 1 }}>
             <KeyboardAwareScrollView enableOnAndroid enableAutomaticScroll extraScrollHeight={100}
-                style={styles.container}
+                style={[styles.container, { paddingTop: spacing.md }]}
                 contentContainerStyle={{ gap: spacing.sm }}>
 
                 <TextInput onChangeText={setTitle}
@@ -285,35 +294,26 @@ export default function IssueCreationScreen() {
                     style={styles.titleTextBox}
                     maxLength={100} />
 
-                <View style={styles.imageContainer}>
+                <View style={{ ...styles.imageContainer, height: imageHeight + spacing.sm * 2 }}>
 
-                    <ScrollView >
+                    <View style={{ alignItems: "center" }}>
                         <PictureIcon color={colors.textMuted}
                             size={size.imageLg} style={[styles.defaultImage,
                             images.length > 0 ? { display: "none" } : { display: "flex" }]} />
 
-                        <FlatList
-                            data={images}
-                            horizontal
-                            style={{ alignSelf: "center" }}
-                            keyExtractor={(item, index) => index.toString()}
-                            renderItem={({ item }) => (
-                                <SelectedImage source={item}
-                                    width={size.imageLg}
-                                    height={size.imageLg}
-                                    onDeletePressed={onImageDeletePressed}
-                                    style={{ marginHorizontal: spacing.sm }}
-                                />
-                            )}
-                        />
-                    </ScrollView>
 
-                    <IconButton onPress={() => { navigation.navigate("Camera", { uri: images }) }}
+                        <SelectedImageGallery images={images} onDeletePressed={onImageDeletePressed}
+                            width={imageWidth} height={imageHeight} />
+                    </View>
+
+
+
+                    <WrapperButton onPress={() => { navigation.navigate("Camera", { uri: images }) }}
                         style={images.length < 5 ? styles.photoButton : styles.disabledPhotoButton}
-                        isDisabled={images.length >= 5}>
+                        isDisabled={images.length >= 3}>
                         <PlusIcon color={colors.textContrast}
                             size={size.xl} />
-                    </IconButton>
+                    </WrapperButton>
                 </View>
 
                 <View style={styles.addressContainer}>
@@ -327,9 +327,9 @@ export default function IssueCreationScreen() {
                 <ModalDropdown
                     data={IssueCategoryArray}
                     onDataSelect={handleSetCategory}
-                    defaultText="Choose a category"
+                    defaultText="Choose a Category"
                     labelSuffix={<CaretDownIcon color={colors.textContrast} />}
-                    buttonStyle={{ color: colors.textContrast, fontSize: typography.sizeLg }} />
+                    buttonStyle={{ color: colors.textContrast, fontSize: typography.sizeLg, backgroundColor: palette.ckGreen, fontWeight: typography.weightMedium }} />
 
                 <TextInput onChangeText={setDescription}
                     value={description}
@@ -355,7 +355,7 @@ export default function IssueCreationScreen() {
                     text="Submit">
                 </Button>
             </View>
-        </>
+        </View>
 
     )
 
@@ -367,7 +367,8 @@ const styles = StyleSheet.create({
         ...globalStyles.container,
         flex: 1,
         gap: spacing.md,
-        padding: spacing.md
+        padding: spacing.md,
+        paddingTop: spacing.xl
     },
     imageContainer: {
         backgroundColor: colors.backgroundSecondary,
@@ -376,7 +377,6 @@ const styles = StyleSheet.create({
         alignContent: "center",
         paddingVertical: spacing.sm,
         gap: spacing.sm,
-        height: "auto",
 
     },
     defaultImage: {
@@ -392,11 +392,15 @@ const styles = StyleSheet.create({
         position: "absolute",
         bottom: spacing.lg,
     },
+    //WrapperButton contributes borderRadius.full but no dimensions, so without
+    //an explicit size these collapse to the icon's own 32pt box with the glyph
+    //touching every edge. Sized to match the delete button on SelectedImage.
     photoButton: {
         backgroundColor: palette.ckBlue,
         position: "absolute",
         bottom: spacing.sm,
         right: spacing.sm,
+        padding: spacing.sm,
         ...globalStyles.shadow
     },
     disabledPhotoButton: {
@@ -404,6 +408,7 @@ const styles = StyleSheet.create({
         position: "absolute",
         bottom: spacing.sm,
         right: spacing.sm,
+        padding: spacing.sm,
         ...globalStyles.shadow
     },
     submitButton: {
@@ -416,13 +421,16 @@ const styles = StyleSheet.create({
     titleTextBox: {
         ...globalStyles.textBox,
         ...globalStyles.heading1,
+        fontSize: typography.sizeXxl,
         textAlign: "center"
     },
     descTextBox: {
         ...globalStyles.textBox,
         ...globalStyles.bodyText,
+        minHeight: size.x4l,
+        justifyContent: "flex-start",
         height: "auto",
-        color: colors.textPrimary
+        color: colors.textPrimary,
     },
 
     addressText: {

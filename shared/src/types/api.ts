@@ -30,6 +30,7 @@ export interface PostUpdateDTO {
     message: string;
     status: IssueStatus;
     images?: string[];
+    createdAt?: Date;
 }
 
 export interface GetNearbyIssueResponse {

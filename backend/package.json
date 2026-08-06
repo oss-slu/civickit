@@ -24,8 +24,7 @@
     "db:down": "docker compose down",
     "db:setup": "npm run db:up && npm run db:migrate",
     "db:nuke": "docker compose down -v",
-    "db:reset": "npm run db:nuke && npm run db:setup",
-    "dev:proxy": "cloudflared tunnel --url http://localhost:3000"
+    "db:reset": "npm run db:nuke && npm run db:setup"
   },
   "keywords": [],
   "author": "",
@@ -64,7 +63,6 @@
     "@types/pg": "^8.16.0",
     "@types/supertest": "^6.0.3",
     "@vitest/coverage-v8": "^4.0.18",
-    "cloudflared": "^0.7.1",
     "dotenv": "^17.3.1",
     "drizzle-kit": "^0.31.10",
     "supertest": "^7.2.2",

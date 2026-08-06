@@ -23,6 +23,7 @@ type Props = {
     }
 };
 
+
 export default function PhotoValidationScreen({ route }: Props) {
     const uri = route.params.uri
     const metadata = route.params.metadata ?? {};

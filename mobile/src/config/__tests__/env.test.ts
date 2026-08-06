@@ -96,6 +96,18 @@ describe('development host derivation', () => {
         const env = await loadEnv({ dev: true, debuggerHost: '192.168.1.20:8081' });
         expect(env.getApiBaseUrl()).toBe('http://192.168.1.20:3000/api');
     });
+
+    it('derives from a Tailscale address', async () => {
+        // `npm run start:tailscale` binds Metro to the 100.x tailnet address,
+        // which reaches this machine from cellular and from isolating wifi.
+        const env = await loadEnv({ dev: true, hostUri: '100.123.2.72:8081' });
+        expect(env.getApiBaseUrl()).toBe('http://100.123.2.72:3000/api');
+    });
+
+    it('derives from a Tailscale MagicDNS name', async () => {
+        const env = await loadEnv({ dev: true, hostUri: 'macbook-pro.tailcfda25.ts.net:8081' });
+        expect(env.getApiBaseUrl()).toBe('http://macbook-pro.tailcfda25.ts.net:3000/api');
+    });
 });
 
 describe('failure modes', () => {
@@ -107,6 +119,14 @@ describe('failure modes', () => {
     it('throws when development has no Metro host to work from', async () => {
         const env = await loadEnv({ dev: true });
         expect(() => env.getApiBaseUrl()).toThrow(/EXPO_PUBLIC_API_URL/);
+    });
+
+    it('refuses to derive from a host that is not this machine', async () => {
+        // `expo start --tunnel` serves Metro from a public relay with nothing
+        // behind it on the API port. Deriving from it yields a URL that can
+        // only time out, so say what to do instead.
+        const env = await loadEnv({ dev: true, hostUri: 'xx-anonymous-8081.exp.direct' });
+        expect(() => env.getApiBaseUrl()).toThrow(/start:tailscale/);
     });
 
     it('defers resolution until first use rather than throwing on import', async () => {

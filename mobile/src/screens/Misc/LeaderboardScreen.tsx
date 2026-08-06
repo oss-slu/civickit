@@ -4,16 +4,19 @@ import { borderRadius, colors, globalStyles, palette, size, spacing, typography 
 import ModalDropdown from "../../components/ModalDropdown";
 import { useEffect, useState } from "react";
 import { CaretDownIcon, DownArrowIcon, UpArrowIcon } from "../../components/Icons";
-import IconButton from "../../components/IconButton";
+import WrapperButton from "../../components/WrapperButton";
 import { IssueCategoryArray } from "../../types/IssueCategoryArray";
 import { IssueStatusArray } from "../../types/IssueStatusArray";
-import FilterCheckList from "../../components/FilterCheckList";
+import CheckList from "../../components/CheckList";
 import IssueCard from "../../components/IssueCard";
 import { StaticScreenProps, useNavigation } from "@react-navigation/native";
 import { GetNearbyIssueResponse } from "@civickit/shared";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { StackParams } from "../../types/StackParams";
 import ExtendedIssueCard from "../../components/ExtendedIssueCard";
+import ModalPopUp from "../../components/ModalPopup";
+import Header from "../../components/Header";
+import Button from "../../components/Button";
 
 type Props = StaticScreenProps<{
     issues: any[];
@@ -27,11 +30,14 @@ export default function LeaderBoardScreen({ route }: Props) {
     const [sort, setSort] = useState("")
     const [isAscending, setIsAscending] = useState(true)
     const [visibleCategories, setVisibleCategories] = useState(IssueCategoryArray)
-    const [visibleStatuses, setVisibleSatatuses] = useState(IssueStatusArray)
+    const [visibleStatuses, setVisibleStatuses] = useState(IssueStatusArray)
     const [issues, setIssues] = useState(route.params.issues)
     const [sortOptions, setSortOptions] = useState<string[]>([])
     const [refreshing, setRefreshing] = useState(false)
     const navigation = useNavigation<StackNavigationProp<StackParams>>()
+    //seeded with the old hardcoded value so the first frame is no worse than
+    //before; Header reports its real height on layout and corrects this
+    const [headerOffset, setHeaderOffset] = useState(spacing.xxxl)
 
     useEffect(() => {
         let arr = []
@@ -55,6 +61,11 @@ export default function LeaderBoardScreen({ route }: Props) {
 
 
     }, [])
+
+    const resetFilter = () => {
+        setVisibleCategories(IssueCategoryArray)
+        setVisibleStatuses(IssueStatusArray)
+    }
 
     useEffect(() => {
         const visibleIssues = route.params.issues.filter((issue: any) =>
@@ -100,98 +111,108 @@ export default function LeaderBoardScreen({ route }: Props) {
 
     }, [sort, isAscending, visibleCategories, visibleStatuses])
 
+
+    const list = issues.map((item: any, index: number) =>
+        <ExtendedIssueCard
+            issue={item}
+            key={index.toString()}
+            onPress={() => { navigation.navigate("Issue Details", { issue: item }) }}
+        />
+    )
+
     return (
-        <FlatList
+        <View style={globalStyles.container}>
+            <ScrollView
+                style={{ ...styles.list, paddingTop: headerOffset + spacing.md }}
+                contentContainerStyle={styles.listContainter}>
+                {list}
+            </ScrollView>
+            <Header onBackPress={navigation.goBack}
+                setOffset={(i: any) => setHeaderOffset(i)}
+                style={styles.header}
+            >
+                <View style={styles.buttonRow}>
+                    {sortOptions.length > 0 &&
+                        <View style={styles.outlinedButton}>
+                            <ModalDropdown
+                                data={sortOptions}
+                                onDataSelect={setSort}
+                                defaultText={sort}
+                                buttonStyle={styles.modalButton}
+                                labelSuffix={<CaretDownIcon />} />
 
-            ListHeaderComponent={
-                <View>
-
-                    <View style={styles.buttonRow}>
-                        {sortOptions.length > 0 &&
-                            <View style={styles.outlinedButton}>
-                                <ModalDropdown
-                                    data={sortOptions}
-                                    onDataSelect={setSort}
-                                    defaultText={sort}
-                                    buttonStyle={styles.modalButton}
-                                    labelSuffix={<CaretDownIcon />} />
-
-                                <IconButton style={{ ...styles.modalButton, width: typography.sizeXl }}
-                                    onPress={() => setIsAscending(!isAscending)}>
-                                    {isAscending ?
-                                        <UpArrowIcon size={typography.sizeXl}
-                                            color={colors.textSecondary}
-                                            style={{ width: typography.sizeXl }} /> :
-                                        <DownArrowIcon size={typography.sizeXl}
-                                            color={colors.textSecondary}
-                                            style={{ width: typography.sizeXl }} />}
-                                </IconButton>
+                            <WrapperButton style={{ ...styles.modalButton, width: typography.sizeXl }}
+                                onPress={() => setIsAscending(!isAscending)}>
+                                {isAscending ?
+                                    <UpArrowIcon size={typography.sizeXl}
+                                        color={colors.textSecondary}
+                                    /> :
+                                    <DownArrowIcon size={typography.sizeXl}
+                                        color={colors.textSecondary}
+                                    />}
+                            </WrapperButton>
+                        </View>
+                    }
+                    <ModalPopUp
+                        buttonBody={
+                            <View style={styles.modalButton}>
+                                <Text style={styles.modalButton}>Filter</Text>
+                                <CaretDownIcon style={styles.modalButton} />
                             </View>
                         }
-                        <FilterCheckList
-                            data={IssueCategoryArray}
-                            setSelectedValues={setVisibleCategories}
-                            buttonStyle={{
-                                ...styles.outlinedButton,
-                                borderColor: visibleCategories.length == IssueCategoryArray.length
-                                    ? colors.backgroundSecondary :
-                                    palette.ckYellow
-                            }}>
-                            <View style={styles.modalButton}>
-                                <Text style={styles.modalButton}>Category</Text>
-                                <CaretDownIcon style={styles.modalButton} />
-                            </View>
-                        </FilterCheckList>
+                        buttonStyle={{
+                            ...styles.outlinedButton,
+                            borderColor: visibleCategories.length == IssueCategoryArray.length
+                                ? colors.backgroundSecondary :
+                                palette.ckYellow,
+                            paddingVertical: spacing.sm,
+                            paddingHorizontal: spacing.md
+                        }}>
+                        <ScrollView contentContainerStyle={styles.filterBody} style={{ maxHeight: 600 }}>
+                            <Button text={"Reset"} onPress={resetFilter} style={styles.resetFilterButton} />
 
-                        <FilterCheckList
-                            data={IssueStatusArray}
-                            setSelectedValues={setVisibleSatatuses}
-                            buttonStyle={{
-                                ...styles.outlinedButton,
-                                borderColor: visibleStatuses.length == IssueStatusArray.length
-                                    ? colors.backgroundSecondary :
-                                    palette.ckYellow
-                            }}
-                        >
-                            <View style={styles.modalButton}>
-                                <Text style={styles.modalButton}>Status</Text>
-                                <CaretDownIcon style={styles.modalButton} />
+                            <View>
+                                <Text style={styles.filterHeading}>Statuses</Text>
+                                <CheckList
+                                    data={IssueStatusArray}
+                                    selectedValues={visibleStatuses}
+                                    setSelectedValues={setVisibleStatuses}
+                                />
                             </View>
-                        </FilterCheckList>
-                    </View>
+
+                            <View>
+                                <Text style={styles.filterHeading}>Categories</Text>
+                                <CheckList
+                                    data={IssueCategoryArray}
+                                    selectedValues={visibleCategories}
+                                    setSelectedValues={setVisibleCategories}
+                                />
+                            </View>
+                        </ScrollView>
+                    </ModalPopUp>
                 </View>
-            }
-            data={issues}
-            style={styles.list}
-            contentContainerStyle={styles.listContainer}
-            renderItem={({ item }) => {
-                return (
-                    <ExtendedIssueCard
-                        issue={item}
-                        onPress={() => { navigation.navigate("Issue Details", { issue: item }) }}
-                    />
-                )
-            }}
-            stickyHeaderIndices={[0]}
-
-        />
-
+            </Header>
+        </View>
     )
 }
 
 const styles = StyleSheet.create({
     list: {
-        marginHorizontal: spacing.xs,
         ...globalStyles.container,
     },
-    listContainer: {
-        rowGap: spacing.xs,
+    listContainter: {
+        rowGap: spacing.sm
+    },
+    header: {
+        columnGap: spacing.sm,
+        borderBottomWidth: 3,
+        borderColor: colors.backgroundSecondary
     },
     buttonRow: {
         flexDirection: "row",
-        width: "100%",
         justifyContent: "center",
-        columnGap: spacing.xs
+        columnGap: spacing.xs,
+
     },
     headerText: {
         fontSize: typography.sizeLg,
@@ -220,7 +241,7 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "center",
-        columnGap: spacing.xs
+        columnGap: spacing.xs,
     },
     buttonSection: {
         flexDirection: "row",
@@ -238,6 +259,7 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         backgroundColor: colors.background,
         color: colors.textSecondary,
+        paddingRight: spacing.sm
     },
     columnRowText: {
         color: colors.textPrimary,
@@ -245,6 +267,24 @@ const styles = StyleSheet.create({
     rowContainer: {
         flexDirection: "row",
         backgroundColor: colors.backgroundSecondary,
-    }
+    },
+    filterHeading: {
+        fontWeight: typography.weightMedium,
+        fontSize: typography.sizeMd
+    },
+
+    filterBody: {
+        flexDirection: "column",
+        rowGap: spacing.lg,
+        justifyContent: "center"
+    },
+
+    resetFilterButton: {
+        fontSize: typography.sizeMd,
+        alignSelf: "flex-start",
+        paddingHorizontal: spacing.lg,
+        position: "absolute",
+        right: 0
+    },
 
 })

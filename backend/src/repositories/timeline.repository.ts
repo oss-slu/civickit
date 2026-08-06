@@ -17,6 +17,10 @@ export class TimelineRepository {
         images: data.images,
         userId: data.userId,
         issueId: data.issueId,
+        // Optional on PostUpdateDTO. issue.controller.ts backdates the
+        // "Photo Taken" entry to the photo's own timestamp, so an explicit
+        // value has to win over the column default.
+        createdAt: data.createdAt,
       })
       .returning();
 

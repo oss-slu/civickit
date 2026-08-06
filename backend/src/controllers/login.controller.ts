@@ -11,7 +11,7 @@ export class LoginController {
   async login(req: Request, res: Response, next: NextFunction) {
     try {
       const loginDTO: LoginDTO = {
-        email: req.body.email,
+        email: req.body.email.toLowerCase(),
         password: req.body.password
       }
 
