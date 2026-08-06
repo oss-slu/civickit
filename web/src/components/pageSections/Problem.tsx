@@ -58,8 +58,8 @@ export default function Problem() {
                             <div
                                 className="group overflow-hidden rounded-2xl border transition-shadow hover:shadow-md"
                                 style={{
-                                    borderColor: palette.dark,
-                                    borderWidth: 3,
+                                    borderColor: palette.lightGray,
+                                    // borderWidth: 3,
                                     backgroundColor: palette.bg,
                                     boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
                                 }}

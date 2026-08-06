@@ -20,33 +20,35 @@ export default function Contact() {
 
 
                 <Reveal delay={0.05 + 1 * 0.07} className="">
-                    <div
-                        className="group flex flex-row gap-x-4 rounded-xl border p-6 m-4 hover:shadow w-full"
-                        style={{
-                            borderColor: palette.lightGray,
-                            backgroundColor: palette.surface,
-                        }}
-                    >
+                    <a href="mailto:civickit@gmail.com">
                         <div
+                            className="group flex flex-row gap-x-4 rounded-xl border p-6 m-4 hover:shadow w-full lg:w-3/4"
                             style={{
-                                backgroundColor: palette.lightGreen,
-                                borderWidth: 2,
-                                borderColor: palette.dark,
-                                padding: 8,
-                                borderRadius: 100,
-                            }}>
-                            <Mail
-                                className=""
+                                borderColor: palette.lightGray,
+                                backgroundColor: palette.surface,
+                            }}
+                        >
+                            <div
                                 style={{
-                                    color: palette.dark,
-                                }}
-                            />
-                        </div>
-                        <a href="mailto:civickit@gmail.com">
-                            <p className="mt-2 text-[18px] font-semibold">civickitapp@gmail.com</p>
-                        </a>
+                                    backgroundColor: palette.lightGreen,
+                                    borderWidth: 2,
+                                    borderColor: palette.dark,
+                                    padding: 8,
+                                    borderRadius: 100,
+                                }}>
+                                <Mail
+                                    className=""
+                                    style={{
+                                        color: palette.dark,
+                                    }}
+                                />
+                            </div>
 
-                    </div>
+                            <p className="mt-2 text-[18px] font-semibold">civickitapp@gmail.com</p>
+
+
+                        </div>
+                    </a>
                 </Reveal>
             </div>
         </section>

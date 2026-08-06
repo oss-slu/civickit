@@ -29,7 +29,7 @@ export default function Hero() {
                                 <br />
                                 public works
                                 <br />
-                                <span style={{ color: palette.green }}>public facing.</span>
+                                <span style={{ color: palette.green, fontStyle: "italic" }}>work.</span>
                             </h1>
                         </Reveal>
 
