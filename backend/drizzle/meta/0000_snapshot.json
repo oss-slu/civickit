@@ -1,5 +1,5 @@
 {
-  "id": "13c2b99a-b0d3-487e-9207-3695e60a0a8b",
+  "id": "5296fc8f-c301-4494-955a-3198c8a6f887",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -601,6 +601,275 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.OrgMembership": {
+      "name": "OrgMembership",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "userId": {
+          "name": "userId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "organizationId": {
+          "name": "organizationId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "role": {
+          "name": "role",
+          "type": "OrgRole",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'ORG_MEMBER'"
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp (3)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp (3)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "OrgMembership_userId_organizationId_key": {
+          "name": "OrgMembership_userId_organizationId_key",
+          "columns": [
+            {
+              "expression": "userId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "organizationId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "OrgMembership_organizationId_idx": {
+          "name": "OrgMembership_organizationId_idx",
+          "columns": [
+            {
+              "expression": "organizationId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "OrgMembership_userId_idx": {
+          "name": "OrgMembership_userId_idx",
+          "columns": [
+            {
+              "expression": "userId",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "OrgMembership_userId_user_id_fk": {
+          "name": "OrgMembership_userId_user_id_fk",
+          "tableFrom": "OrgMembership",
+          "tableTo": "user",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "OrgMembership_organizationId_Organization_id_fk": {
+          "name": "OrgMembership_organizationId_Organization_id_fk",
+          "tableFrom": "OrgMembership",
+          "tableTo": "Organization",
+          "columnsFrom": [
+            "organizationId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.Organization": {
+      "name": "Organization",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "slug": {
+          "name": "slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "OrgType",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "OrgStatus",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'PENDING'"
+        },
+        "tier": {
+          "name": "tier",
+          "type": "OrgTier",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "categoryScope": {
+          "name": "categoryScope",
+          "type": "IssueCategory[]",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'"
+        },
+        "boundarySource": {
+          "name": "boundarySource",
+          "type": "BoundarySource",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "boundaryRef": {
+          "name": "boundaryRef",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "boundarySyncedAt": {
+          "name": "boundarySyncedAt",
+          "type": "timestamp (3)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "geofence": {
+          "name": "geofence",
+          "type": "geography(MultiPolygon,4326)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp (3)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp (3)",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "Organization_status_idx": {
+          "name": "Organization_status_idx",
+          "columns": [
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "Organization_geofence_idx": {
+          "name": "Organization_geofence_idx",
+          "columns": [
+            {
+              "expression": "geofence",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gist",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "Organization_slug_key": {
+          "name": "Organization_slug_key",
+          "nullsNotDistinct": false,
+          "columns": [
+            "slug"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.session": {
       "name": "session",
       "schema": "",
@@ -1089,6 +1358,15 @@
     }
   },
   "enums": {
+    "public.BoundarySource": {
+      "name": "BoundarySource",
+      "schema": "public",
+      "values": [
+        "OFFICIAL",
+        "UPLOADED",
+        "FREEHAND"
+      ]
+    },
     "public.EventStatus": {
       "name": "EventStatus",
       "schema": "public",
@@ -1122,6 +1400,46 @@
         "RESOLVED",
         "CLOSED",
         "COMMUNITY_RESOLVED"
+      ]
+    },
+    "public.OrgRole": {
+      "name": "OrgRole",
+      "schema": "public",
+      "values": [
+        "ORG_ADMIN",
+        "ORG_MEMBER"
+      ]
+    },
+    "public.OrgStatus": {
+      "name": "OrgStatus",
+      "schema": "public",
+      "values": [
+        "PENDING",
+        "ACTIVE",
+        "SUSPENDED"
+      ]
+    },
+    "public.OrgTier": {
+      "name": "OrgTier",
+      "schema": "public",
+      "values": [
+        "STARTER",
+        "GROWTH",
+        "FULLSCALE"
+      ]
+    },
+    "public.OrgType": {
+      "name": "OrgType",
+      "schema": "public",
+      "values": [
+        "WARD_OFFICE",
+        "CID",
+        "BID",
+        "SBD",
+        "CDC",
+        "NONPROFIT",
+        "CITY_DEPARTMENT",
+        "OTHER"
       ]
     },
     "public.Role": {

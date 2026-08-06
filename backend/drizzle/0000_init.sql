@@ -1,6 +1,11 @@
+CREATE TYPE "public"."BoundarySource" AS ENUM('OFFICIAL', 'UPLOADED', 'FREEHAND');--> statement-breakpoint
 CREATE TYPE "public"."EventStatus" AS ENUM('PLANNED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED');--> statement-breakpoint
 CREATE TYPE "public"."IssueCategory" AS ENUM('POTHOLE', 'STREETLIGHT', 'GRAFFITI', 'ILLEGAL_DUMPING', 'BROKEN_SIDEWALK', 'TRAFFIC_SIGNAL', 'OTHER');--> statement-breakpoint
 CREATE TYPE "public"."IssueStatus" AS ENUM('REPORTED', 'ACKNOWLEDGED', 'IN_PROGRESS', 'RESOLVED', 'CLOSED', 'COMMUNITY_RESOLVED');--> statement-breakpoint
+CREATE TYPE "public"."OrgRole" AS ENUM('ORG_ADMIN', 'ORG_MEMBER');--> statement-breakpoint
+CREATE TYPE "public"."OrgStatus" AS ENUM('PENDING', 'ACTIVE', 'SUSPENDED');--> statement-breakpoint
+CREATE TYPE "public"."OrgTier" AS ENUM('STARTER', 'GROWTH', 'FULLSCALE');--> statement-breakpoint
+CREATE TYPE "public"."OrgType" AS ENUM('WARD_OFFICE', 'CID', 'BID', 'SBD', 'CDC', 'NONPROFIT', 'CITY_DEPARTMENT', 'OTHER');--> statement-breakpoint
 CREATE TYPE "public"."Role" AS ENUM('REPORTER', 'ADMIN');--> statement-breakpoint
 CREATE TABLE "account" (
 	"id" text PRIMARY KEY NOT NULL,
@@ -64,6 +69,32 @@ CREATE TABLE "Issue" (
 	"cityRefNumber" text
 );
 --> statement-breakpoint
+CREATE TABLE "OrgMembership" (
+	"id" text PRIMARY KEY NOT NULL,
+	"userId" text NOT NULL,
+	"organizationId" text NOT NULL,
+	"role" "OrgRole" DEFAULT 'ORG_MEMBER' NOT NULL,
+	"createdAt" timestamp (3) DEFAULT now() NOT NULL,
+	"updatedAt" timestamp (3) NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "Organization" (
+	"id" text PRIMARY KEY NOT NULL,
+	"name" text NOT NULL,
+	"slug" text NOT NULL,
+	"type" "OrgType" NOT NULL,
+	"status" "OrgStatus" DEFAULT 'PENDING' NOT NULL,
+	"tier" "OrgTier",
+	"categoryScope" "IssueCategory"[] DEFAULT '{}' NOT NULL,
+	"boundarySource" "BoundarySource",
+	"boundaryRef" text,
+	"boundarySyncedAt" timestamp (3),
+	"geofence" geography(MultiPolygon,4326),
+	"createdAt" timestamp (3) DEFAULT now() NOT NULL,
+	"updatedAt" timestamp (3) NOT NULL,
+	CONSTRAINT "Organization_slug_key" UNIQUE("slug")
+);
+--> statement-breakpoint
 CREATE TABLE "session" (
 	"id" text PRIMARY KEY NOT NULL,
 	"expiresAt" timestamp (3) NOT NULL,
@@ -122,6 +153,8 @@ ALTER TABLE "EventRsvp" ADD CONSTRAINT "EventRsvp_userId_user_id_fk" FOREIGN KEY
 ALTER TABLE "Event" ADD CONSTRAINT "Event_organizerId_user_id_fk" FOREIGN KEY ("organizerId") REFERENCES "public"."user"("id") ON DELETE restrict ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "Event" ADD CONSTRAINT "Event_issueId_Issue_id_fk" FOREIGN KEY ("issueId") REFERENCES "public"."Issue"("id") ON DELETE set null ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "Issue" ADD CONSTRAINT "Issue_userId_user_id_fk" FOREIGN KEY ("userId") REFERENCES "public"."user"("id") ON DELETE restrict ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "OrgMembership" ADD CONSTRAINT "OrgMembership_userId_user_id_fk" FOREIGN KEY ("userId") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "OrgMembership" ADD CONSTRAINT "OrgMembership_organizationId_Organization_id_fk" FOREIGN KEY ("organizationId") REFERENCES "public"."Organization"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "session" ADD CONSTRAINT "session_userId_user_id_fk" FOREIGN KEY ("userId") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "TimelineEntry" ADD CONSTRAINT "TimelineEntry_issueId_Issue_id_fk" FOREIGN KEY ("issueId") REFERENCES "public"."Issue"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 ALTER TABLE "TimelineEntry" ADD CONSTRAINT "TimelineEntry_userId_user_id_fk" FOREIGN KEY ("userId") REFERENCES "public"."user"("id") ON DELETE restrict ON UPDATE cascade;--> statement-breakpoint
@@ -136,6 +169,11 @@ CREATE INDEX "Issue_latitude_longitude_idx" ON "Issue" USING btree ("latitude","
 CREATE INDEX "Issue_status_idx" ON "Issue" USING btree ("status");--> statement-breakpoint
 CREATE INDEX "Issue_category_idx" ON "Issue" USING btree ("category");--> statement-breakpoint
 CREATE INDEX "Issue_createdAt_idx" ON "Issue" USING btree ("createdAt");--> statement-breakpoint
+CREATE UNIQUE INDEX "OrgMembership_userId_organizationId_key" ON "OrgMembership" USING btree ("userId","organizationId");--> statement-breakpoint
+CREATE INDEX "OrgMembership_organizationId_idx" ON "OrgMembership" USING btree ("organizationId");--> statement-breakpoint
+CREATE INDEX "OrgMembership_userId_idx" ON "OrgMembership" USING btree ("userId");--> statement-breakpoint
+CREATE INDEX "Organization_status_idx" ON "Organization" USING btree ("status");--> statement-breakpoint
+CREATE INDEX "Organization_geofence_idx" ON "Organization" USING gist ("geofence");--> statement-breakpoint
 CREATE INDEX "session_userId_idx" ON "session" USING btree ("userId");--> statement-breakpoint
 CREATE INDEX "TimelineEntry_issueId_idx" ON "TimelineEntry" USING btree ("issueId");--> statement-breakpoint
 CREATE INDEX "TimelineEntry_createdAt_idx" ON "TimelineEntry" USING btree ("createdAt");--> statement-breakpoint
