@@ -48,9 +48,7 @@ export default function Problem() {
                         className="mt-5 max-w-xl text-[17px] leading-relaxed"
                         style={{ color: palette.darkGray }}
                     >
-                        Broken sidewalks, downed signs, crumbling infrastructure. These
-                        aren&apos;t edge cases. They exist in every
-                        neighborhood in St.&nbsp;Louis.
+                        Problems like these exist in every neighborhood in St. Louis.
                     </p>
                 </Reveal>
 
@@ -60,7 +58,8 @@ export default function Problem() {
                             <div
                                 className="group overflow-hidden rounded-2xl border transition-shadow hover:shadow-md"
                                 style={{
-                                    borderColor: palette.lightGray,
+                                    borderColor: palette.dark,
+                                    borderWidth: 3,
                                     backgroundColor: palette.bg,
                                     boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
                                 }}

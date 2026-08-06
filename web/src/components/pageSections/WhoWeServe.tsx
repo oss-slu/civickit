@@ -7,20 +7,20 @@ export default function WhoWeServe() {
         {
             icon: Users,
             title: 'Residents',
-            accent: palette.brightBlue,
-            desc: 'Anyone in the city can report an issue in seconds. No barriers. No accounts required to view the map.',
+            accent: palette.red,
+            desc: 'Anyone in the city can report an issue in seconds.',
         },
         {
             icon: Building2,
             title: 'Community Orgs',
             accent: palette.green,
-            desc: 'Neighborhood associations, park districts, and improvement orgs use CivicKit to track trends and advocate with data.',
+            desc: 'Neighborhood associations, park districts, and improvement orgs can use CivicKit to track trends, address problems, and advocate with data.',
         },
         {
             icon: Landmark,
             title: 'City of St. Louis',
-            accent: palette.darkBlue,
-            desc: 'Alderpersons and city departments gain a data-backed, centralized dashboard, funded by beautification budgets.',
+            accent: palette.yellow,
+            desc: 'Alderpersons and city departments gain a data-backed, centralized dashboard visualizing what happens within their community.',
         },
     ]
 
@@ -44,19 +44,20 @@ export default function WhoWeServe() {
                             <div
                                 className="group relative overflow-hidden rounded-2xl border p-8 transition-shadow hover:shadow-md"
                                 style={{
-                                    borderColor: palette.lightGray,
+                                    borderColor: s.accent,
+                                    borderWidth: 4,
                                     backgroundColor: palette.bg,
                                 }}
                             >
                                 <div
-                                    className="absolute top-0 left-0 h-1 w-full"
-                                    style={{ backgroundColor: s.accent }}
-                                />
-                                <div
                                     className="flex h-12 w-12 items-center justify-center rounded-xl"
-                                    style={{ backgroundColor: `${s.accent}12` }}
+                                    style={{
+                                        backgroundColor: s.accent,
+                                        borderWidth: 3,
+                                        borderColor: palette.dark
+                                    }}
                                 >
-                                    <s.icon className="h-6 w-6" style={{ color: s.accent }} />
+                                    <s.icon className="h-6 w-6" style={{ color: palette.dark }} />
                                 </div>
                                 <h3 className="mt-5 text-xl font-bold">{s.title}</h3>
                                 <p

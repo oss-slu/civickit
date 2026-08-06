@@ -4,9 +4,9 @@ import { Camera, FileText, Send } from "lucide-react"
 
 export default function Solution() {
     const steps = [
-        { num: 1, icon: Camera, label: 'Snap a photo', sub: 'Point and shoot', color: palette.red },
-        { num: 2, icon: FileText, label: 'Add a description', sub: 'Quick context', color: palette.yellow },
-        { num: 3, icon: Send, label: 'Submit', sub: 'Pinned on the map', color: palette.green },
+        { num: 1, icon: Camera, label: 'Snap a photo', sub: '', color: palette.red },
+        { num: 2, icon: FileText, label: 'Add a description', color: palette.yellow },
+        { num: 3, icon: Send, label: 'Submit', sub: '', color: palette.green },
     ]
 
     return (
@@ -41,19 +41,22 @@ export default function Solution() {
                         <Reveal key={step.num} delay={0.12 + i * 0.1}>
                             <div className="group relative justify-items-center md:justify-items-start">
                                 <div
-                                    className="flex h-16 w-16 items-center justify-center rounded-2xl text-2xl font-bold text-white shadow-lg"
+                                    className="flex h-16 w-16 items-center justify-center rounded-2xl text-2xl font-bold text-white"
                                     style={{
                                         backgroundColor: step.color,
-                                        boxShadow: `0 8px 24px ${step.color}25`,
+                                        borderWidth: 3,
+                                        borderColor: palette.dark
+                                        // boxShadow: `0 8px 24px ${step.color}25`,
                                     }}
                                 >
                                     {step.num}
                                 </div>
                                 {i < steps.length - 1 && (
                                     <div
-                                        className="absolute top-8 left-20 hidden h-px w-[calc(100%-5rem)] lg:block"
+                                        className="absolute top-8 left-20 h-1 w-[calc(100%-5rem)] hidden md:block"
                                         style={{
-                                            backgroundImage: `linear-gradient(to right, ${step.color}30, transparent)`,
+                                            // backgroundImage: `linear-gradient(to right, ${step.color}, transparent)`,
+                                            backgroundColor: palette.dark,
                                         }}
                                     />
                                 )}

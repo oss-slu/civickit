@@ -23,7 +23,7 @@ export default function Nav() {
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-8 py-4">
         <div className="flex items-center">
-          <img src={"images/logo-green.png"} height={50} width={50} />
+          <img src={"images/logo-color.png"} height={50} width={50} />
           <span
             className="text-2xl font-bold tracking-tight font-display"
             style={{
@@ -34,7 +34,7 @@ export default function Nav() {
           </span>
         </div>
         <nav className="hidden items-center gap-10 md:flex">
-          {['Problem', 'Solution', 'Contact'].map((label) => (
+          {['Problem', 'Solution'].map((label) => (
             <a
               key={label}
               href={`#${label.toLowerCase()}`}
@@ -51,7 +51,11 @@ export default function Nav() {
             onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = palette.darkGreen)}
             onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = palette.green)}
           >
-            See the Demo
+            <a
+              href={`#contact`}
+            >
+              Contact
+            </a>
           </Button>
         </nav>
       </div>
