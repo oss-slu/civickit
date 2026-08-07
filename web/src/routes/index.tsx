@@ -8,6 +8,7 @@ import Solution from '@/components/pageSections/Solution'
 import SharedMap from '@/components/pageSections/SharedMap'
 import WhoWeServe from '@/components/pageSections/WhoWeServe'
 import Footer from '@/components/pageSections/Footer'
+import Contact from '@/components/pageSections/Contact'
 
 export const Route = createFileRoute('/')({
   component: LandingPage,
@@ -59,6 +60,7 @@ function LandingPage() {
       <Solution />
       <SharedMap />
       <WhoWeServe />
+      <Contact />
       <Footer />
     </div>
   )

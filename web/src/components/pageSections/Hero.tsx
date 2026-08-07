@@ -29,7 +29,7 @@ export default function Hero() {
                                 <br />
                                 public works
                                 <br />
-                                <span style={{ color: palette.green }}>public facing.</span>
+                                <span style={{ color: palette.green, fontStyle: "italic" }}>work.</span>
                             </h1>
                         </Reveal>
 
@@ -38,15 +38,13 @@ export default function Hero() {
                                 className="mt-6 max-w-lg text-[17px] leading-relaxed"
                                 style={{ color: palette.darkGray }}
                             >
-                                See a problem? Snap a photo, add a description, and submit in under 10 seconds. Your report is
-                                instantly pinned on a shared, live map that the whole city can
-                                see.
+                                See a problem? Snap a photo, add a description, and submit in under 10 seconds.
                             </p>
                         </Reveal>
 
                         <Reveal delay={0.24}>
                             <div className="mt-8 flex items-center gap-3">
-                                <Button
+                                {/* <Button
                                     size="lg"
                                     className="group/cta h-11 rounded-full px-7 text-[15px] font-semibold text-white transition-colors duration-200"
                                     style={{ backgroundColor: palette.green }}
@@ -55,8 +53,8 @@ export default function Hero() {
                                 >
                                     See the Demo
                                     <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-200 group-hover/cta:translate-x-0.5" />
-                                </Button>
-                                <Button
+                                </Button> */}
+                                {/* <Button
                                     size="lg"
                                     variant="outline"
                                     className="h-11 rounded-full px-6 text-[15px]"
@@ -74,7 +72,7 @@ export default function Hero() {
                                         <GitHubIcon className="mr-2 h-4 w-4" />
                                         GitHub
                                     </a>
-                                </Button>
+                                </Button> */}
 
                             </div>
                         </Reveal>
@@ -88,7 +86,7 @@ export default function Hero() {
                                 style={{ backgroundColor: `${palette.green}08` }}
                             />
                             <div
-                                className="relative h-full w-full overflow-hidden rounded-2xl border shadow-xl"
+                                className="relative h-full w-full overflow-hidden rounded-2xl"
                                 style={{
                                     borderColor: palette.lightGray,
                                     backgroundColor: palette.surface,

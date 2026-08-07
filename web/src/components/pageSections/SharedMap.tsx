@@ -1,7 +1,6 @@
 import { palette } from "@/lib/colors"
 import { Eye, Layers, ShieldCheck, TrendingUp } from "lucide-react"
 import Reveal from "../Reveal"
-import MapVisualization from "../MapVisualization"
 
 export default function SharedMap() {
     const benefits = [
@@ -38,7 +37,7 @@ export default function SharedMap() {
                             >
                                 One shared map.
                                 <br />
-                                <span style={{ color: palette.medGray }}>
+                                <span style={{ color: palette.green }}>
                                     Full transparency.
                                 </span>
                             </h2>
@@ -48,7 +47,7 @@ export default function SharedMap() {
                             {benefits.map((b, i) => (
                                 <Reveal key={b.label} delay={0.08 + i * 0.07}>
                                     <div
-                                        className="group flex items-start gap-4 rounded-xl border p-5 transition-all hover:shadow-md"
+                                        className="group flex items-start gap-4 rounded-xl border p-5 transition-all"
                                         style={{
                                             borderColor: palette.lightGray,
                                             backgroundColor: palette.surface,
@@ -56,18 +55,24 @@ export default function SharedMap() {
                                     >
                                         <div
                                             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
-                                            style={{ backgroundColor: `${palette.green}10` }}
+                                            style={{
+                                                backgroundColor: palette.lightGreen,
+                                                borderColor: palette.dark,
+                                                borderWidth: 2
+                                            }}
                                         >
                                             <b.icon
                                                 className="h-5 w-5"
-                                                style={{ color: palette.green }}
+                                                style={{ color: palette.dark }}
                                             />
                                         </div>
                                         <div>
                                             <p className="text-[15px] font-semibold">{b.label}</p>
                                             <p
                                                 className="mt-0.5 text-sm"
-                                                style={{ color: palette.darkGray }}
+                                                style={{
+                                                    color: palette.darkGray,
+                                                }}
                                             >
                                                 {b.desc}
                                             </p>
@@ -78,7 +83,7 @@ export default function SharedMap() {
                         </div>
                     </div>
 
-                    <Reveal delay={0.15} className="hidden lg:block">
+                    <Reveal delay={0.15} className="hidden w-3/4 lg:block">
                         <div>
                             <img className="shadow-lg rounded-[55px]"
                                 src={"images/phone1.png"} />

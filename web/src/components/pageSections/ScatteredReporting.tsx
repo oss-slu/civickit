@@ -22,32 +22,49 @@ export default function ScatteredReporting() {
         },
     ]
 
+    let reportingIs = "Reporting is"
+    let scattered = " scattered"
+
     return (
         <section className="py-28 md:py-36" style={{ backgroundColor: palette.bg }}>
             <div className="mx-auto max-w-7xl px-8">
                 <Reveal>
-                    <h2
+                    <div
                         className="max-w-2xl text-[clamp(2rem,4vw,3rem)] leading-[1.1] 
-                            font-display font-bold tracking-tight"
+                            font-display font-bold tracking-tight  flex flex-row gap-x-2"
                     >
-                        Reporting is scattered.
-                    </h2>
+                        <div>Reporting is </div>
+                        <div style={{ color: palette.red }}>scattered.
+                        </div>
+                    </div>
                 </Reveal>
 
                 <div className="mt-14 grid grid-rows-[auto] gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     {methods.map((m, i) => (
                         <Reveal key={m.title} delay={0.05 + i * 0.07} className="flex">
                             <div
-                                className="group flex-1 rounded-xl border p-6 transition-shadow hover:shadow-md"
+                                className="group flex-1 rounded-xl border p-6 "
                                 style={{
                                     borderColor: palette.lightGray,
                                     backgroundColor: palette.surface,
                                 }}
                             >
-                                <m.icon
-                                    className="h-5 w-5"
-                                    style={{ color: palette.medGray }}
-                                />
+                                <div
+                                    style={{
+                                        backgroundColor: palette.yellow,
+                                        borderWidth: 2,
+                                        borderColor: palette.dark,
+                                        padding: 8,
+                                        width: 40,
+                                        borderRadius: 100
+                                    }}>
+                                    <m.icon
+                                        className="h-5 w-5 bg"
+                                        style={{
+                                            color: palette.dark,
+                                        }}
+                                    />
+                                </div>
                                 <p className="mt-4 text-[15px] font-semibold">{m.title}</p>
                                 <p
                                     className="mt-2 text-sm leading-relaxed"
