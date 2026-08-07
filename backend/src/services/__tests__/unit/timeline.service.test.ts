@@ -3,30 +3,12 @@
 import { TimelineService } from '../../timeline.service';
 import { TimelineRepository } from '../../../repositories/timeline.repository';
 import { describe, beforeEach, vi, it, expect, Mocked, Mock } from 'vitest';
-import { Prisma } from '@prisma/client';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
 import { CreateIssueDTO, PostUpdateDTO } from '@civickit/shared/src/types/api';
 import { IssueService } from '../../issue.service';
 import { IssueRepository } from '../../../repositories/issue.repository';
-import { UpvoteRepository } from '../../../repositories/upvote.repository';
 
 // mock repository
 vi.mock('../../../src/repositories/timeline.repository');
-
-// mock bcrypt
-vi.mock('bcryptjs', () => ({
-    default: {
-        compare: vi.fn(),
-    },
-}));
-
-// mock jwt
-vi.mock('jsonwebtoken', () => ({
-    default: {
-        sign: vi.fn(),
-    },
-}));
 
 describe('TimelineService', () => {
     let timelineService: TimelineService;
@@ -35,7 +17,6 @@ describe('TimelineService', () => {
     let issueService: IssueService;
     let mockIssueRepository: Mocked<IssueRepository>;
 
-    let mockUpvoteRepository: Mocked<UpvoteRepository>;
 
     beforeEach(() => {
         // Manual mock setup
@@ -51,15 +32,8 @@ describe('TimelineService', () => {
             findNearby: vi.fn(),
         } as unknown as Mocked<IssueRepository>;
 
-        mockUpvoteRepository = {
-            createUpvote: vi.fn(),
-            deleteUpvote: vi.fn(),
-            countUpvotes: vi.fn(),
-            exists: vi.fn(),
-        } as unknown as Mocked<UpvoteRepository>;
-
         timelineService = new TimelineService(mockTimelineRepository);
-        issueService = new IssueService(mockIssueRepository, mockUpvoteRepository);
+        issueService = new IssueService(mockIssueRepository);
         vi.clearAllMocks();
     });
 

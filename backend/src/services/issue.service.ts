@@ -2,13 +2,19 @@
 
 import { IssueRepository } from '../repositories/issue.repository';
 import { CreateIssueDTO, IssueStatus } from '@civickit/shared';
-import { uploadImage } from '../utils/cloudinary';
-import { UpvoteRepository } from '../repositories/upvote.repository';
-import { is } from 'zod/v4/locales';
+import { issueStatus } from '../db/schema';
 import { AppError } from '../utils/errors';
 
+/** Checked against the database enum, so the two cannot drift apart. */
+function isIssueStatus(value: unknown): value is IssueStatus {
+  return (
+    typeof value === 'string' &&
+    (issueStatus.enumValues as readonly string[]).includes(value)
+  );
+}
+
 export class IssueService {
-  constructor(private issueRepository: IssueRepository, private upvoteRepository: UpvoteRepository) { }
+  constructor(private issueRepository: IssueRepository) { }
 
   async createIssue(data: CreateIssueDTO, userId: string) {
     if (!data.title || data.title.length < 3) {
@@ -36,29 +42,30 @@ export class IssueService {
       throw new AppError('Issue not found', 404);
     }
 
-    const upvoteCount = await this.upvoteRepository.countUpvotes(issue.id);
-
-    return {
-      ...issue,
-      upvoteCount,
-    };
+    // findById already counts upvotes in the same statement that reads the row.
+    // This used to issue a second countUpvotes query and return both values.
+    return issue;
   }
 
   async getIssuesByUser(id: string, limit?: number) {
-    const issues = await this.issueRepository.findByUser(id, limit);
-
-    return issues.map((issue) => ({ ...issue, upvoteCount: issue._count.upvotes }));
+    return this.issueRepository.findByUser(id, limit);
   }
 
   async getIssuesByUserUpvotes(id: string, limit?: number) {
-    const issues = await this.issueRepository.findByUpvoter(id, limit);
-
-    return issues.map((issue) => ({ ...issue, upvoteCount: issue._count.upvotes }));
+    return this.issueRepository.findByUpvoter(id, limit);
   }
 
   // update status tag
   // Callers must gate this behind requirePermission('update:issue_status').
   async updateStatus(id: string, status: IssueStatus) {
+    // The route has no body validation, so this is the only thing standing
+    // between `PATCH {}` and the database. An absent status used to reach the
+    // ORM as an empty patch, which Prisma treated as a no-op update and
+    // answered 200 -- reporting success for a request that changed nothing.
+    if (!isIssueStatus(status)) {
+      throw new AppError('A valid status is required', 400);
+    }
+
     return this.issueRepository.updateStatus(id, { status });
   }
 }

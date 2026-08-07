@@ -10,6 +10,7 @@ import {
     ValidationError,
     UnauthorizedError,
 } from '../utils/errors';
+import { RecordNotFoundError } from '../db/errors';
 
 //  Mock helpers
 const mockRequest = (overrides = {}): Partial<Request> => ({
@@ -111,6 +112,22 @@ describe('Error Handling System (Vitest only)', () => {
         expect(res.json).toHaveBeenCalledWith({
             success: false,
             message: 'X',
+        });
+    });
+
+    it('should answer 404 for a RecordNotFoundError raised by a repository', () => {
+        // Repositories raise this where Prisma raised P2025. Without this
+        // branch an update against a missing row answers 500.
+        const err = new RecordNotFoundError('Issue not found');
+        const req = mockRequest();
+        const res = mockResponse();
+
+        errorHandler(err, req as Request, res as Response, mockNext);
+
+        expect(res.status).toHaveBeenCalledWith(404);
+        expect(res.json).toHaveBeenCalledWith({
+            success: false,
+            message: 'Issue not found',
         });
     });
 

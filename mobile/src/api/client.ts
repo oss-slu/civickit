@@ -134,6 +134,10 @@ export async function apiFetch<T>(path: string, options: ApiRequestOptions = {})
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
     const forwardAbort = () => controller.abort();
     signal?.addEventListener('abort', forwardAbort);
+    // A signal that had already aborted before this call never fires its
+    // listener, so without this the request would go out and could not be
+    // cancelled — it would run to completion, or to the timeout.
+    if (signal?.aborted) controller.abort();
 
     let response: Response;
     try {

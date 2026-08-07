@@ -1,22 +1,24 @@
 // backend/src/repositories/login.repository.ts
-import prisma from "../prisma";
+
+import { eq } from 'drizzle-orm';
+import db, { first } from '../db';
+import { users } from '../db/schema';
 
 export class LoginRepository {
-
   async findByEmail(email: string) {
-
-    const user = await prisma.user.findUnique({
-      where: { email }
-    });
-
-    if (user != null) {
-      return {
-        id: user?.id, email: user?.email,
-        name: user?.name, passwordHash: user?.passwordHash,
-        profileImage: user?.profileImage, createdAt: user?.createdAt
-      }
-    }
-
-    return null
+    return first(
+      await db
+        .select({
+          id: users.id,
+          email: users.email,
+          name: users.name,
+          passwordHash: users.passwordHash,
+          profileImage: users.profileImage,
+          createdAt: users.createdAt,
+        })
+        .from(users)
+        .where(eq(users.email, email))
+        .limit(1),
+    );
   }
 }

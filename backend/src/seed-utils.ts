@@ -1,7 +1,7 @@
 // filepath: backend/src/seed-utils.ts
 /**
  * Seed Utilities
- * 
+ *
  * Contains the core logic for seeding the database with issues and users.
  * Follows best practices from similar seed scripts:
  * - Safe to run multiple times (cleans before seeding)
@@ -10,7 +10,9 @@
  * - Detailed logging
  */
 
-import prisma from './prisma.js';
+import { count, eq } from 'drizzle-orm';
+import db from './db/index.js';
+import * as schema from './db/schema.js';
 import { userTemplates, type SeedIssueTemplate, type SeedUserTemplate } from './seed-data.js';
 import { uploadImageToCloudinary } from './utils/cloudinary-upload.js';
 import * as path from 'path';
@@ -46,12 +48,12 @@ export async function cleanupDatabase() {
     log('info', 'Deleting all rows...');
 
     // Delete in reverse FK order
-    await prisma.upvote.deleteMany();
-    await prisma.timelineEntry.deleteMany();
-    await prisma.eventRsvp.deleteMany();
-    await prisma.event.deleteMany();
-    await prisma.issue.deleteMany();
-    await prisma.user.deleteMany();
+    await db.delete(schema.upvotes);
+    await db.delete(schema.timelineEntries);
+    await db.delete(schema.eventRsvps);
+    await db.delete(schema.events);
+    await db.delete(schema.issues);
+    await db.delete(schema.users);
 
     log('info', 'All tables cleared');
 }
@@ -87,9 +89,11 @@ async function createUsers(userTemplates: SeedUserTemplate[]) {
 
     for (const userTemplate of userTemplates) {
         // Check if user already exists
-        const existingUser = await prisma.user.findUnique({
-            where: { email: userTemplate.email },
-        });
+        const [existingUser] = await db
+            .select()
+            .from(schema.users)
+            .where(eq(schema.users.email, userTemplate.email))
+            .limit(1);
 
         if (existingUser) {
             log('warn', `User ${userTemplate.email} already exists, skipping`);
@@ -101,14 +105,15 @@ async function createUsers(userTemplates: SeedUserTemplate[]) {
         const passwordHash = await bcrypt.hash(userTemplate.password, 10);
 
         // Create user
-        const user = await prisma.user.create({
-            data: {
+        const [user] = await db
+            .insert(schema.users)
+            .values({
                 email: userTemplate.email,
                 name: userTemplate.name,
                 passwordHash,
                 profileImage: userTemplate.profileImage || null,
-            },
-        });
+            })
+            .returning();
 
         log('info', `  Created user: ${user.email}`);
         users.push(user);
@@ -153,8 +158,9 @@ async function createIssues(
         }
 
         // Create the issue
-        const issue = await prisma.issue.create({
-            data: {
+        const [issue] = await db
+            .insert(schema.issues)
+            .values({
                 title: template.title,
                 description: template.description,
                 category: template.category,
@@ -167,8 +173,8 @@ async function createIssues(
                 name: template.name || null,
                 images: imageUrls,
                 userId: randomUser.id,
-            },
-        });
+            })
+            .returning();
 
         await createRandomEndorsements(issue.id, randomUser.id, users);
 
@@ -192,12 +198,12 @@ async function createRandomEndorsements(
     const shuffledUsers = [...eligibleUsers].sort(() => Math.random() - 0.5);
     const selectedUsers = shuffledUsers.slice(0, endorsementCount);
 
-    await prisma.upvote.createMany({
-        data: selectedUsers.map((user) => ({
+    await db.insert(schema.upvotes).values(
+        selectedUsers.map((user) => ({
             issueId,
             userId: user.id,
         })),
-    });
+    );
 
     log('info', `   Added ${endorsementCount} endorsements`);
 }
@@ -206,27 +212,27 @@ async function createRandomEndorsements(
  * Print summary of seeded data
  */
 async function printSummary() {
-    const userCount = await prisma.user.count();
-    const issueCount = await prisma.issue.count();
-    const upvoteCount = await prisma.upvote.count();
+    const [{ value: userCount }] = await db.select({ value: count() }).from(schema.users);
+    const [{ value: issueCount }] = await db.select({ value: count() }).from(schema.issues);
+    const [{ value: upvoteCount }] = await db.select({ value: count() }).from(schema.upvotes);
 
     // Count by category
-    const categoryCounts = await prisma.issue.groupBy({
-        by: ['category'],
-        _count: true,
-    });
+    const categoryCounts = await db
+        .select({ category: schema.issues.category, total: count() })
+        .from(schema.issues)
+        .groupBy(schema.issues.category);
 
     // Count by status
-    const statusCounts = await prisma.issue.groupBy({
-        by: ['status'],
-        _count: true,
-    });
+    const statusCounts = await db
+        .select({ status: schema.issues.status, total: count() })
+        .from(schema.issues)
+        .groupBy(schema.issues.status);
 
     log('info', 'Seed complete', {
         users: userCount,
         issues: issueCount,
         endorsements: upvoteCount,
-        byCategory: Object.fromEntries(categoryCounts.map(c => [c.category, c._count])),
-        byStatus: Object.fromEntries(statusCounts.map(s => [s.status, s._count])),
+        byCategory: Object.fromEntries(categoryCounts.map(c => [c.category, c.total])),
+        byStatus: Object.fromEntries(statusCounts.map(s => [s.status, s.total])),
     });
 }

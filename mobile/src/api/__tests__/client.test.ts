@@ -256,6 +256,28 @@ describe('transport failures', () => {
         expect(error).not.toBeInstanceOf(NetworkError);
         expect(error.message).toBe('Aborted');
     });
+
+    it('cancels a request whose signal had already aborted', async () => {
+        const controller = new AbortController();
+        controller.abort();
+
+        fetchMock.mockImplementation(
+            (_url: string, init: RequestInit) =>
+                new Promise((_resolve, reject) => {
+                    // What a real fetch does with a signal that is already
+                    // aborted: reject now. The listener alone would never fire.
+                    if (init.signal?.aborted) return reject(new Error('Aborted'));
+                    init.signal?.addEventListener('abort', () => reject(new Error('Aborted')));
+                }),
+        );
+
+        const error = await rejection(apiFetch('/issues/', { signal: controller.signal }));
+
+        // An abort that happened before the call fires no listener, so the
+        // request must be cancelled up front rather than left running.
+        expect(error).not.toBeInstanceOf(NetworkError);
+        expect(lastCall()[1].signal?.aborted).toBe(true);
+    });
 });
 
 describe('success responses', () => {

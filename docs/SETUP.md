@@ -26,7 +26,7 @@ Notes:
 2. `cd backend`
 3. `cp .env.example .env` (copy `.env.example` to `.env`) then fill in values
 4. `npm install`
-5. `npm run db:setup` (starts docker container, pushes schema and generates client)
+5. `npm run db:setup` (starts the docker container and applies migrations)
 6. `npm run dev` (start the backend)
 7. Server runs on http://localhost:3000
 
@@ -46,7 +46,7 @@ npm run seed:reset
 Seeding creates 40 users and ~24 issues around Midtown St. Louis (photos are uploaded to your Cloudinary account). All seeded users share the password `password123` — e.g. log in as `alice@example.com` to test with an account that already has issues and endorsements.
 
 ### Testing Backend API
-1. Seed the database (above), or browse/edit data with `npx prisma studio`
+1. Seed the database (above), or browse/edit data with `npm run db:studio`
 2. Get nearby issues: `curl "http://localhost:3000/api/issues/nearby?lat=38.635&lng=-90.23&radius=5000"`
 3. Get issue by id: `curl http://localhost:3000/api/issues/<issue-id>`
 4. Creating an issue requires auth: log in first and pass the token
@@ -67,6 +67,46 @@ curl -X POST http://localhost:3000/api/issues \
   "images": []
 }'
 ```
+
+### Database and migrations
+The backend uses [Drizzle](https://orm.drizzle.team). The schema lives in
+`backend/src/db/schema.ts` and is the source of truth.
+
+To change it: edit `schema.ts`, then `npm run db:generate` to write a migration
+into `backend/drizzle/`, then `npm run db:migrate` to apply it. Review the
+generated SQL before committing it.
+
+`drizzle/extensions.sql` holds the PostGIS `CREATE EXTENSION` statements.
+drizzle-kit cannot generate those from a schema file, so `db:migrate` applies
+that file before the migrations. Do not move its contents into a generated
+migration — the next `db:generate` would drop them, and the nearby-issues
+endpoint fails without PostGIS.
+
+> **Upgrading an existing checkout:** this replaced Prisma, and the migration
+> history was restarted. A database created before that change cannot be
+> migrated forward — `db:migrate` fails on types and tables that already exist.
+> Recreate it, then re-seed:
+>
+> ```bash
+> npm run db:reset && npm run seed:run
+> ```
+>
+> Any local data is lost. Note that `db:down` alone is **not** enough: it keeps
+> the `civickit-data` volume, so the old schema survives. `db:reset` calls
+> `db:nuke` (`docker compose down -v`), which removes it.
+
+### Running backend tests
+```bash
+npm test              # unit tests, no database needed
+npm run test:integration   # runs SQL against a real database
+```
+The integration tests need the database container up (`npm run db:up`). They
+create and manage their own `civickit_test` database, drop its schema on every
+run, and truncate between cases — so they refuse to start if `TEST_DATABASE_URL`
+resolves to the same database as `DATABASE_URL`. Override it via
+`.env.test.local` (see `backend/.env.test.example`) if the default collides.
+
+These are the only tests that execute SQL; the unit tests mock the repositories.
 
 ## Mobile Setup
 The app derives the backend address from whichever address Metro is served on —

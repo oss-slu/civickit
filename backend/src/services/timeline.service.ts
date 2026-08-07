@@ -1,7 +1,6 @@
 // backend/src/services/timeline.service.ts
 import { PostUpdateDTO } from '@civickit/shared/src/types/api';
 import { TimelineRepository } from '../repositories/timeline.repository';
-import { Prisma } from '@prisma/client';
 
 export class TimelineService {
   constructor(private readonly timelineRepository: TimelineRepository) { }

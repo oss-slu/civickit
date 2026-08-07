@@ -2,16 +2,14 @@
 import { Request, Response, NextFunction } from 'express';
 import { IssueService } from '../services/issue.service';
 import { IssueRepository } from '../repositories/issue.repository';
-import { UpvoteRepository } from '../repositories/upvote.repository';
 import { PostUpdateDTO } from '@civickit/shared';
-import { TimelineController } from './timeline.controller';
 import { TimelineService } from '../services/timeline.service';
 import { TimelineRepository } from '../repositories/timeline.repository';
 
 const issueRepository = new IssueRepository();
-const upvoteRepository = new UpvoteRepository();
-const issueService = new IssueService(issueRepository, upvoteRepository);
-const timelineService = new TimelineService(new TimelineRepository())
+const issueService = new IssueService(issueRepository);
+const timelineService = new TimelineService(new TimelineRepository());
+
 // Parses an optional `limit` query param, clamped to [1, 200], defaulting to 100.
 function parseLimit(raw: unknown): number {
   const DEFAULT_LIMIT = 100;
@@ -48,7 +46,8 @@ export class IssueController {
         }, userId);
       res.status(201).json(issue);
 
-      //post cooresponding updates
+      // Seed the issue's timeline. Posted after the response, as on main --
+      // see "Known gaps" in plans/013 before changing that ordering.
       const reported: PostUpdateDTO = {
         message: "Report Submitted",
         createdAt: new Date(issue.createdAt),

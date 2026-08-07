@@ -5,11 +5,10 @@ import { TimelineRepository } from '../repositories/timeline.repository';
 import { IssueController } from './issue.controller';
 import { IssueService } from '../services/issue.service';
 import { IssueRepository } from '../repositories/issue.repository';
-import { UpvoteRepository } from '../repositories/upvote.repository';
 
 
 const timelineService = new TimelineService(new TimelineRepository());
-const issueService = new IssueService(new IssueRepository, new UpvoteRepository);
+const issueService = new IssueService(new IssueRepository);
 
 export class TimelineController {
 
