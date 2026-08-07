@@ -11,6 +11,15 @@ export function Logo({ style }: any) {
     )
 }
 
+export function LogoColor({ style }: any) {
+    return (
+        <View>
+            <Image source={require('../../assets/logos/logo-color.svg')}
+                style={{ width: 100, height: 100, ...style }} />
+        </View >
+    )
+}
+
 export function LogoPlusText({ style }: any) {
     return (
         <View>
@@ -25,6 +34,15 @@ export function LoopingLogoGif({ style }: any) {
     return (
         <View>
             <Image source={require('../../assets/logos/logoLooping.gif')}
+                style={{ width: 100, height: 100, ...style }} />
+        </View>
+    )
+}
+
+export function LoopingLogoGifColor({ style }: any) {
+    return (
+        <View>
+            <Image source={require('../../assets/logos/logoLoopingColor.gif')}
                 style={{ width: 100, height: 100, ...style }} />
         </View>
     )
