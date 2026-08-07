@@ -18,9 +18,11 @@ export default function TimelineEntry({ timelineEntry, issueCategory = "OTHER", 
     const HOURS24 = 86400000
     const isNew = new Date().valueOf() - new Date(timelineEntry.createdAt).valueOf() < HOURS24
 
-    const pictures = timelineEntry.images.map((image: any, index: number) =>
-        <Image source={{ uri: image }} key={index} style={styles.picture} />)
-
+    let pictures: string[] = []
+    if (timelineEntry.images) {
+        pictures = timelineEntry.images.map((image: any, index: number) =>
+            <Image source={{ uri: image }} key={index} style={styles.picture} />)
+    }
 
     useEffect(() => {
         const getEntries = async () => {
@@ -36,7 +38,7 @@ export default function TimelineEntry({ timelineEntry, issueCategory = "OTHER", 
         <View style={styles.container}>
 
             <View style={styles.leftContainter}>
-                {timelineEntry.images.length == 0 ?
+                {pictures.length == 0 ?
                     <View style={{
                         ...styles.dot, flexDirection: "row", alignItems: "center", justifyContent: "center",
                         backgroundColor: statusColors[timelineEntry.status.toLowerCase()].background,
