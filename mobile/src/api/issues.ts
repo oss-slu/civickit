@@ -1,27 +1,43 @@
 // mobile/src/api/issues.ts
-import type { CreateIssueDTO, GetNearbyIssueResponse, Issue, User } from '@civickit/shared';
+import type { CreateIssueDTO, GetNearbyIssueResponse, Issue, PostUpdateDTO, User } from '@civickit/shared';
 import { apiFetch } from './client';
 
 export const METERS_PER_MILE = 1609.34;
 
 /**
  * Shape actually returned by the issue *list* endpoints. This is deliberately
- * not `Issue` from @civickit/shared: the backend includes the Prisma relation
- * as `user` (not `author`) and adds a `_count`. Reconciling the two is a
- * separate change — this type documents reality in the meantime.
+ * not `Issue` from @civickit/shared: the backend names the author relation
+ * `user`, not `author`. Reconciling the two is a separate change — this type
+ * documents reality in the meantime.
+ *
+ * `upvoteCount` comes from Issue. The endpoints used to also carry a Prisma
+ * `_count: { upvotes }` alongside it, which nothing ever read.
  */
 export interface IssueListItem extends Omit<Issue, 'author'> {
     user: Pick<User, 'id' | 'name' | 'profileImage'>;
-    _count: { upvotes: number };
 }
 
 export interface IssueListResponse<T> {
     issues: T[];
 }
 
+export interface TimelineListResponse<T> {
+    updates: T[];
+}
+
+
 export interface UpvoteState {
     upvoted: boolean;
     upvoteCount: number;
+}
+
+export interface TimelineEntry {
+    createdAt: Date;
+    issueId: string;
+    userId: string;
+    message: string;
+    status: string;
+    images: string[];
 }
 
 export interface NearbyIssuesParams {
@@ -90,5 +106,23 @@ export function removeUpvote(issueId: string): Promise<UpvoteState> {
     return apiFetch(`/issues/${encodeURIComponent(issueId)}/upvote`, {
         method: 'DELETE',
         auth: true,
+    });
+}
+
+export function addTimelineEntry(issueId: string, timelineEntry: PostUpdateDTO): Promise<TimelineEntry> {
+    return apiFetch(`/issues/${encodeURIComponent(issueId)}/update`, {
+        method: 'POST',
+        body: timelineEntry,
+        auth: true,
+    });
+}
+
+export function getTimelineEntries(
+    issueId: string,
+    options: { limit?: number; signal?: AbortSignal } = {},
+): Promise<TimelineListResponse<TimelineEntry[]>> {
+    return apiFetch(`/issues/${encodeURIComponent(issueId)}/updates`, {
+        method: 'GET',
+        auth: true
     });
 }

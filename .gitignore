@@ -36,6 +36,3 @@ dist/
 *.key
 *.mobileprovision
 .expo/
-
-# Prisma
-prisma/migrations/

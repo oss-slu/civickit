@@ -6,19 +6,16 @@
 
 import { IssueService } from '../../issue.service';
 import { IssueRepository } from '../../../repositories/issue.repository';
-import { UpvoteRepository } from '../../../repositories/upvote.repository';
 import { describe, beforeEach, vi, it, expect, Mocked } from 'vitest';
 import { CreateIssueDTO, extractPhotoMetadataFromExif, resolvePhotoMetadata } from '@civickit/shared';
 import { mock } from 'node:test';
 
 // Mock the repository, not integration test
 vi.mock('../../../src/repositories/issue.repository');
-vi.mock('../../../src/repositories/upvote.repository');
 
 describe('IssueService', () => {
   let issueService: IssueService;
   let mockIssueRepository: Mocked<IssueRepository>;
-  let mockUpvoteRepository: Mocked<UpvoteRepository>;
 
   beforeEach(() => {
     // Create mock repository
@@ -30,14 +27,7 @@ describe('IssueService', () => {
       findByUpvoter: vi.fn(),
     } as unknown as Mocked<IssueRepository>;
 
-    mockUpvoteRepository = {
-      createUpvote: vi.fn(),
-      deleteUpvote: vi.fn(),
-      countUpvotes: vi.fn(),
-      exists: vi.fn(),
-    } as unknown as Mocked<UpvoteRepository>;
-
-    issueService = new IssueService(mockIssueRepository, mockUpvoteRepository);
+    issueService = new IssueService(mockIssueRepository);
   });
 
   const makeInput = (
@@ -232,7 +222,6 @@ describe('IssueService', () => {
 
       const result = await issueService.getNearbyIssues(38.627, -90.1994);
 
-      expect(mockUpvoteRepository.countUpvotes).not.toHaveBeenCalled();
       expect(mockIssueRepository.findNearby).toHaveBeenCalledWith(
         38.627,
         -90.1994,
@@ -260,20 +249,16 @@ describe('IssueService', () => {
   });
 
   describe('getIssuesByUser', () => {
-    it('should not call countUpvotes and should map _count.upvotes onto upvoteCount', async () => {
+    it('should pass the repository rows through with their upvoteCount', async () => {
       const mockIssues = [
-        { id: 'issue-1', _count: { upvotes: 5 } },
-        { id: 'issue-2', _count: { upvotes: 0 } },
+        { id: 'issue-1', upvoteCount: 5 },
+        { id: 'issue-2', upvoteCount: 0 },
       ];
       mockIssueRepository.findByUser.mockResolvedValue(mockIssues as any);
 
       const result = await issueService.getIssuesByUser('user-123');
 
-      expect(mockUpvoteRepository.countUpvotes).not.toHaveBeenCalled();
-      expect(result).toEqual([
-        { id: 'issue-1', _count: { upvotes: 5 }, upvoteCount: 5 },
-        { id: 'issue-2', _count: { upvotes: 0 }, upvoteCount: 0 },
-      ]);
+      expect(result).toEqual(mockIssues);
       result.forEach((issue) => {
         expect(typeof issue.upvoteCount).toBe('number');
       });
@@ -283,7 +268,7 @@ describe('IssueService', () => {
   describe('getIssuesByUserUpvotes', () => {
     it('should call findByUpvoter exactly once and never call findById', async () => {
       const mockIssues = [
-        { id: 'issue-1', _count: { upvotes: 2 } },
+        { id: 'issue-1', upvoteCount: 2 },
       ];
       mockIssueRepository.findByUpvoter.mockResolvedValue(mockIssues as any);
 
@@ -292,13 +277,44 @@ describe('IssueService', () => {
       expect(mockIssueRepository.findByUpvoter).toHaveBeenCalledTimes(1);
       expect(mockIssueRepository.findByUpvoter).toHaveBeenCalledWith('user-123', undefined);
       expect(mockIssueRepository.findById).not.toHaveBeenCalled();
-      expect(mockUpvoteRepository.countUpvotes).not.toHaveBeenCalled();
-      expect(result).toEqual([
-        { id: 'issue-1', _count: { upvotes: 2 }, upvoteCount: 2 },
-      ]);
+      expect(result).toEqual(mockIssues);
       result.forEach((issue) => {
         expect(typeof issue.upvoteCount).toBe('number');
       });
+    });
+  });
+
+  describe('updateStatus', () => {
+    beforeEach(() => {
+      mockIssueRepository.updateStatus = vi.fn();
+    });
+
+    it('should pass a valid status through to the repository', async () => {
+      const updated = { id: 'issue-1', status: 'RESOLVED' };
+      (mockIssueRepository.updateStatus as any).mockResolvedValue(updated);
+
+      const result = await issueService.updateStatus('issue-1', 'RESOLVED');
+
+      expect(mockIssueRepository.updateStatus).toHaveBeenCalledWith('issue-1', {
+        status: 'RESOLVED',
+      });
+      expect(result).toEqual(updated);
+    });
+
+    // PATCH /:issueId/status reads req.body.status with no body validation, so
+    // these arrive exactly as written.
+    it.each([
+      ['missing', undefined],
+      ['null', null],
+      ['empty', ''],
+      ['not a member of the enum', 'BANANA'],
+      ['the wrong type', 42],
+    ])('should reject a status that is %s with a 400', async (_label, status) => {
+      await expect(
+        issueService.updateStatus('issue-1', status as never),
+      ).rejects.toThrow('A valid status is required');
+
+      expect(mockIssueRepository.updateStatus).not.toHaveBeenCalled();
     });
   });
 });

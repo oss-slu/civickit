@@ -26,7 +26,7 @@ Notes:
 2. `cd backend`
 3. `cp .env.example .env` (copy `.env.example` to `.env`) then fill in values
 4. `npm install`
-5. `npm run db:setup` (starts docker container, pushes schema and generates client)
+5. `npm run db:setup` (starts the docker container and applies migrations)
 6. `npm run dev` (start the backend)
 7. Server runs on http://localhost:3000
 
@@ -46,7 +46,7 @@ npm run seed:reset
 Seeding creates 40 users and ~24 issues around Midtown St. Louis (photos are uploaded to your Cloudinary account). All seeded users share the password `password123` — e.g. log in as `alice@example.com` to test with an account that already has issues and endorsements.
 
 ### Testing Backend API
-1. Seed the database (above), or browse/edit data with `npx prisma studio`
+1. Seed the database (above), or browse/edit data with `npm run db:studio`
 2. Get nearby issues: `curl "http://localhost:3000/api/issues/nearby?lat=38.635&lng=-90.23&radius=5000"`
 3. Get issue by id: `curl http://localhost:3000/api/issues/<issue-id>`
 4. Creating an issue requires auth: log in first and pass the token
@@ -68,37 +68,102 @@ curl -X POST http://localhost:3000/api/issues \
 }'
 ```
 
+### Database and migrations
+The backend uses [Drizzle](https://orm.drizzle.team). The schema lives in
+`backend/src/db/schema.ts` and is the source of truth.
+
+To change it: edit `schema.ts`, then `npm run db:generate` to write a migration
+into `backend/drizzle/`, then `npm run db:migrate` to apply it. Review the
+generated SQL before committing it.
+
+`drizzle/extensions.sql` holds the PostGIS `CREATE EXTENSION` statements.
+drizzle-kit cannot generate those from a schema file, so `db:migrate` applies
+that file before the migrations. Do not move its contents into a generated
+migration — the next `db:generate` would drop them, and the nearby-issues
+endpoint fails without PostGIS.
+
+> **Upgrading an existing checkout:** this replaced Prisma, and the migration
+> history was restarted. A database created before that change cannot be
+> migrated forward — `db:migrate` fails on types and tables that already exist.
+> Recreate it, then re-seed:
+>
+> ```bash
+> npm run db:reset && npm run seed:run
+> ```
+>
+> Any local data is lost. Note that `db:down` alone is **not** enough: it keeps
+> the `civickit-data` volume, so the old schema survives. `db:reset` calls
+> `db:nuke` (`docker compose down -v`), which removes it.
+
+### Running backend tests
+```bash
+npm test              # unit tests, no database needed
+npm run test:integration   # runs SQL against a real database
+```
+The integration tests need the database container up (`npm run db:up`). They
+create and manage their own `civickit_test` database, drop its schema on every
+run, and truncate between cases — so they refuse to start if `TEST_DATABASE_URL`
+resolves to the same database as `DATABASE_URL`. Override it via
+`.env.test.local` (see `backend/.env.test.example`) if the default collides.
+
+These are the only tests that execute SQL; the unit tests mock the repositories.
+
 ## Mobile Setup
-The app derives the backend address from the Metro host it was loaded from, so testing on a physical phone needs no configuration — your machine's LAN IP is discovered automatically. To point at something else, set `EXPO_PUBLIC_API_URL` (see the Cloudflare proxy steps below).
+The app derives the backend address from whichever address Metro is served on —
+the same machine that runs the backend — so testing on a physical phone needs no
+IP configuration. To point it somewhere else, such as a deployed backend, set
+`EXPO_PUBLIC_API_URL` (see `mobile/.env.example`).
 
 1. From the `mobile/` directory
 ```bash
 cd mobile
 npm install
 ```
-2. In the `mobile/` directory, choose `startWin.sh` for Windows or `startMac.sh` for Mac
-   1. In a bash terminal, set permissions with `chmod +x startWin.sh` or `chmod +x startMac.sh` (You only need to do this once)
-   2. Run `./startWin.sh` or `./startMac.sh` — this uses your LAN address and works on a physical phone
-   3. To start on localhost (fine for simulators/emulators), run `./startWin.sh localhost` or `./startMac.sh localhost`
+2. In the `mobile/` directory, start Metro:
+```bash
+npm start
+```
 
 * Press `i` to open iOS simulator (macOS only)
 * Press `a` to open Android emulator
 * Press `w` to run in the browser (web)
 
-To run on a physical device: start with no argument (phone and computer must be on the same Wi-Fi network), then scan the QR code using the Camera app (iOS) or Expo Go (Android). Expo Go must be installed on the device. From Windows you may need production mode:
+3. Then scan the QR code using the Camera app (iOS) or Expo Go (Android). Expo
+Go must be installed on the device. From Windows you may need production mode:
 ```bash
 npx expo start --no-dev --minify
 ```
 
-If the app loads but fails to fetch (common on networks that block device-to-device traffic), proxy the backend through Cloudflare:
-1. ensure dependencies are up to date in backend `npm install`
-2. in `backend/` run `npm run dev`
-3. in `backend/` run `npm run dev:proxy` which generates a public trycloudflare.com link
-4. in `mobile/` run it with that link (with `/api` appended) as the API base URL:
+### When the phone can't reach your laptop
+
+`npm start` needs the phone and the laptop on the same wifi, with
+client-to-client traffic allowed. It fails when you are on cellular data, or on
+guest/"sandboxed" wifi that isolates clients from each other. The symptom is the
+app loading but every request failing.
+
+Use Tailscale instead. It puts the phone and the laptop on a private network of
+your own, so they reach each other regardless of the wifi in between — including
+networks that block direct traffic, where it relays over port 443.
+
+1. Install Tailscale on the laptop and the phone, signed into the same account.
+2. Start the backend as usual: `cd backend && npm run dev`
+3. Start Metro bound to the Tailscale address:
 ```bash
-EXPO_PUBLIC_API_URL=https://<your-link>.trycloudflare.com/api npx expo start --tunnel
+cd mobile
+npm run start:tailscale
 ```
-Any `EXPO_PUBLIC_*` variable can also live in a `mobile/.env` file instead of the command line.
+
+That is the whole setup. Metro is served from the laptop's Tailscale address, so
+the app derives the backend from it automatically — nothing to configure, and no
+URL to re-paste, because the address never changes.
+
+On Windows the npm script's shell syntax will not run; use:
+```
+set REACT_NATIVE_PACKAGER_HOSTNAME=<your tailscale ip> && npx expo start
+```
+
+Image uploads go from the phone straight to Cloudinary, so they keep working on
+cellular either way.
 
 ## Web Setup
 ```bash

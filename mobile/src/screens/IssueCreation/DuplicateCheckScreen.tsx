@@ -5,7 +5,7 @@ import { MessageView } from "../../components/MessageView";
 import IssueCard from "../../components/IssueCard";
 import { borderRadius, colors, globalStyles, palette, size, spacing, typography } from "../../styles";
 import { View, StyleSheet, RefreshControl } from "react-native";
-import IconButton from "../../components/IconButton";
+import WrapperButton from "../../components/WrapperButton";
 import { RightArrowIcon } from "../../components/Icons";
 import Button from "../../components/Button";
 import { StackParams } from "../../types/StackParams";
@@ -42,12 +42,13 @@ export default function DuplicateCheckScreen() {
         navigation.popTo("Camera", {})
     }
 
+
     return (
-        <View style={{ height: "100%" }}>
+        <View style={{ height: "100%", backgroundColor: colors.background }}>
             <FlatList
                 data={issues}
-                style={{ margin: spacing.sm }}
-                contentContainerStyle={{ gap: spacing.sm }}
+                style={{ margin: spacing.sm, }}
+                contentContainerStyle={{ gap: spacing.sm, paddingBottom: spacing.xxxl + spacing.xl }}
                 keyExtractor={(item, index) => index.toString()}
                 refreshControl={<RefreshControl
                     refreshing={refreshing}
@@ -57,10 +58,10 @@ export default function DuplicateCheckScreen() {
                         <IssueCard issue={item}
                             onPress={() => navigation.navigate('Issue Details', { issue: item })}
                             animated={false} />
-                        <IconButton style={styles.button}
+                        <WrapperButton style={styles.button}
                             onPress={() => navigation.navigate('Issue Details', { issue: item })}>
                             <RightArrowIcon size={typography.sizeXxl} color={colors.textPrimary} />
-                        </IconButton>
+                        </WrapperButton>
                     </View>
                 )}
             />
@@ -92,6 +93,7 @@ const styles = StyleSheet.create({
     },
     button: {
         backgroundColor: colors.backgroundSecondary,
+        paddingHorizontal: spacing.sm
     },
     buttonRow: {
         paddingHorizontal: spacing.md,

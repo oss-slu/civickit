@@ -30,6 +30,7 @@ export type StackParams = {
         distanceOption?: boolean
     },
     "Profile": {},
+    "ProfileNav": {},
     "Avatar": {
         user: User | null
     },

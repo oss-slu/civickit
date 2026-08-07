@@ -1,7 +1,7 @@
 import { ScrollView, View } from "react-native";
 import { Image } from 'expo-image';
 import { Dimensions, StyleSheet } from 'react-native';
-import IconButton from "../../components/IconButton";
+import WrapperButton from "../../components/WrapperButton";
 import { CameraIcon, PictureIcon } from "../../components/Icons";
 import { globalStyles, palette, size, spacing, typography } from "../../styles";
 import { StaticScreenProps } from "@react-navigation/native";
@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
         height: "100%"
     },
     button: {
-        backgroundColor: palette.ckLightMediumGray,
+        backgroundColor: palette.ckGrayBlue,
         height: windowWidth / 2 - spacing.xs * 1.5,
         width: windowWidth / 2 - spacing.xs * 1.5,
         borderRadius: 0,

@@ -3,27 +3,10 @@
 import { UpvoteService } from '../../upvote.service';
 import { UpvoteRepository } from '../../../repositories/upvote.repository';
 import { describe, beforeEach, vi, it, expect, Mocked, Mock } from 'vitest';
-import { Prisma } from '@prisma/client';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import { exists } from 'fs';
+import { RecordNotFoundError } from '../../../db/errors';
 
 // mock repository
 vi.mock('../../../src/repositories/upvote.repository');
-
-// mock bcrypt
-vi.mock('bcryptjs', () => ({
-    default: {
-        compare: vi.fn(),
-    },
-}));
-
-// mock jwt
-vi.mock('jsonwebtoken', () => ({
-    default: {
-        sign: vi.fn(),
-    },
-}));
 
 describe('UpvoteService', () => {
     let upvoteService: UpvoteService;
@@ -60,9 +43,15 @@ describe('UpvoteService', () => {
         });
 
         it('should throw 409 if issue already upvoted', async () => {
-            const error = new Prisma.PrismaClientKnownRequestError('Unique constraint failed', {
-                code: 'P2002',
-                clientVersion: '7.4.1',
+            // Shaped like what actually reaches the service: Drizzle wraps the
+            // failed query, and the driver error carrying the SQLSTATE is the
+            // cause. A bare { code: '23505' } passes this test while the real
+            // endpoint answers 500, so the nesting is the point.
+            const error = Object.assign(new Error('Failed query'), {
+                cause: Object.assign(
+                    new Error('duplicate key value violates unique constraint'),
+                    { code: '23505', constraint: 'Upvote_issueId_userId_key' },
+                ),
             });
 
             mockUpvoteRepository.createUpvote.mockRejectedValueOnce(error);
@@ -99,10 +88,9 @@ describe('UpvoteService', () => {
         });
 
         it('should throw 404 if upvote does not exist', async () => {
-            const error = new Prisma.PrismaClientKnownRequestError('Record not found', {
-                code: 'P2025',
-                clientVersion: '7.4.1',
-            });
+            // Postgres reports nothing when a delete matches no row, so the
+            // repository raises this where Prisma raised P2025.
+            const error = new RecordNotFoundError('Upvote does not exist');
 
             mockUpvoteRepository.deleteUpvote.mockRejectedValueOnce(error);
 
