@@ -47,7 +47,6 @@ const IssueDetailScreen = () => {
   const [upvoteCount, setUpvoteCount] = useState(issue.upvoteCount ?? 0);
   const [timelineEntries, setTimelineEntries] = useState<any[]>()
   const [loading, setLoading] = useState(false);
-  const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   const navigation = useNavigation();
 
@@ -92,6 +91,8 @@ const IssueDetailScreen = () => {
     getEntries()
 
   }, [issue.id]);
+
+  //claimById -> orgMembership -> orgId -> org
 
 
   const handleEndorse = async () => {

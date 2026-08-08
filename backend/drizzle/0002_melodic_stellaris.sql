@@ -1,0 +1,1 @@
+ALTER TYPE "public"."Role" ADD VALUE 'ORG_MEMBER';

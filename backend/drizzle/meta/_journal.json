@@ -8,6 +8,27 @@
       "when": 1785985857772,
       "tag": "0000_init",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1786143790040,
+      "tag": "0001_wonderful_rumiko_fujikawa",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1786149332383,
+      "tag": "0002_melodic_stellaris",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1786149646862,
+      "tag": "0003_lumpy_franklin_storm",
+      "breakpoints": true
     }
   ]
 }

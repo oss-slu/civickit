@@ -68,4 +68,10 @@ export class IssueService {
 
     return this.issueRepository.updateStatus(id, { status });
   }
+
+  // claim an issue
+  // Callers must gate this behind requirePermission('update:claim_issue').
+  async claimIssue(issueId: string, claimedById: string) {
+    return this.issueRepository.claimIssue(issueId, { claimedById });
+  }
 }

@@ -140,4 +140,18 @@ export class IssueRepository {
 
     return updated;
   }
+
+  async claimIssue(id: string, data: Partial<{ claimedById: string }>) {
+    const [updated] = await db
+      .update(issues)
+      .set(data)
+      .where(eq(issues.id, id))
+      .returning();
+
+    if (!updated) {
+      throw new RecordNotFoundError('Issue not found');
+    }
+
+    return updated;
+  }
 }

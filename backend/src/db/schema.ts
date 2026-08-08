@@ -163,6 +163,7 @@ export const issues = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: 'restrict', onUpdate: 'cascade' }),
     cityRefNumber: text('cityRefNumber'),
+    claimedById: text('claimedById')
   },
   (table) => [
     index('Issue_latitude_longitude_idx').on(table.latitude, table.longitude),

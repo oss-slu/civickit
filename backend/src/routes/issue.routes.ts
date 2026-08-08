@@ -33,5 +33,7 @@ router.post('/:issueId/update', authMiddleware, requirePermission('update:issue_
 router.get('/:issueId/updates', authMiddleware, timelineController.getIssueUpdates)
 router.get('/:userId/userUpdates', authMiddleware, timelineController.getUserUpdates)
 
+//claiming an issue
+router.post('/:issueId/claim', authMiddleware, requirePermission('update:claim_issue'), issueController.claimIssue)
 
 export default router;

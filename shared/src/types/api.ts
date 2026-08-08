@@ -1,5 +1,6 @@
 // shared/src/types/api.ts
 import { IssueCategory, IssueStatus } from "../enums/issue";
+import { OrgRole } from "../enums/organization";
 import { PhotoMetadataSource } from "../utils/photoMetadata";
 import { User } from "./user";
 
@@ -24,6 +25,12 @@ export interface CreateIssueDTO {
     locationSource?: PhotoMetadataSource;
     photoTakenAt?: string;
     photoTakenAtSource?: PhotoMetadataSource;
+}
+
+export interface OrgMembershipDTO {
+    userId: string;
+    organizationId: string;
+    role: OrgRole;
 }
 
 export interface PostUpdateDTO {

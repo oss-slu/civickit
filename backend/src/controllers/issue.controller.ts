@@ -125,4 +125,15 @@ export class IssueController {
       next(error);
     }
   }
+
+  // claim issue
+  async claimIssue(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = req.userId!
+      const issue = await issueService.claimIssue(String(req.params.issueId), userId);
+      res.json(issue);
+    } catch (error) {
+      next(error);
+    }
+  }
 }
