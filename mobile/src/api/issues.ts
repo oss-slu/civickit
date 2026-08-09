@@ -38,6 +38,7 @@ export interface TimelineEntry {
     message: string;
     status: string;
     images: string[];
+    userName: string;
 }
 
 export interface NearbyIssuesParams {
@@ -95,6 +96,10 @@ export function getUpvoteState(issueId: string, signal?: AbortSignal): Promise<U
     return apiFetch(`/issues/${encodeURIComponent(issueId)}/upvote`, { auth: true, signal });
 }
 
+export function getIssueById(issueId: string, signal?: AbortSignal): Promise<Issue> {
+    return apiFetch(`/issues/${encodeURIComponent(issueId)}/`, { auth: true, signal });
+}
+
 export function addUpvote(issueId: string): Promise<UpvoteState> {
     return apiFetch(`/issues/${encodeURIComponent(issueId)}/upvote`, {
         method: 'POST',
@@ -124,5 +129,17 @@ export function getTimelineEntries(
     return apiFetch(`/issues/${encodeURIComponent(issueId)}/updates`, {
         method: 'GET',
         auth: true
+    });
+}
+
+export function claimIssue(issueId: string): Promise<Issue> {
+    return apiFetch(`/issues/${encodeURIComponent(issueId)}/claim`, {
+        method: 'POST', auth: true
+    });
+}
+
+export function releaseIssue(issueId: string): Promise<Issue> {
+    return apiFetch(`/issues/${encodeURIComponent(issueId)}/release`, {
+        method: 'POST', auth: true
     });
 }

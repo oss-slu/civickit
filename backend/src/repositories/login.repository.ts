@@ -15,6 +15,7 @@ export class LoginRepository {
           passwordHash: users.passwordHash,
           profileImage: users.profileImage,
           createdAt: users.createdAt,
+          role: users.role
         })
         .from(users)
         .where(eq(users.email, email))

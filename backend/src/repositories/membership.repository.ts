@@ -8,7 +8,7 @@ import { Issue, orgMemberships, upvotes, users } from '../db/schema';
 import { OrgMembershipDTO } from '@civickit/shared/src/types/api';
 
 
-export class OrgMembershipRepository {
+export class MembershipRepository {
 
   async create(data: OrgMembershipDTO) {
     const [inserted] = await db

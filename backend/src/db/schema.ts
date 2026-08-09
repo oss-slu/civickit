@@ -116,7 +116,7 @@ const updatedAt = () =>
  * loudly on the next db:reset -- but if you ever regenerate a migration that
  * recreates or alters this column, check for it.
  */
-const geography = customType<{ data: string; driverData: string }>({
+export const geography = customType<{ data: string; driverData: string }>({
   dataType: () => 'geography(MultiPolygon,4326)',
 });
 
@@ -340,6 +340,7 @@ export const organizations = pgTable(
     geofence: geography('geofence'),
     createdAt: timestamp3('createdAt').notNull().defaultNow(),
     updatedAt: updatedAt(),
+    profileImage: text('profileImage'),
   },
   (table) => [
     index('Organization_status_idx').on(table.status),

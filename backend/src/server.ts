@@ -8,6 +8,7 @@ import issueRoutes from './routes/issue.routes';
 import authRoutes from "./routes/auth.routes";
 import uploadRoutes from './routes/upload.routes';
 import loginRoutes from './routes/login.routes';
+import orgRoutes from './routes/org.routes'
 import RateLimit from 'express-rate-limit';
 import { errorHandler } from './middleware/error.middleware';
 import { requestLogger } from './middleware/logger.middleware';
@@ -61,6 +62,7 @@ app.use(limiter)
 // Routes
 // TODO: Add routes
 app.use('/api/issues', issueRoutes);
+app.use('/api/organizations', orgRoutes)
 app.use('/api/auth/login', loginRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/upload', uploadRoutes);

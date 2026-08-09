@@ -30,7 +30,6 @@ type MapElement = GetNearbyIssueResponse | IssueCluster
 function isCluster(element: MapElement): element is IssueCluster {
     return (element as IssueCluster).issues != undefined
 }
-import { showLocation } from 'react-native-map-link';
 
 export default function MapViewScreen({ ref, issues, refetch }: any) {
     const navigation = useNavigation<StackNavigationProp<StackParams>>();
@@ -231,9 +230,6 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
                             closeCallout(() => {
                                 setCurrentElement(undefined)
                             })
-                        }}
-                        onForwardPress={() => {
-                            navigation.navigate("Issue Details", { issue: currentElement! })
                         }}
                     />
                 }

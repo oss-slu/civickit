@@ -4,10 +4,10 @@ import { FlatList, Modal, TouchableOpacity, View, StyleSheet } from "react-nativ
 import WrapperButton from "./WrapperButton";
 import { useState } from "react";
 import Checkbox from "expo-checkbox";
-import { palette, typography, colors, borderRadius, spacing } from "../styles";
+import { palette, typography, colors, borderRadius, spacing, globalStyles } from "../styles";
 import Button from "./Button";
 
-export default function ModalPopUp({ buttonStyle, buttonBody, style, children }: any) {
+export default function ModalPopUp({ buttonStyle, buttonBody, closeButtonBody, closeButtonStyle, style, children }: any) {
     const [isVisible, setIsVisible] = useState(false)
     const toggleModal = () => setIsVisible(!isVisible)
 
@@ -21,9 +21,18 @@ export default function ModalPopUp({ buttonStyle, buttonBody, style, children }:
                 <View style={{ ...styles.modalBackground, }}>
                     <View style={{ ...styles.modalContent, ...style }}>
                         {children}
-                        <Button style={styles.closeButton} onPress={toggleModal}
-                            text="Close">
-                        </Button>
+
+                        {closeButtonBody ?
+                            <TouchableOpacity style={{ ...styles.closeButton, ...closeButtonStyle }} onPress={toggleModal}>
+                                {closeButtonBody}
+                            </TouchableOpacity>
+                            :
+                            <Button style={styles.closeButton} onPress={toggleModal}
+                                text="Close">
+                            </Button>
+                        }
+
+
                     </View>
                 </View>
             </Modal>
@@ -62,7 +71,8 @@ const styles = StyleSheet.create({
         fontSize: typography.sizeLg
     },
     closeButton: {
+        ...globalStyles.button,
         backgroundColor: palette.ckRed,
-        fontSize: typography.sizeLg
+        fontSize: typography.sizeLg,
     }
 })

@@ -1,7 +1,8 @@
 // shared/src/types/api.ts
 import { IssueCategory, IssueStatus } from "../enums/issue";
-import { OrgRole } from "../enums/organization";
+import { BoundarySource, OrgRole, OrgStatus, OrgTier, OrgType } from "../enums/organization";
 import { PhotoMetadataSource } from "../utils/photoMetadata";
+import { Org } from "./org";
 import { User } from "./user";
 
 export interface ApiResponse<T> {
@@ -25,6 +26,18 @@ export interface CreateIssueDTO {
     locationSource?: PhotoMetadataSource;
     photoTakenAt?: string;
     photoTakenAtSource?: PhotoMetadataSource;
+}
+
+export interface CreateOrgDTO {
+    name: string;
+    slug: string;
+    type: OrgType;
+    status: OrgStatus;
+    tier: OrgTier;
+    categoryScope: IssueCategory[];
+    boundarySource?: BoundarySource;
+    boundaryRef?: string;
+    boundarySyncedAt?: Date;
 }
 
 export interface OrgMembershipDTO {
@@ -60,6 +73,9 @@ export interface GetNearbyIssueResponse {
     distance: string
     upvoteCount: number
     author: Pick<User, 'id' | 'name' | 'profileImage'>;
+    claimedById: string;
+    claimedByUser?: Pick<User, 'id' | 'name' | 'profileImage'>;
+    claimedByOrg?: Pick<Org, 'id' | 'name' | 'profileImage'>;
 }
 
 export interface LoginDTO {

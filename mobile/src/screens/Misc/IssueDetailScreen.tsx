@@ -1,13 +1,13 @@
 // mobile/src/screens/Misc/IssueDetailScreen.tsx
-import React, { useState, useEffect } from 'react';
-import { Platform, Text, ScrollView, FlatList, Image, StyleSheet, View, TouchableOpacity, useWindowDimensions, useAnimatedValue } from 'react-native';
-import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Platform, Text, ScrollView, FlatList, Image, StyleSheet, View, TouchableOpacity, useWindowDimensions, useAnimatedValue, TextInput } from 'react-native';
+import { useRoute, RouteProp, useNavigation, useFocusEffect } from '@react-navigation/native';
 import { GetNearbyIssueResponse, Issue } from '@civickit/shared';
 import { format, formatDistanceToNow } from 'date-fns';
-import { DefaultCategoryIcon, CheckMarkCircleIcon, CheckMarkIcon, ClockIcon, LocationPinIcon, TagIcon, UpvoteIcon, WrenchIcon, TextIcon } from '../../components/Icons';
+import { DefaultCategoryIcon, CheckMarkCircleIcon, CheckMarkIcon, ClockIcon, LocationPinIcon, TagIcon, UpvoteIcon, WrenchIcon, TextIcon, CheckMarkDoneIcon } from '../../components/Icons';
 import { borderRadius, colors, globalStyles, palette, size, spacing, typography } from '../../styles';
 import { PROVIDER_GOOGLE } from 'react-native-maps/lib/ProviderConstants';
-import { issuesApi } from '../../api';
+import { authApi, issuesApi, orgsApi } from '../../api';
 import Pin from '../../components/Pin';
 import { showLocation } from 'react-native-map-link';
 import Header from '../../components/Header';
@@ -17,6 +17,9 @@ import CategoryIcon from '../../components/CategoryIcon';
 import TimelineEntry from '../../components/TimelineEntry';
 import ImageGallery from '../../components/ImageGallery';
 import Timeline from '../../components/Timeline';
+import { useAuth } from '../../contexts/AuthContext';
+import ModalPopUp from '../../components/ModalPopup';
+import { popup } from 'leaflet';
 
 let MapView: any = null;
 let Marker: any = null;
@@ -38,12 +41,16 @@ const IssueDetailScreen = () => {
   //seeded with a sensible default so the first frame is reasonable; Header
   //reports its real height on layout and corrects this
   const [headerOffset, setHeaderOffset] = useState(spacing.xxxl)
-  const { issue } = route.params;
+  const [issue, setIssue] = useState<Issue | GetNearbyIssueResponse>(route.params.issue);
+
   const { width } = useWindowDimensions();
   const imageWidth = width - spacing.md * 2;
   const imageHeight = imageWidth * 1.25;
+  const { role, organization, user } = useAuth()
+  const [releaseMessage, setReleaseMessage] = useState("")
 
   const [hasEndorsed, setHasEndorsed] = useState(false);
+
   const [upvoteCount, setUpvoteCount] = useState(issue.upvoteCount ?? 0);
   const [timelineEntries, setTimelineEntries] = useState<any[]>()
   const [loading, setLoading] = useState(false);
@@ -64,7 +71,7 @@ const IssueDetailScreen = () => {
     }
   }
 
-
+  //get upvotes
   useEffect(() => {
     const controller = new AbortController();
 
@@ -82,17 +89,15 @@ const IssueDetailScreen = () => {
     return () => controller.abort();
   }, [issue.id]);
 
+  //get timeline entries when issue changes
   useEffect(() => {
     const getEntries = async () => {
       const timeline = await issuesApi.getTimelineEntries(issue.id)
       setTimelineEntries(timeline.updates)
     }
-
     getEntries()
 
-  }, [issue.id]);
-
-  //claimById -> orgMembership -> orgId -> org
+  }, [issue]);
 
 
   const handleEndorse = async () => {
@@ -114,6 +119,28 @@ const IssueDetailScreen = () => {
       setLoading(false);
     }
   };
+
+  const handleClaim = async () => {
+    await issuesApi.claimIssue(issue.id)
+    await issuesApi.addTimelineEntry(issue.id, {
+      message: organization.name + " claimed this issue",
+      status: "ACKNOWLEDGED"
+    })
+    setIssue(await issuesApi.getIssueById(issue.id))
+  }
+
+  const handleRelease = async () => {
+    await issuesApi.addTimelineEntry(issue.id, {
+      message: releaseMessage.length > 0 ? organization.name + " unclaimed this issue: " + releaseMessage : organization.name + " unclaimed this issue",
+      status: "REPORTED"
+    })
+    setIssue(await issuesApi.releaseIssue(issue.id))
+
+  }
+
+  const handleUpdate = async () => {
+    console.log("Update Pressed")
+  }
 
   const [category, setCategory] = useState<String>(issue.category.replace(/_/g, " ").toLowerCase())
 
@@ -154,11 +181,29 @@ const IssueDetailScreen = () => {
           height={imageHeight}
           width={imageWidth} />
 
+        {/* Claimed By */}
+        {issue.claimedById &&
+          <View style={{ ...styles.claimedByContainter }}>
+            {issue.claimedByOrg?.profileImage &&
+              <Image source={{ uri: issue.claimedByOrg.profileImage }} style={styles.orgProfilePic} />
+            }
+
+            <View>
+              <Text style={styles.claimedByLabel}>Issue Claimed By</Text>
+              <View style={{ flexDirection: "row", columnGap: spacing.xs }}>
+                <Text style={{ ...styles.claimedByText, fontWeight: typography.weightBold }}>{issue.claimedByUser?.name}</Text>
+                <Text style={styles.claimedByText}>with</Text>
+                <Text style={{ ...styles.claimedByText, fontWeight: typography.weightBold }}>{issue.claimedByOrg?.name}</Text>
+              </View>
+            </View>
+          </View>
+        }
+
         {/* Description */}
         <View style={{ ...styles.infoBlock, flexDirection: "row", columnGap: spacing.sm }}>
           <TextIcon color={colors.textPrimary}
             size={typography.sizeLg}
-            style={{ ...styles.icon, marginTop: spacing.xs }} />
+            style={{ marginTop: spacing.xs }} />
           {/* <Text style={styles.infoRowLabel}>Description</Text> */}
           <Text style={styles.infoRowText}>{issue.description}</Text>
         </View>
@@ -175,7 +220,7 @@ const IssueDetailScreen = () => {
             <View style={{ flexDirection: "row", columnGap: spacing.xs }}>
               <LocationPinIcon color={colors.textPrimary}
                 size={typography.sizeLg}
-                style={{ ...styles.icon, marginTop: spacing.xs }} />
+                style={{ marginTop: spacing.xs }} />
               <Text style={{ ...styles.infoRowText, textDecorationLine: 'underline' }}>
                 {resolvedAddress}
               </Text>
@@ -217,6 +262,35 @@ const IssueDetailScreen = () => {
         <Text style={styles.time}>
           Reported {formatDistanceToNow(new Date(issue.createdAt))} ago
         </Text>
+
+        {((role == "ORG_ADMIN" || role == "ORG_MEMBER") &&
+          (issue.claimedById != null && issue.claimedByOrg?.id == organization.id)) &&
+
+          <ModalPopUp
+            buttonBody={
+              <Text style={styles.releaseText}>Unclaim Issue</Text>}
+            closeButtonBody={<Text style={styles.cancelText}>Cancel</Text>}
+            closeButtonStyle={{ position: "relative" }}
+            buttonStyle={styles.releaseButton}
+          >
+            <View style={styles.popup}>
+              <Text style={styles.warningText}>Are you sure?</Text>
+              <TextInput onChangeText={setReleaseMessage}
+                value={releaseMessage}
+                placeholder='Add a note...'
+                style={styles.releaseMessage}
+                multiline
+                numberOfLines={5}
+                maxLength={500}
+                focusable
+              />
+              <TouchableOpacity style={styles.releaseButtonTwo} onPress={handleRelease}>
+                <Text style={styles.longButtonText}>Yes, unclaim this issue</Text>
+              </TouchableOpacity>
+            </View>
+          </ModalPopUp>
+
+        }
       </ScrollView>
 
       <Header title={issue.title}
@@ -224,17 +298,56 @@ const IssueDetailScreen = () => {
         lineNum={lineNum}
         setOffset={(i: any) => setHeaderOffset(i)} />
 
-      {/* Upvote / Endorse Button */}
-      <TouchableOpacity style={{ ...styles.endorseButton, backgroundColor: hasEndorsed ? palette.ckGreen : palette.ckRed }} onPress={handleEndorse}>
-        {hasEndorsed ?
-          <View style={{ flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
-            <Text style={styles.endorseText}>Endorsed</Text>
-            <CheckMarkIcon color={colors.textContrast} size={typography.sizeXl} />
-          </View> :
-          <Text style={styles.endorseText}>Endorse</Text>
-        }
+      {/*TODO: add check for service area/*}
+      {/* Endorse / Claim / Update Button */}
+      {((role != "ORG_ADMIN" && role != "ORG_MEMBER") || //user is a reporter
+        (issue.claimedById != null && issue.claimedByOrg?.id != organization.id)) ? //issue claimed by a different org
 
-      </TouchableOpacity>
+        <TouchableOpacity style={{ ...styles.longButton, backgroundColor: hasEndorsed ? palette.ckGreen : palette.ckRed, bottom: spacing.ml, marginHorizontal: spacing.ml }} onPress={handleEndorse}>
+          {hasEndorsed ?
+            <View style={{ flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
+              <Text style={styles.longButtonText}>Endorsed</Text>
+              <CheckMarkIcon color={colors.textContrast} size={typography.sizeXl} />
+            </View> :
+            <Text style={styles.longButtonText}>Endorse</Text>
+          }
+        </TouchableOpacity>
+        :
+        //responder
+        ((issue.claimedById != null && issue.claimedByUser?.id == user!.id || //user claimed this issue
+          (issue.claimedById != null && organization.id == issue.claimedByOrg?.id))) ?  //user's org claimed this issue
+
+          <View style={styles.buttonBar}>
+            <TouchableOpacity style={{ ...styles.littleEndorseButton, backgroundColor: hasEndorsed ? palette.ckGreen : palette.ckRed }} onPress={handleEndorse}>
+              {hasEndorsed ?
+                <View style={{ flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
+                  <CheckMarkIcon color={colors.textContrast} size={typography.sizeXl} />
+                </View> :
+                <CheckMarkIcon color={colors.textContrast} size={typography.sizeXl} />
+              }
+            </TouchableOpacity>
+
+
+            <TouchableOpacity style={{ ...styles.longButton, backgroundColor: palette.ckGreen }} onPress={handleUpdate}>
+              <Text style={styles.longButtonText}>Update</Text>
+            </TouchableOpacity>
+          </View> :
+
+          <View style={styles.buttonBar}>
+            <TouchableOpacity style={{ ...styles.littleEndorseButton, backgroundColor: hasEndorsed ? palette.ckGreen : palette.ckRed }} onPress={handleEndorse}>
+              {hasEndorsed ?
+                <View style={{ flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
+                  <CheckMarkIcon color={colors.textContrast} size={typography.sizeXl} />
+                </View> :
+                <CheckMarkIcon color={colors.textContrast} size={typography.sizeXl} />
+              }
+            </TouchableOpacity>
+            <TouchableOpacity style={{ ...styles.longButton, backgroundColor: palette.ckRed }} onPress={handleClaim}>
+              <Text style={styles.longButtonText}>Claim</Text>
+            </TouchableOpacity>
+          </View>
+
+      }
     </View>
   );
 }
@@ -268,17 +381,23 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 
+  releaseMessage: {
+    ...globalStyles.textBox,
+    ...globalStyles.bodyText,
+    minHeight: size.x4l,
+    justifyContent: "flex-start",
+    height: "auto",
+    width: "100%",
+    color: colors.textPrimary,
+
+  },
+
   catValue: {
     fontSize: typography.sizeLg,
     color: colors.textPrimary,
     fontWeight: typography.weightMedium
   },
 
-  infoCard: {
-    backgroundColor: palette.ckLightGray,
-    borderRadius: borderRadius.ml,
-    padding: spacing.sd,
-  },
 
   infoRowText: {
     fontSize: typography.sizeLg,
@@ -286,28 +405,36 @@ const styles = StyleSheet.create({
     //textTransform: 'capitalize' causes region to lowercase, and Pm to act weird, need to fix categories without doing this line because now tags is all lowercase
   },
 
-  infoRowLabel: {
-    fontSize: typography.sizeSm,
-    fontWeight: typography.weightBold,
+  claimedByText: {
+    fontSize: typography.sizeLg,
     color: colors.textPrimary,
+    //textTransform: 'capitalize' causes region to lowercase, and Pm to act weird, need to fix categories without doing this line because now tags is all lowercase
+  },
+
+  claimedByContainter: {
+    backgroundColor: colors.backgroundSecondary,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.sm,
+    paddingRight: spacing.md,
+    // alignSelf: "flex-start",
+    borderRadius: borderRadius.lg,
+    flexDirection: "row",
+    columnGap: spacing.xs,
+    alignItems: "center"
+
+  },
+
+  claimedByLabel: {
+    fontSize: typography.sizeSm,
+    fontWeight: typography.weightMedium,
+    color: colors.textPrimary,
+    marginLeft: spacing.xs
   },
 
   infoRowMeta: {
     fontSize: typography.sizeSm,
     color: colors.textMuted,
     marginTop: spacing.xs,
-  },
-
-  infoTextColumn: {
-    flex: 1,
-    gap: spacing.xs,
-  },
-
-  infoRow: {
-    flex: 1,
-    flexDirection: "row",
-    columnGap: spacing.sm,
-    paddingVertical: spacing.sm,
   },
 
   imageCaption: {
@@ -317,20 +444,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between"
   },
 
-  icon: {
-  },
-
-  divider: {
-    height: 1,
-    backgroundColor: palette.ckDarkGray,
-    marginVertical: spacing.xs,
-  },
-
-  image: {
-    borderRadius: borderRadius.md,
-    backgroundColor: palette.ckLightGray,
-    resizeMode: 'cover',
-  },
 
   infoBlock: {
     backgroundColor: colors.backgroundSecondary,
@@ -354,21 +467,76 @@ const styles = StyleSheet.create({
     color: palette.ckDarkGray,
   },
 
-  endorseButton: {
+  buttonBar: {
     position: 'absolute',
     bottom: spacing.ml,
-    left: spacing.ml,
-    right: spacing.ml,
+    paddingHorizontal: spacing.ml,
+    flexDirection: "row",
+    columnGap: spacing.sm,
+    width: "100%",
+  },
+
+  longButton: {
     backgroundColor: palette.ckRed,
     padding: spacing.md,
-    borderRadius: 40,
+    borderRadius: borderRadius.full,
     alignItems: 'center',
+    flexGrow: 1,
+    flexShrink: 0,
     ...globalStyles.shadow
   },
 
-  endorseText: {
+  littleEndorseButton: {
+    padding: spacing.md + 3,
+    borderRadius: borderRadius.full,
+    flexGrow: 0,
+    flexShrink: 0,
+    ...globalStyles.shadow
+  },
+
+  longButtonText: {
     fontSize: typography.sizeXl,
     fontWeight: 'bold',
     color: colors.textContrast
+  },
+
+  releaseButton: {
+    backgroundColor: palette.ckLightGray,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: borderRadius.full,
+    alignSelf: 'center',
+    marginTop: spacing.md
+  },
+  releaseText: {
+    color: colors.textSecondary,
+    fontSize: typography.sizeLg
+  },
+  cancelText: {
+    fontSize: typography.sizeXl,
+    fontWeight: 'bold',
+    color: colors.textContrast,
+  },
+  releaseButtonTwo: {
+    backgroundColor: palette.ckGreen,
+    paddingVertical: spacing.sm,
+    alignItems: "center",
+    borderRadius: borderRadius.full,
+    width: "100%"
+  },
+  warningText: {
+    color: colors.textPrimary,
+    fontSize: typography.sizeXl,
+    fontWeight: typography.weightMedium
+  },
+  popup: {
+    alignItems: "center",
+    rowGap: spacing.sm,
+    marginBottom: spacing.sm
+  },
+  orgProfilePic: {
+    width: size.xl,
+    height: size.xl,
+    borderRadius: borderRadius.full
   }
 },);

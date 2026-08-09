@@ -7,3 +7,4 @@ export { queryKeys } from './queryKeys';
 export * as authApi from './auth';
 export * as issuesApi from './issues';
 export * as uploadApi from './upload';
+export * as orgsApi from './orgs'

@@ -12,6 +12,7 @@ import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import EvilIcons from '@expo/vector-icons/EvilIcons';
 import Octicons from '@expo/vector-icons/Octicons';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 
 interface IconProps {
     color?: string,
@@ -394,7 +395,7 @@ export function EditIcon(props: IconProps) {
 
 export function CheckMarkCircleIcon(props: IconProps) {
     return (
-        <AntDesign name="check-circle"
+        <FontAwesome6 name="check-circle"
             color={props.color}
             size={props.size}
             style={props.style} />
@@ -422,6 +423,16 @@ export function LineGraphIcon(props: IconProps) {
 export function CheckMarkIcon(props: IconProps) {
     return (
         <Entypo name="check"
+            color={props.color}
+            size={props.size}
+            style={props.style} />
+    )
+}
+
+
+export function CheckMarkDoneIcon(props: IconProps) {
+    return (
+        <MaterialIcons name="done-all"
             color={props.color}
             size={props.size}
             style={props.style} />

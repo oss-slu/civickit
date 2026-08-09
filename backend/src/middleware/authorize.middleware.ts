@@ -2,12 +2,12 @@ import { Request, Response, NextFunction } from "express";
 import { rolePermissions } from "../config/permissions";
 import { AuthRepository } from "../repositories/auth.repository";
 import { AppError, UnauthorizedError } from "../utils/errors";
-import { OrgMembershipRepository } from "../repositories/orgMembership.repository";
+import { MembershipRepository } from "../repositories/membership.repository";
 import { IssueRepository } from "../repositories/issue.repository";
 import { OrgRepository } from "../repositories/org.repository";
 
 const authRepo = new AuthRepository();
-const orgMembershipRepo = new OrgMembershipRepository();
+const orgMembershipRepo = new MembershipRepository();
 const issueRepo = new IssueRepository();
 const orgRepo = new OrgRepository();
 
@@ -18,9 +18,6 @@ function requirePermission(permission: string) {
             if (!userId) {
                 throw new UnauthorizedError("Not authenticated");
             }
-
-            console.log(req)
-
             // Load the role fresh from the DB every request → revocation is instant.
             const user = await authRepo.findById(userId);
             if (!user) {
@@ -41,7 +38,7 @@ function requirePermission(permission: string) {
                     }
 
                     //TODO: check that issue is within org's service area
-                } else if (permission == "create:timeline_entry") {
+                } else if (permission == "create:timeline_entry" || permission == "update:release_issue") {
                     if (!req.params.issueId) {
                         throw new UnauthorizedError("No issueId provided");
                     }
@@ -64,7 +61,7 @@ function requirePermission(permission: string) {
 
                     const orgClaimedBy = await orgMembershipRepo.findByUser(claimedById)
                     if (!orgClaimedBy) {
-                        throw new UnauthorizedError("Isse not claimed by any organization");
+                        throw new UnauthorizedError("Issue not claimed by any organization");
                     }
 
                     if (orgClaimedBy.organizationId != orgMembership.organizationId) {

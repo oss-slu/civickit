@@ -6,16 +6,34 @@ import IssueCard from "./IssueCard";
 import WrapperButton from "./WrapperButton";
 import { CloseXIcon, RightArrowIcon } from "./Icons";
 import { GetNearbyIssueResponse, Issue } from "@civickit/shared";
+import { useCallback, useState } from "react";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { issuesApi } from "../api";
+import { StackParams } from "../types/StackParams";
+import { StackNavigationProp } from "@react-navigation/stack";
 
 interface CalloutProps {
     style?: any,
     issue: GetNearbyIssueResponse | undefined,
     onClosePress: () => void,
-    onForwardPress: () => void
+    onForwardPress?: null | (() => void)
 }
-export default function CalloutPopup({ style, issue, onClosePress, onForwardPress }: CalloutProps) {
+export default function CalloutPopup({ style, issue, onClosePress, onForwardPress = null }: CalloutProps) {
+    const [localIssue, setLocalIssue] = useState(issue)
+    const navigation = useNavigation<StackNavigationProp<StackParams>>();
+    useFocusEffect(
+        useCallback(() => {
+            const getIssue = async () => {
+                //get updates to issue
+                if (issue) {
+                    setLocalIssue({ ...(await issuesApi.getIssueById(issue.id)), distance: issue?.distance })
+                }
+            }
+            getIssue()
+        }, [])
+    )
 
-    if (issue != undefined) {
+    if (localIssue != undefined) {
         return (
             <View style={{ ...styles.container, ...style, }}>
                 <WrapperButton style={styles.button}
@@ -23,18 +41,18 @@ export default function CalloutPopup({ style, issue, onClosePress, onForwardPres
                     <CloseXIcon size={typography.sizeXl + 4} color={colors.textPrimary} />
                 </WrapperButton>
                 <TouchableOpacity style={styles.touchable}
-                    onPress={onForwardPress}
+                    onPress={onForwardPress ? onForwardPress : () => { navigation.navigate("Issue Details", { issue: localIssue }) }}
                     activeOpacity={0.6}
                 >
                     <IssueCard
-                        issue={issue}
+                        issue={localIssue}
                         variant="expanded"
                         style={{
                             borderRadius: 0,
                             backgroundColor: colors.background,
 
                         }}
-                        onPress={onForwardPress}
+                        onPress={onForwardPress ? onForwardPress : () => { navigation.navigate("Issue Details", { issue: localIssue }) }}
                         animated={false}
                     />
                     <View style={styles.button}

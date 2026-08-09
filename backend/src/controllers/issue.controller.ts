@@ -136,4 +136,14 @@ export class IssueController {
       next(error);
     }
   }
+
+  //release issue
+  async releaseIssue(req: Request, res: Response, next: NextFunction) {
+    try {
+      const issue = await issueService.releaseIssue(String(req.params.issueId));
+      res.json(issue);
+    } catch (error) {
+      next(error);
+    }
+  }
 }

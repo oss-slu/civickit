@@ -154,4 +154,18 @@ export class IssueRepository {
 
     return updated;
   }
+
+  async releaseIssue(id: string) {
+    const [updated] = await db
+      .update(issues)
+      .set({ claimedById: null })
+      .where(eq(issues.id, id))
+      .returning();
+
+    if (!updated) {
+      throw new RecordNotFoundError('Issue not found');
+    }
+
+    return updated;
+  }
 }
