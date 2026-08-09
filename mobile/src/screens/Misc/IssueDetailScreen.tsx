@@ -188,12 +188,12 @@ const IssueDetailScreen = () => {
               <Image source={{ uri: issue.claimedByOrg.profileImage }} style={styles.orgProfilePic} />
             }
 
-            <View>
+            <View style={{ paddingLeft: !issue.claimedByOrg?.profileImage ? spacing.sm : 0 }}>
               <Text style={styles.claimedByLabel}>Issue Claimed By</Text>
-              <View style={{ flexDirection: "row", columnGap: spacing.xs }}>
+              <View style={{ flexDirection: "row", columnGap: spacing.xs, paddingLeft: !issue.claimedByOrg?.profileImage ? spacing.xs : 0 }}>
                 <Text style={{ ...styles.claimedByText, fontWeight: typography.weightBold }}>{issue.claimedByUser?.name}</Text>
                 <Text style={styles.claimedByText}>with</Text>
-                <Text style={{ ...styles.claimedByText, fontWeight: typography.weightBold }}>{issue.claimedByOrg?.name}</Text>
+                <Text style={{ ...styles.claimedByText, fontWeight: typography.weightBold, }}>{issue.claimedByOrg?.name}</Text>
               </View>
             </View>
           </View>
