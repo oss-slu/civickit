@@ -20,6 +20,7 @@ describe('LoginRepository', () => {
         passwordHash: 'not-a-real-hash',
         profileImage: null,
         createdAt: expect.any(Date),
+        role: "REPORTER"
       });
     });
 
@@ -35,6 +36,7 @@ describe('LoginRepository', () => {
         'name',
         'passwordHash',
         'profileImage',
+        'role'
       ]);
     });
 
