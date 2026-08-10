@@ -112,7 +112,7 @@ describe('TimelineService', () => {
 
         it('should return updates attached to user1', async () => {
             const mockUser = { id: 'user1' };
-            const mockUpdate = {
+            const mockUpdate = [{
                 issueId: 'issue1',
                 id: 'update1',
                 createdAt: new Date(),
@@ -120,10 +120,10 @@ describe('TimelineService', () => {
                 message: 'test message 1',
                 status: 'ACKNOWLEDGED',
                 images: []
-            };
+            }];
             mockTimelineRepository.findByUser.mockResolvedValue(mockUpdate as any);
             const result = await timelineService.getUserUpdates(mockUser.id)
-
+            console.log("!!!!!", result)
             expect(result.updates).toEqual(mockUpdate);
         });
 

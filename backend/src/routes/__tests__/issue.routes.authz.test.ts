@@ -59,6 +59,8 @@ describe('issue status authorization', () => {
 
       const response = await route.send().send({ status: 'RESOLVED' });
 
+      console.log("$$$$$$", response)
+
       expect(response.status).toBe(403);
       expect(updateStatus).not.toHaveBeenCalled();
     });

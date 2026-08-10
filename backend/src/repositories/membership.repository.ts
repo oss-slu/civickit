@@ -30,7 +30,7 @@ export class MembershipRepository {
 
   async findByUser(id: string) {
     return first(
-      await db.select().from(orgMemberships).where(eq(orgMemberships.userId, id))
+      await db.select().from(orgMemberships).where(eq(orgMemberships.userId, id)).limit(1),
     )
 
   }

@@ -29,7 +29,7 @@ function requirePermission(permission: string) {
                 if (permission == "update:claim_issue") {
                     const orgMembership = await orgMembershipRepo.findByUser(userId)
                     if (!orgMembership) {
-                        throw new UnauthorizedError("User not in an organization");
+                        throw new AppError("User not in an organization", 403);
                     }
                     if (orgMembership.role != "ORG_MEMBER" &&
                         orgMembership.role != "ORG_ADMIN"
@@ -39,13 +39,18 @@ function requirePermission(permission: string) {
 
                     //TODO: check that issue is within org's service area
                 } else if (permission == "create:timeline_entry" || permission == "update:release_issue") {
+
+
                     if (!req.params.issueId) {
                         throw new UnauthorizedError("No issueId provided");
                     }
 
                     const orgMembership = await orgMembershipRepo.findByUser(userId)
+
+                    console.log("$$$$$", permission, req.params.issueId, userId)
+
                     if (!orgMembership) {
-                        throw new UnauthorizedError("User not in any organization");
+                        throw new AppError("User not in any organization", 403);
                     }
                     if (orgMembership.role != "ORG_MEMBER" &&
                         orgMembership.role != "ORG_ADMIN"
@@ -65,7 +70,7 @@ function requirePermission(permission: string) {
                     }
 
                     if (orgClaimedBy.organizationId != orgMembership.organizationId) {
-                        throw new UnauthorizedError("User not in selected issue's organization");
+                        throw new AppError("User not in selected issue's organization", 403);
                     }
                 } else {
                     throw new AppError("Forbidden", 403);

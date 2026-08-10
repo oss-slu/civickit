@@ -194,7 +194,19 @@ describe('IssueService', () => {
 
   describe('getIssueById', () => {
     it('should return issue if found', async () => {
-      const mockIssue = { id: '123' };
+      const mockIssue = {
+        id: '123',
+        claimedByOrg: {
+          id: undefined,
+          name: undefined,
+          profileImage: undefined,
+        },
+        claimedByUser: {
+          id: undefined,
+          name: undefined,
+          profileImage: undefined,
+        },
+      };
       mockIssueRepository.findById.mockResolvedValue(mockIssue as any);
 
       const result = await issueService.getIssueById('123');
@@ -215,8 +227,34 @@ describe('IssueService', () => {
   describe('getNearbyIssues', () => {
     it('should return issues from the repository without an N+1 upvote count loop', async () => {
       const mockIssues = [
-        { id: 'issue-1', upvoteCount: 3 },
-        { id: 'issue-2', upvoteCount: 0 },
+        {
+          id: 'issue-1',
+          upvoteCount: 3,
+          claimedByOrg: {
+            id: undefined,
+            name: undefined,
+            profileImage: undefined,
+          },
+          claimedByUser: {
+            id: undefined,
+            name: undefined,
+            profileImage: undefined,
+          },
+        },
+        {
+          id: 'issue-2',
+          upvoteCount: 0,
+          claimedByOrg: {
+            id: undefined,
+            name: undefined,
+            profileImage: undefined,
+          },
+          claimedByUser: {
+            id: undefined,
+            name: undefined,
+            profileImage: undefined,
+          },
+        },
       ];
       mockIssueRepository.findNearby.mockResolvedValue(mockIssues as any);
 

@@ -20,6 +20,8 @@ import Timeline from '../../components/Timeline';
 import { useAuth } from '../../contexts/AuthContext';
 import ModalPopUp from '../../components/ModalPopup';
 import { popup } from 'leaflet';
+import { StackParams } from '../../types/StackParams';
+import { StackNavigationProp } from '@react-navigation/stack';
 
 let MapView: any = null;
 let Marker: any = null;
@@ -55,7 +57,7 @@ const IssueDetailScreen = () => {
   const [timelineEntries, setTimelineEntries] = useState<any[]>()
   const [loading, setLoading] = useState(false);
 
-  const navigation = useNavigation();
+  const navigation = useNavigation<StackNavigationProp<StackParams>>()
 
   const resolvedAddress = issue.address || 'No address available';
   const formatSource = (source?: string) => source === 'exif' ? 'Photo metadata' : 'Device GPS';
@@ -121,20 +123,31 @@ const IssueDetailScreen = () => {
   };
 
   const handleClaim = async () => {
-    await issuesApi.claimIssue(issue.id)
-    await issuesApi.addTimelineEntry(issue.id, {
-      message: organization.name + " claimed this issue",
-      status: "ACKNOWLEDGED"
-    })
-    setIssue(await issuesApi.getIssueById(issue.id))
+    try {
+      await issuesApi.claimIssue(issue.id)
+      await issuesApi.addTimelineEntry(issue.id, {
+        message: organization.name + " claimed this issue",
+        status: "ACKNOWLEDGED"
+      })
+      setIssue(await issuesApi.getIssueById(issue.id))
+    } catch (error) {
+      console.log(error)
+      navigation.push('Error', { errorMessage: 'Issue Claim Failed' });
+      throw error;
+    }
   }
 
   const handleRelease = async () => {
-    await issuesApi.addTimelineEntry(issue.id, {
-      message: releaseMessage.length > 0 ? organization.name + " unclaimed this issue: " + releaseMessage : organization.name + " unclaimed this issue",
-      status: "REPORTED"
-    })
-    setIssue(await issuesApi.releaseIssue(issue.id))
+    try {
+      await issuesApi.addTimelineEntry(issue.id, {
+        message: releaseMessage.length > 0 ? organization.name + " unclaimed this issue: " + releaseMessage : organization.name + " unclaimed this issue",
+        status: "REPORTED"
+      })
+      setIssue(await issuesApi.releaseIssue(issue.id))
+    } catch (error) {
+      navigation.push('Error', { errorMessage: 'Issue Release Failed' });
+      throw error;
+    }
 
   }
 

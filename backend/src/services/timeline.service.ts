@@ -38,7 +38,8 @@ export class TimelineService {
   async getUserUpdates(userId: string) {
     const updates = await this.timelineRepository.findByUser(userId)
 
-    let newUp: any[] = []
+
+    let newUp: any[] | any = []
     for (let i = 0; i < updates.length; i++) {
       newUp[i] = {
         ...updates[i],

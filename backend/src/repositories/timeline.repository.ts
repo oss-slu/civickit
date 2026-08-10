@@ -32,6 +32,6 @@ export class TimelineRepository {
   }
 
   async findByUser(id: string) {
-    return db.select().from(timelineEntries).where(eq(timelineEntries.userId, id));
+    return await db.select().from(timelineEntries).where(eq(timelineEntries.userId, id));
   }
 }
