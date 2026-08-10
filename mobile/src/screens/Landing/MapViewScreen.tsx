@@ -1,9 +1,9 @@
 // mobile/src/screens/Landing/MapViewScreen.tsx
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { View, Animated, useAnimatedValue } from 'react-native';
-import { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import { Marker, PROVIDER_GOOGLE, Geojson, Polygon } from 'react-native-maps';
 import { StackParams } from '../../types/StackParams';
 import { useLocation } from '../../contexts/LocationContext';
 import Pin from '../../components/Pin';
@@ -13,9 +13,11 @@ import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet';
 import IssueListScreen from './IssueListScreen';
 import CalloutPopup from '../../components/CalloutPopup';
 import Cluster from '../../components/Cluster';
-import { getDistance } from 'geolib';
+import { getDistance, isPointInPolygon } from 'geolib';
 import CalloutListPopup from '../../components/CalloutListPopup';
 import { GetNearbyIssueResponse } from '@civickit/shared';
+import cityBounds from '../../../assets/shapes/stl_boundary_inverted.json'
+// import Geojson from 'react-native-geojson';
 
 interface IssueCluster {
     issues: GetNearbyIssueResponse[]
@@ -30,7 +32,6 @@ type MapElement = GetNearbyIssueResponse | IssueCluster
 function isCluster(element: MapElement): element is IssueCluster {
     return (element as IssueCluster).issues != undefined
 }
-import { showLocation } from 'react-native-map-link';
 
 export default function MapViewScreen({ ref, issues, refetch }: any) {
     const navigation = useNavigation<StackNavigationProp<StackParams>>();
@@ -41,6 +42,7 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
     const fadeAnim = useAnimatedValue(0);
     const posAnim = useAnimatedValue(0);
     const [paddingBottom, setPaddingBottom] = useState("110%")
+    const { setInBounds } = useLocation()
     //initial value matches the initialRegion delta (0.05) with the same
     //zoom factor used in onRegionChange, so the first render clusters the
     //same way as every render after the map settles
@@ -49,7 +51,6 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
 
     //get contexts from above layer(s)
     const location = useLocation().location
-
     const onMarkerPress = (element: MapElement) => {
         //large clusters zoom the map in instead of rendering a huge callout (#174)
         if (isCluster(element) && element.issues.length > 10) {
@@ -184,6 +185,18 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
         }
     }
 
+
+    const checkUserLocation = (coordinate: any) => {
+        const coords = cityBounds.features[0].geometry.coordinates[0][1].map((point) => {
+            return {
+                latitude: point[1],
+                longitude: point[0]
+            }
+        })
+        setInBounds(isPointInPolygon(coordinate, coords))
+    }
+
+
     return (
         <View style={{ flex: 1 }}>
             <MapView
@@ -195,14 +208,18 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
                 style={{ flex: 1 }}
                 toolbarEnabled={false}
                 onRegionChangeComplete={(Region) => onRegionChange(Region)}
+                onUserLocationChange={(e) => { checkUserLocation(e.nativeEvent.coordinate) }}
                 initialRegion={location ? {
                     latitude: location.latitude,
                     longitude: location.longitude,
                     latitudeDelta: 0.05,
                     longitudeDelta: 0.05,
                 } : undefined}
+            // minZoomLevel={11}
+            // cameraZoomRange={{ maxCenterCoordinateDistance: 11 }}
             >
                 {markerList}
+                <Geojson geojson={cityBounds as any} fillColor='rgba(0, 0, 0, 0.15)' />
             </MapView>
 
             <Animated.View
@@ -239,7 +256,6 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
                 }
 
             </Animated.View>
-
             <BottomSheet
                 ref={bottomSheetRef}
                 snapPoints={snapPoints}

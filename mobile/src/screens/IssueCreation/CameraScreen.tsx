@@ -1,7 +1,7 @@
 // mobile/src/screens/IssueScreation/CameraScreen.tsx
 import * as ImagePicker from 'expo-image-picker';
 import { useContext, useRef, useState } from 'react';
-import { StyleSheet, View, } from 'react-native';
+import { StyleSheet, View, Text } from 'react-native';
 import { CameraView, CameraType, useCameraPermissions, FlashMode } from 'expo-camera';
 import { MessageView } from '../../components/MessageView';
 import Button from '../../components/Button';
@@ -9,13 +9,14 @@ import { borderRadius, colors, palette, size, spacing, typography } from '../../
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { StackParams } from '../../types/StackParams';
-import { FlashlightOffIcon, FlashlightOnIcon, FlipCameraIcon, LightingFillIcon, LightingOutlineIcon, PictureIcon } from '../../components/Icons';
+import { FlashlightOffIcon, FlashlightOnIcon, FlipCameraIcon, LightingFillIcon, LightingOutlineIcon, PictureIcon, WarningIcon } from '../../components/Icons';
 import WrapperButton from '../../components/WrapperButton';
 import { FormStartedContext, ImagesContext, PhotoMetadataContext } from '../../contexts/FormContexts';
 import { useNearbyIssues } from '../../contexts/NearbyIssuesContext';
 import LoadingScreen from '../Misc/LoadingScreen';
 import { extractPhotoMetadataFromExif } from '../../utils/photoMetadata';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useLocation } from '../../contexts/LocationContext';
 
 
 export default function CameraScreen() {
@@ -26,6 +27,7 @@ export default function CameraScreen() {
     const [enableTorch, setEnableTorch] = useState<boolean>(false)
     const [permissions, requestPermission] = useCameraPermissions();
     const { formStarted, setFormStarted } = useContext(FormStartedContext)
+    const { inBounds } = useLocation()
 
     const { data, isLoading, error } = useNearbyIssues()
     const ref = useRef<CameraView>(null);
@@ -151,6 +153,18 @@ export default function CameraScreen() {
 
                 </WrapperButton>
             </View>
+
+            {!inBounds &&
+                <View style={[styles.messageContainer,
+                {
+                    position: "absolute",
+                    top: spacing.xxxl + spacing.sm
+                },]}>
+                    <WarningIcon size={typography.sizeLg} color={colors.textContrast} />
+                    <Text style={styles.text}>Your are outside of our service area</Text>
+                </View>
+            }
+
             <View style={styles.lowerButtonRow}>
 
                 <WrapperButton onPress={pickImage} style={{
@@ -233,6 +247,21 @@ const styles = StyleSheet.create({
         borderRadius: borderRadius.md,
         backgroundColor: palette.ckDark,
         opacity: 0.8
-
+    },
+    messageContainer: {
+        borderRadius: borderRadius.full,
+        backgroundColor: palette.ckDark,
+        opacity: 0.6,
+        paddingVertical: spacing.sm,
+        paddingHorizontal: spacing.md,
+        alignSelf: "center",
+        flexDirection: "row",
+        alignItems: "center",
+        columnGap: spacing.sm,
+    },
+    text: {
+        color: colors.textContrast,
+        fontWeight: typography.weightMedium,
+        fontSize: typography.sizeLg,
     }
 })

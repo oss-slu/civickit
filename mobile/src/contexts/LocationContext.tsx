@@ -11,6 +11,8 @@ interface LocationContextType {
     refetch: () => void;
     isLoading: boolean;
     error: Error | null;
+    inBounds: boolean,
+    setInBounds: (inBounds: boolean) => void
 }
 
 const LocationContext = createContext<LocationContextType | undefined>(undefined)
@@ -22,6 +24,7 @@ export const LocationProvider = ({ children }: any) => {
     const generalErrorMessage = "Error getting location"
     const [error, setError] = useState<Error | null>(null)
     const [isLoading, setIsLoading] = useState(true)
+    const [inBounds, setInBounds] = useState(false)
 
     const checkForErrors = (location: any, locationServicesEnabled: boolean) => {
         if (location != undefined) {
@@ -98,7 +101,7 @@ export const LocationProvider = ({ children }: any) => {
         )
     }
     return (
-        <LocationContext.Provider value={{ location, refetch, error, isLoading }}>
+        <LocationContext.Provider value={{ location, refetch, error, isLoading, inBounds, setInBounds }}>
             {children}
         </LocationContext.Provider>
     );

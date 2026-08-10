@@ -104,7 +104,8 @@ export const size = {
     longButton: 180,
     imageMd: 240,
     imageLg: 340,
-    navBar: 88
+    navBar: 88,
+    navBarHeight: 56
 };
 
 export const statusColors: Record<string, { background: string, stroke: string, text: string }> = {
