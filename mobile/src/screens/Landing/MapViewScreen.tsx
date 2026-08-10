@@ -50,6 +50,7 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
     const location = useLocation().location
 
     const onMarkerPress = (element: MapElement) => {
+
         //large clusters zoom the map in instead of rendering a huge callout (#174)
         if (isCluster(element) && element.issues.length > 10) {
             ref?.current?.animateToRegion({

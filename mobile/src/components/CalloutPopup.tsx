@@ -21,6 +21,7 @@ interface CalloutProps {
 export default function CalloutPopup({ style, issue, onClosePress, onForwardPress = null }: CalloutProps) {
     const [localIssue, setLocalIssue] = useState(issue)
     const navigation = useNavigation<StackNavigationProp<StackParams>>();
+
     useFocusEffect(
         useCallback(() => {
             const getIssue = async () => {
@@ -30,7 +31,7 @@ export default function CalloutPopup({ style, issue, onClosePress, onForwardPres
                 }
             }
             getIssue()
-        }, [])
+        }, [issue])
     )
 
     if (localIssue != undefined) {
