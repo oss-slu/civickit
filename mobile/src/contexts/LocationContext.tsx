@@ -83,6 +83,7 @@ export const LocationProvider = ({ children }: any) => {
         if (coords) {
             const { latitude, longitude } = coords;
             setLocation({ latitude: latitude, longitude: longitude })
+            // setLocation({ latitude: 34.7465, longitude: -92.2896 })
             checkForErrors({ latitude: latitude, longitude: longitude }, true)
         }
     }
