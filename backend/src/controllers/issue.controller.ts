@@ -5,10 +5,11 @@ import { IssueRepository } from '../repositories/issue.repository';
 import { PostUpdateDTO } from '@civickit/shared';
 import { TimelineService } from '../services/timeline.service';
 import { TimelineRepository } from '../repositories/timeline.repository';
+import { AuthRepository } from '../repositories/auth.repository';
 
 const issueRepository = new IssueRepository();
 const issueService = new IssueService(issueRepository);
-const timelineService = new TimelineService(new TimelineRepository());
+const timelineService = new TimelineService(new TimelineRepository(), new AuthRepository);
 
 // Parses an optional `limit` query param, clamped to [1, 200], defaulting to 100.
 function parseLimit(raw: unknown): number {
