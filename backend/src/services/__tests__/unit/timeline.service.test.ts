@@ -6,6 +6,7 @@ import { describe, beforeEach, vi, it, expect, Mocked, Mock } from 'vitest';
 import { CreateIssueDTO, PostUpdateDTO } from '@civickit/shared/src/types/api';
 import { IssueService } from '../../issue.service';
 import { IssueRepository } from '../../../repositories/issue.repository';
+import { AuthRepository } from '../../../repositories/auth.repository';
 
 // mock repository
 vi.mock('../../../src/repositories/timeline.repository');
@@ -16,6 +17,7 @@ describe('TimelineService', () => {
 
     let issueService: IssueService;
     let mockIssueRepository: Mocked<IssueRepository>;
+    let mockAuthRepository: Mocked<AuthRepository>;
 
 
     beforeEach(() => {
@@ -32,7 +34,13 @@ describe('TimelineService', () => {
             findNearby: vi.fn(),
         } as unknown as Mocked<IssueRepository>;
 
-        timelineService = new TimelineService(mockTimelineRepository);
+        mockAuthRepository = {
+            create: vi.fn(),
+            findById: vi.fn(),
+            findNearby: vi.fn(),
+        } as unknown as Mocked<AuthRepository>;
+
+        timelineService = new TimelineService(mockTimelineRepository, mockAuthRepository);
         issueService = new IssueService(mockIssueRepository);
         vi.clearAllMocks();
     });
@@ -95,7 +103,7 @@ describe('TimelineService', () => {
     describe('get', () => {
         it('should return updates attached to issue1', async () => {
             const mockIssue = { id: 'issue1' };
-            const mockUpdate = {
+            const mockUpdate = [{
                 issueId: 'issue1',
                 id: 'update1',
                 createdAt: new Date(),
@@ -103,7 +111,7 @@ describe('TimelineService', () => {
                 message: 'test message 1',
                 status: 'ACKNOWLEDGED',
                 images: []
-            };
+            }];
             mockTimelineRepository.findByIssue.mockResolvedValue(mockUpdate as any);
             const result = await timelineService.getIssueUpdates(mockIssue.id)
 
@@ -123,7 +131,6 @@ describe('TimelineService', () => {
             }];
             mockTimelineRepository.findByUser.mockResolvedValue(mockUpdate as any);
             const result = await timelineService.getUserUpdates(mockUser.id)
-            console.log("!!!!!", result)
             expect(result.updates).toEqual(mockUpdate);
         });
 

@@ -4,10 +4,8 @@ import { TimelineRepository } from '../repositories/timeline.repository';
 import { AuthRepository } from '../repositories/auth.repository';
 import { AuthService } from './auth.service';
 
-const authRepository = new AuthRepository()
-const authService = new AuthService(authRepository)
 export class TimelineService {
-  constructor(private readonly timelineRepository: TimelineRepository) { }
+  constructor(private readonly timelineRepository: TimelineRepository, private readonly authRepository: AuthRepository) { }
 
   async postUpdate(data: PostUpdateDTO, issueId: string, userId: string) {
     try {
@@ -26,10 +24,9 @@ export class TimelineService {
     for (let i = 0; i < updates.length; i++) {
       newUp[i] = {
         ...updates[i],
-        userName: (await authRepository.findById(updates[i].userId))?.name
+        userName: (await this.authRepository.findById(updates[i].userId))?.name
       }
     }
-
     return {
       updates: newUp
     };
@@ -43,10 +40,9 @@ export class TimelineService {
     for (let i = 0; i < updates.length; i++) {
       newUp[i] = {
         ...updates[i],
-        username: (await authRepository.findById(updates[i].userId))?.name
+        username: (await this.authRepository.findById(updates[i].userId))?.name
       }
     }
-
     return {
       updates: newUp
     };

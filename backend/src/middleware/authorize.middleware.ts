@@ -38,16 +38,17 @@ function requirePermission(permission: string) {
                     }
 
                     //TODO: check that issue is within org's service area
-                } else if (permission == "create:timeline_entry" || permission == "update:release_issue") {
+                } else if (permission == "create:timeline_entry" ||
+                    permission == "update:release_issue" ||
+                    permission == 'update:issue_status') {
 
 
-                    if (!req.params.issueId) {
-                        throw new UnauthorizedError("No issueId provided");
+                    let orgMembership = undefined
+                    try {
+                        orgMembership = await orgMembershipRepo.findByUser(userId)
+                    } catch (error) {
+                        throw new AppError("User not in any organization", 403);
                     }
-
-                    const orgMembership = await orgMembershipRepo.findByUser(userId)
-
-                    console.log("$$$$$", permission, req.params.issueId, userId)
 
                     if (!orgMembership) {
                         throw new AppError("User not in any organization", 403);
@@ -58,15 +59,19 @@ function requirePermission(permission: string) {
                         throw new AppError("Forbidden", 403);
                     }
 
+                    if (!req.params || !req.params.issueId) {
+                        throw new AppError("No issueId provided", 400);
+                    }
+
                     const issue = await issueRepo.findById(String(req.params.issueId))
                     const claimedById = issue?.claimedById
                     if (!claimedById) {
-                        throw new UnauthorizedError("Issue not claimed");
+                        throw new AppError("Issue not claimed", 400);
                     }
 
                     const orgClaimedBy = await orgMembershipRepo.findByUser(claimedById)
                     if (!orgClaimedBy) {
-                        throw new UnauthorizedError("Issue not claimed by any organization");
+                        throw new AppError("Issue not claimed by any organization", 400);
                     }
 
                     if (orgClaimedBy.organizationId != orgMembership.organizationId) {

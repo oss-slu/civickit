@@ -36,6 +36,7 @@ describe('requirePermission', () => {
     await requirePermission('update:issue_status')(req, res, next);
 
     const error = errorPassedToNext();
+    console.log("!!!!!", error)
     expect(error).toBeInstanceOf(AppError);
     expect(error.statusCode).toBe(403);
   });
