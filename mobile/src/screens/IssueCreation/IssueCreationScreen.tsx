@@ -335,7 +335,7 @@ export default function IssueCreationScreen() {
 
     const onUserEditsAddress = async (newAddress: string) => {
         setMiniMapAddress(newAddress)
-        setLocationSource("user")
+        setMiniMapSource("user")
         const geocode = await Location.geocodeAsync(newAddress);
 
         if (geocode.length == 0) {
