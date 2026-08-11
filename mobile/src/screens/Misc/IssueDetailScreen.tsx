@@ -22,6 +22,7 @@ import ModalPopUp from '../../components/ModalPopup';
 import { popup } from 'leaflet';
 import { StackParams } from '../../types/StackParams';
 import { StackNavigationProp } from '@react-navigation/stack';
+import MiniMap from '../../components/MiniMap';
 
 let MapView: any = null;
 let Marker: any = null;
@@ -60,7 +61,8 @@ const IssueDetailScreen = () => {
   const navigation = useNavigation<StackNavigationProp<StackParams>>()
 
   const resolvedAddress = issue.address || 'No address available';
-  const formatSource = (source?: string) => source === 'exif' ? 'Photo metadata' : 'Device GPS';
+  const formatSource = (source?: string) => source === 'exif' ? 'Photo EXIF.' :
+    source === 'device' ? 'Phone GPS.' : 'User Input';
 
   //header collapse
   const [lineNum, setLineNum] = useState(4)
@@ -248,26 +250,7 @@ const IssueDetailScreen = () => {
 
         {/* Map */}
         {Platform.OS !== 'web' && MapView && Marker ? (
-          <MapView
-            style={styles.map}
-            provider={PROVIDER_GOOGLE}
-            initialRegion={{
-              latitude: issue.latitude,
-              longitude: issue.longitude,
-              latitudeDelta: 0.01,
-              longitudeDelta: 0.01,
-            }}
-          >
-            <Marker
-              coordinate={{
-                latitude: issue.latitude,
-                longitude: issue.longitude,
-              }}
-            >
-
-              <Pin issue={issue} />
-            </Marker>
-          </MapView>
+          <MiniMap issue={issue} />
         ) : (
           <Text style={styles.mapFallback}>Map not supported on web</Text>
         )}
