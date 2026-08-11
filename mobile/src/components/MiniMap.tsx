@@ -22,7 +22,7 @@ export default function MiniMap({ issue, style, draggable = null, onMarkerDragEn
                     latitude: issue.latitude,
                     longitude: issue.longitude,
                 }}
-                draggable
+                draggable={draggable}
                 onDragEnd={(e) => onMarkerDragEnd(e.nativeEvent.coordinate)}
             >
 
