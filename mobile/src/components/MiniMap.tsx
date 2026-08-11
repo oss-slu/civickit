@@ -1,3 +1,4 @@
+// mobile/src/components/MiniMap.tsx
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import Pin from "./Pin";
 import { StyleSheet, View } from "react-native"
