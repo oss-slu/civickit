@@ -37,7 +37,7 @@ export class OrgController {
       const membership = await membershipService.createMembership(
         {
           ...req.body,
-        });
+        }, req.userId!);
       res.status(201).json(membership);
 
     } catch (error) {

@@ -1,7 +1,7 @@
 // backend/src/repositories/issue.repository.ts
 
 import { CreateIssueDTO, IssueStatus } from '@civickit/shared';
-import { and, desc, eq, exists, getTableColumns, sql } from 'drizzle-orm';
+import { and, desc, eq, exists, getTableColumns, isNull, sql } from 'drizzle-orm';
 import db, { first } from '../db';
 import { RecordNotFoundError } from '../db/errors';
 import { Issue, issues, upvotes, users } from '../db/schema';
@@ -141,18 +141,25 @@ export class IssueRepository {
     return updated;
   }
 
-  async claimIssue(id: string, data: Partial<{ claimedById: string }>) {
+  /**
+   * Claims the issue only if nobody holds it, and reports whether that
+   * happened. The `claimedById IS NULL` guard is part of the UPDATE rather than
+   * a read-then-write in the service so two organizations claiming the same
+   * issue at the same moment cannot both win: the second statement matches zero
+   * rows.
+   *
+   * Returns null when the write did not apply -- either the issue is already
+   * claimed or there is no such issue. The service reads back to tell those
+   * apart, since only the caller knows which one deserves which status.
+   */
+  async claimIssue(id: string, data: { claimedById: string }) {
     const [updated] = await db
       .update(issues)
       .set(data)
-      .where(eq(issues.id, id))
+      .where(and(eq(issues.id, id), isNull(issues.claimedById)))
       .returning();
 
-    if (!updated) {
-      throw new RecordNotFoundError('Issue not found');
-    }
-
-    return updated;
+    return updated ?? null;
   }
 
   async releaseIssue(id: string) {

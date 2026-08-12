@@ -8,6 +8,14 @@
 /** Postgres unique_violation. Prisma reported this as P2002. */
 const UNIQUE_VIOLATION = '23505';
 
+/**
+ * Postgres foreign_key_violation: a write referenced a row that does not exist.
+ * Prisma reported this as P2003. Unmapped it reaches the error handler as an
+ * unrecognised error and answers 500 -- an alarm that the server broke, when
+ * what happened is the caller sent an id for something that is not there.
+ */
+const FOREIGN_KEY_VIOLATION = '23503';
+
 /** Guards against a cause chain that loops back on itself. */
 const MAX_CAUSE_DEPTH = 5;
 
@@ -24,6 +32,10 @@ export function sqlStateOf(error: unknown, depth = 0): string | null {
 
 export function isUniqueViolation(error: unknown): boolean {
   return sqlStateOf(error) === UNIQUE_VIOLATION;
+}
+
+export function isForeignKeyViolation(error: unknown): boolean {
+  return sqlStateOf(error) === FOREIGN_KEY_VIOLATION;
 }
 
 /**

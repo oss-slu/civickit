@@ -25,6 +25,8 @@ describe('IssueService', () => {
       findNearby: vi.fn(),
       findByUser: vi.fn(),
       findByUpvoter: vi.fn(),
+      claimIssue: vi.fn(),
+      releaseIssue: vi.fn(),
     } as unknown as Mocked<IssueRepository>;
 
     issueService = new IssueService(mockIssueRepository);
@@ -353,6 +355,56 @@ describe('IssueService', () => {
       ).rejects.toThrow('A valid status is required');
 
       expect(mockIssueRepository.updateStatus).not.toHaveBeenCalled();
+    });
+  });
+
+  // A claim is exclusive: it is what tells one organization the issue is theirs
+  // to work. The repository applies the write conditionally and returns null
+  // when it did not apply, so the service reads back to say why.
+  describe('claimIssue', () => {
+    it('claims an issue that nobody holds', async () => {
+      const claimed = { id: 'issue-1', claimedById: 'user-1' };
+      mockIssueRepository.claimIssue.mockResolvedValue(claimed as any);
+
+      const result = await issueService.claimIssue('issue-1', 'user-1');
+
+      expect(result).toEqual(claimed);
+      expect(mockIssueRepository.claimIssue).toHaveBeenCalledWith('issue-1', {
+        claimedById: 'user-1',
+      });
+    });
+
+    it('rejects claiming an issue another user already holds with a 409', async () => {
+      mockIssueRepository.claimIssue.mockResolvedValue(null as any);
+      mockIssueRepository.findById.mockResolvedValue({
+        id: 'issue-1',
+        claimedById: 'someone-else',
+      } as any);
+
+      await expect(issueService.claimIssue('issue-1', 'user-1')).rejects.toMatchObject({
+        statusCode: 409,
+      });
+    });
+
+    // A double-tap on Claim must not surface an error to the user who already
+    // holds the issue.
+    it('is idempotent when the same user re-claims an issue they hold', async () => {
+      const held = { id: 'issue-1', claimedById: 'user-1' };
+      mockIssueRepository.claimIssue.mockResolvedValue(null as any);
+      mockIssueRepository.findById.mockResolvedValue(held as any);
+
+      const result = await issueService.claimIssue('issue-1', 'user-1');
+
+      expect(result).toMatchObject({ id: 'issue-1', claimedById: 'user-1' });
+    });
+
+    it('reports a 404 when the issue does not exist', async () => {
+      mockIssueRepository.claimIssue.mockResolvedValue(null as any);
+      mockIssueRepository.findById.mockResolvedValue(null as any);
+
+      await expect(issueService.claimIssue('nope', 'user-1')).rejects.toMatchObject({
+        statusCode: 404,
+      });
     });
   });
 });

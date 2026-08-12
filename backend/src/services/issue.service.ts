@@ -110,8 +110,29 @@ export class IssueService {
 
   // claim an issue
   // Callers must gate this behind requirePermission('update:claim_issue').
+  //
+  // A claim is exclusive -- it is what marks the issue as one organization's to
+  // work -- so claiming one that is already held has to fail rather than
+  // silently reassign it.
   async claimIssue(issueId: string, claimedById: string) {
-    return this.issueRepository.claimIssue(issueId, { claimedById });
+    const claimed = await this.issueRepository.claimIssue(issueId, { claimedById });
+    if (claimed) {
+      return claimed;
+    }
+
+    // The conditional update matched nothing. Read back to say why.
+    const existing = await this.issueRepository.findById(issueId);
+    if (!existing) {
+      throw new AppError('Issue not found', 404);
+    }
+
+    // Already held by the caller: treat as a no-op rather than an error, so a
+    // double-tap on Claim does not surface a failure.
+    if (existing.claimedById === claimedById) {
+      return existing;
+    }
+
+    throw new AppError('Issue is already claimed', 409);
   }
 
   // release an issue

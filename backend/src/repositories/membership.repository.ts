@@ -25,7 +25,9 @@ export class MembershipRepository {
   }
 
   async findById(id: string) {
-    return db.select().from(orgMemberships).where(eq(orgMemberships.id, id));
+    return first(
+      await db.select().from(orgMemberships).where(eq(orgMemberships.id, id)).limit(1),
+    );
   }
 
   async findByUser(id: string) {
@@ -33,6 +35,25 @@ export class MembershipRepository {
       await db.select().from(orgMemberships).where(eq(orgMemberships.userId, id)).limit(1),
     )
 
+  }
+
+  // A user's membership in one specific org. Authorization decisions must use
+  // this rather than findByUser: findByUser answers "is this user in *an* org",
+  // which would let an admin of one org act on every other org.
+  // OrgMembership_userId_organizationId_key makes the pair unique.
+  async findByUserAndOrg(userId: string, organizationId: string) {
+    return first(
+      await db
+        .select()
+        .from(orgMemberships)
+        .where(
+          and(
+            eq(orgMemberships.userId, userId),
+            eq(orgMemberships.organizationId, organizationId),
+          ),
+        )
+        .limit(1),
+    );
   }
   async findByOrganization(id: string) {
     return db.select().from(orgMemberships).where(eq(orgMemberships.organizationId, id));
