@@ -1,1 +1,0 @@
-ALTER TABLE "Issue" ADD COLUMN "claimedById" text;

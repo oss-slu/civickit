@@ -12,29 +12,8 @@
     {
       "idx": 1,
       "version": "7",
-      "when": 1786143790040,
-      "tag": "0001_wonderful_rumiko_fujikawa",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1786149332383,
-      "tag": "0002_melodic_stellaris",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1786149646862,
-      "tag": "0003_lumpy_franklin_storm",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1786224258199,
-      "tag": "0004_married_warlock",
+      "when": 1786555997092,
+      "tag": "0001_late_warstar",
       "breakpoints": true
     }
   ]

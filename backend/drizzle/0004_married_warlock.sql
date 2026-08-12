@@ -1,1 +1,0 @@
-ALTER TABLE "Organization" ADD COLUMN "profileImage" text;
