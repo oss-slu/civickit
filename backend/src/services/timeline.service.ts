@@ -1,11 +1,13 @@
 // backend/src/services/timeline.service.ts
 import { PostUpdateDTO } from '@civickit/shared/src/types/api';
 import { TimelineRepository } from '../repositories/timeline.repository';
+import { ImageRepository } from '../repositories/image.repository';
+import { Image } from '@civickit/shared/src/types/image';
 import { AuthRepository } from '../repositories/auth.repository';
 import { AuthService } from './auth.service';
 
 export class TimelineService {
-  constructor(private readonly timelineRepository: TimelineRepository, private readonly authRepository: AuthRepository) { }
+  constructor(private readonly timelineRepository: TimelineRepository, private imageRepository: ImageRepository, private readonly authRepository: AuthRepository) { }
 
   async postUpdate(data: PostUpdateDTO, issueId: string, userId: string) {
     try {
@@ -15,6 +17,16 @@ export class TimelineService {
     }
   }
 
+  private async getUpdateImages(imageIds: string[]) {
+    let images: Image[] = []
+    for (let i = 0; i < imageIds.length; i++) {
+      const image = await this.imageRepository.findById(imageIds[i])
+      if (image != null) {
+        images[i] = image
+      }
+    }
+    return images
+  }
 
 
   async getIssueUpdates(issueId: string) {
@@ -34,6 +46,16 @@ export class TimelineService {
 
   async getUserUpdates(userId: string) {
     const updates = await this.timelineRepository.findByUser(userId)
+    const newupdates = updates.map(async (update) => {
+      const images = await this.getUpdateImages(update.imageIds)
+      const newUp: any = {
+        ...update,
+        images: images
+      }
+      delete newUp.imageIds
+      return newUp
+    })
+
 
 
     let newUp: any[] | any = []
@@ -44,7 +66,7 @@ export class TimelineService {
       }
     }
     return {
-      updates: newUp
+      updates: newupdates
     };
   }
 

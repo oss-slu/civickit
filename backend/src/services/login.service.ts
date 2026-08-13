@@ -7,9 +7,10 @@ import { LoginDTO, LoginResponse } from "@civickit/shared";
 import "dotenv/config";
 import { AppError } from "../utils/errors";
 import { JWT_SECRET } from "../config/env";
+import { ImageRepository } from "../repositories/image.repository";
 
 export class LoginService {
-  constructor(private loginRepository: LoginRepository) { }
+  constructor(private loginRepository: LoginRepository, private imageRepository: ImageRepository) { }
 
   async login(credentials: LoginDTO): Promise<LoginResponse | AppError> {
     const user = await this.loginRepository.findByEmail(credentials.email);
@@ -28,6 +29,11 @@ export class LoginService {
     //generate token with user id
     const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' })
 
+    let profileImage = null
+    if (user.profileImageId) {
+      profileImage = await this.imageRepository.findById(user.profileImageId)
+    }
+
     const loginResponse: LoginResponse = {
       token: token,
       user: {
@@ -37,6 +43,7 @@ export class LoginService {
         createdAt: String(user.createdAt),
         profileImage: String(user.profileImage),
         role: user.role
+        profileImage: profileImage
       }
     };
 

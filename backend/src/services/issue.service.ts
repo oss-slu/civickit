@@ -1,12 +1,14 @@
 // backend/src/services/issue.service.ts
 
-import { IssueRepository } from '../repositories/issue.repository';
-import { CreateIssueDTO, IssueStatus } from '@civickit/shared';
+import { IssueRepository, NearbyIssue } from '../repositories/issue.repository';
+import { CreateIssueDTO, Issue, IssueStatus } from '@civickit/shared';
 import { Issue, issueStatus } from '../db/schema';
 import { AppError } from '../utils/errors';
 import { OrgRepository } from '../repositories/org.repository';
 import { AuthRepository } from '../repositories/auth.repository';
 import { MembershipRepository } from '../repositories/membership.repository';
+import { ImageRepository } from '../repositories/image.repository';
+import { Image } from '@civickit/shared/src/types/image';
 
 /** Checked against the database enum, so the two cannot drift apart. */
 function isIssueStatus(value: unknown): value is IssueStatus {
@@ -22,7 +24,7 @@ const authRepository = new AuthRepository()
 const membershipRepository = new MembershipRepository()
 
 export class IssueService {
-  constructor(private issueRepository: IssueRepository) { }
+  constructor(private issueRepository: IssueRepository, private imageRepository: ImageRepository) { }
 
   async createIssue(data: CreateIssueDTO, userId: string) {
     if (!data.title || data.title.length < 3) {
@@ -35,8 +37,6 @@ export class IssueService {
       throw new AppError('Latitude and longitude are required', 400);
     }
 
-    // Images are already URLs from Cloudinary, provided by the client
-    // Just save the issue with the image URLs
     return this.issueRepository.create({ ...data, userId, status: 'REPORTED' });
   }
 
@@ -67,9 +67,34 @@ export class IssueService {
     return newIssues
   }
 
+  private async getIssueImages(imageIds: string[]) {
+    let images: Image[] = []
+    for (let i = 0; i < imageIds.length; i++) {
+      const image = await this.imageRepository.findById(imageIds[i])
+      if (image != null) {
+        images[i] = image
+      }
+    }
+    console.log(images)
+    return images
+  }
+
   async getNearbyIssues(lat: number, lng: number, radius?: number, limit?: number) {
     const issues = await this.issueRepository.findNearby(lat, lng, radius, limit);
     const newIssues = this.getClaimedByInfo(issues)
+    return newIssues
+    const issues = await this.issueRepository.findNearby(lat, lng, radius, limit);
+    let newIssues: any[] = []
+    for (let i = 0; i < issues.length; i++) {
+      const images = await this.getIssueImages(issues[i].imageIds)
+      const newIssue: any = {
+        ...issues[i],
+        images: images
+      }
+      delete newIssue.imageIds
+      newIssues[i] = newIssue
+    }
+
     return newIssues
   }
 
@@ -81,17 +106,48 @@ export class IssueService {
 
     const newIssue = (await this.getClaimedByInfo([issue]))[0]
 
+    const images = await this.getIssueImages(issue.imageIds)
+    const fullIssue: any = {
+      ...issue,
+      images: images
+    }
+    delete fullIssue.imageIds
+
     // findById already counts upvotes in the same statement that reads the row.
     // This used to issue a second countUpvotes query and return both values.
-    return newIssue;
+    return fullIssue;
   }
 
   async getIssuesByUser(id: string, limit?: number) {
-    return this.issueRepository.findByUser(id, limit);
+    const issues = await this.issueRepository.findByUser(id, limit);
+    let newIssues: any[] = []
+    for (let i = 0; i < issues.length; i++) {
+      const images = await this.getIssueImages(issues[i].imageIds)
+      const newIssue: any = {
+        ...issues[i],
+        images: images
+      }
+      delete newIssue.imageIds
+      newIssues[i] = newIssue
+    }
+
+    return newIssues
   }
 
   async getIssuesByUserUpvotes(id: string, limit?: number) {
-    return this.issueRepository.findByUpvoter(id, limit);
+    const issues = await this.issueRepository.findByUpvoter(id, limit);
+    let newIssues: any[] = []
+    for (let i = 0; i < issues.length; i++) {
+      const images = await this.getIssueImages(issues[i].imageIds)
+      const newIssue: any = {
+        ...issues[i],
+        images: images
+      }
+      delete newIssue.imageIds
+      newIssues[i] = newIssue
+    }
+
+    return newIssues
   }
 
   // update status tag

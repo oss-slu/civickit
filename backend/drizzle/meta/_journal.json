@@ -12,8 +12,71 @@
     {
       "idx": 1,
       "version": "7",
-      "when": 1786555997092,
-      "tag": "0001_late_warstar",
+      "when": 1786469295222,
+      "tag": "0001_lazy_silver_fox",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1786469673807,
+      "tag": "0002_solid_lady_mastermind",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1786469817755,
+      "tag": "0003_true_robin_chapel",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1786470082071,
+      "tag": "0004_brief_falcon",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1786470271462,
+      "tag": "0005_nappy_cloak",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1786470552418,
+      "tag": "0006_dark_revanche",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1786541267972,
+      "tag": "0007_warm_photon",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1786542783454,
+      "tag": "0008_sturdy_deathbird",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1786549016697,
+      "tag": "0009_ambiguous_energizer",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1786549102932,
+      "tag": "0010_easy_felicia_hardy",
       "breakpoints": true
     }
   ]

@@ -156,6 +156,7 @@ const IssueDetailScreen = () => {
   }
 
   const [category, setCategory] = useState<String>(issue.category.replace(/_/g, " ").toLowerCase())
+  const imageLinks = issue.images.map((image) => image.link)
 
   return (
     <View style={{ ...styles.page, }}>
@@ -190,7 +191,7 @@ const IssueDetailScreen = () => {
 
         {/* Image Gallery */}
         <ImageGallery
-          images={issue.images}
+          images={imageLinks}
           height={imageHeight}
           width={imageWidth} />
 

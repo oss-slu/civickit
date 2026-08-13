@@ -9,6 +9,11 @@ export {
 } from './enums/issue'
 
 export {
+    PhotoSource
+} from './enums/image'
+
+
+export {
     OrgType,
     OrgStatus,
     OrgRole,
@@ -25,6 +30,10 @@ export {
     CreateAuthDTO,
     GetNearbyIssueResponse
 } from './types/api'
+
+export {
+    Image
+} from './types/image'
 
 export {
     Event,

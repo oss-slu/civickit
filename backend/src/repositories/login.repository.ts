@@ -13,7 +13,7 @@ export class LoginRepository {
           email: users.email,
           name: users.name,
           passwordHash: users.passwordHash,
-          profileImage: users.profileImage,
+          profileImageId: users.profileImageId,
           createdAt: users.createdAt,
           role: users.role
         })

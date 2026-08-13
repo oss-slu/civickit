@@ -1,9 +1,11 @@
 // shared/src/types/api.ts
+import { PhotoSource } from "../enums/image";
 import { IssueCategory, IssueStatus } from "../enums/issue";
 import { BoundarySource, OrgRole, OrgStatus, OrgTier, OrgType } from "../enums/organization";
 import { PhotoMetadataSource } from "../utils/photoMetadata";
 import { Org } from "./org";
 import { User } from "./user";
+import { Image } from "./image";
 
 export interface ApiResponse<T> {
     success: boolean;
@@ -22,11 +24,23 @@ export interface CreateIssueDTO {
     district?: string;
     subregion?: string;
     name?: string;
-    images?: string[];
+    imageIds?: string[];
     locationSource?: PhotoMetadataSource;
     photoTakenAt?: string;
     photoTakenAtSource?: PhotoMetadataSource;
 }
+
+export interface createImageDTO {
+    link: string,
+    createdAt?: Date,
+    photoTakenAt: string,
+    photoTakenAtSource: PhotoMetadataSource,
+    sourceId?: string,
+    source?: PhotoSource,
+    width: number,
+    height: number
+}
+
 
 export interface CreateOrgDTO {
     name: string;
@@ -49,7 +63,7 @@ export interface OrgMembershipDTO {
 export interface PostUpdateDTO {
     message: string;
     status: IssueStatus;
-    images?: string[];
+    imageIds?: string[];
     createdAt?: Date;
 }
 
@@ -63,7 +77,7 @@ export interface GetNearbyIssueResponse {
     district?: string;
     subregion?: string;
     name?: string;
-    images: string[];
+    images: Image[];
     id: string;
     createdAt: string;
     locationSource?: PhotoMetadataSource;

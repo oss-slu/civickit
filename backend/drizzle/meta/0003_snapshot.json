@@ -1,6 +1,6 @@
 {
-  "id": "dd91e996-8c6b-44a0-8a7c-8bbd099a7b71",
-  "prevId": "5296fc8f-c301-4494-955a-3198c8a6f887",
+  "id": "bef42230-52b4-4b94-bedc-ae096ab50a20",
+  "prevId": "971d119e-fdfb-44da-9d6c-7e511e7b22d3",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -423,6 +423,18 @@
           "primaryKey": false,
           "notNull": false
         },
+        "userId": {
+          "name": "userId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "orgId": {
+          "name": "orgId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "timelineEntryId": {
           "name": "timelineEntryId",
           "type": "text",
@@ -480,6 +492,32 @@
             "id"
           ],
           "onDelete": "cascade",
+          "onUpdate": "cascade"
+        },
+        "Image_userId_user_id_fk": {
+          "name": "Image_userId_user_id_fk",
+          "tableFrom": "Image",
+          "tableTo": "user",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "cascade"
+        },
+        "Image_orgId_Organization_id_fk": {
+          "name": "Image_orgId_Organization_id_fk",
+          "tableFrom": "Image",
+          "tableTo": "Organization",
+          "columnsFrom": [
+            "orgId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
           "onUpdate": "cascade"
         },
         "Image_timelineEntryId_TimelineEntry_id_fk": {

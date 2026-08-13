@@ -20,7 +20,7 @@ import Button from '../../components/Button';
 import WrapperButton from '../../components/WrapperButton';
 import SelectedImage from '../../components/SelectedImage';
 import ModalDropdown from '../../components/ModalDropdown';
-import { NetworkError, issuesApi } from '../../api';
+import { NetworkError, imagesApi, issuesApi } from '../../api';
 import { ImagesContext, PhotoMetadataContext, UserLocationContext, AddressContext, TitleContext, CategoryContext, DescriptionContext, FormStartedContext } from '../../contexts/FormContexts';
 import { userLocation } from '../../types/userLocation';
 import { PhotoMetadataSource } from '../../utils/photoMetadata';
@@ -194,6 +194,7 @@ export default function IssueCreationScreen() {
 
             // Step 1: Upload images to Cloudinary
             let imageUrls: string[] = [];
+            let imageIds: string[] = []
             if (images.length > 0) {
                 try {
                     const imageUploadStartTime = Date.now();
@@ -204,12 +205,38 @@ export default function IssueCreationScreen() {
                     });
                     imageUrls = await uploadImagesToCloudinary(images);
                     performanceLog.times.imageUploadMs = Date.now() - imageUploadStartTime;
+                    // console.log("!!!", resolvedPhotoMetadata)
+
+                    //add images to database
+                    for (let i = 0; i < imageUrls.length; i++) {
+                        try {
+                            const newImage = await imagesApi.createImage({
+                                link: imageUrls[i],
+                                photoTakenAt: resolvedPhotoMetadata.photoTakenAt,
+                                photoTakenAtSource: resolvedPhotoMetadata.photoTakenAtSource,
+                                width: 100,
+                                height: 100,
+                            })
+
+                            imageIds[i] = newImage.id
+                        } catch (e) {
+                            throw (e)
+                        }
+
+                    }
+
+                    console.log("***", imageIds)
+
+
+
+
                 } catch (uploadError) {
                     setIsLoading(false);
                     navigation.push('Error', { errorMessage: 'Image upload to Cloudinary failed' });
                     throw uploadError;
                 }
             }
+
 
             // Step 2: Send issue data with image URLs to backend
             const requestBody = {
@@ -223,10 +250,9 @@ export default function IssueCreationScreen() {
                 subregion: locationMetadata.subregion,
                 name: locationMetadata.name,
                 locationSource: resolvedPhotoMetadata.locationSource,
-                photoTakenAt: resolvedPhotoMetadata.photoTakenAt,
-                photoTakenAtSource: resolvedPhotoMetadata.photoTakenAtSource,
-                images: imageUrls
+                imageIds: imageIds
             };
+
 
             const backendStartTime = Date.now();
             let issue;

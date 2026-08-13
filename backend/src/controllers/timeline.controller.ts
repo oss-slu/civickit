@@ -5,6 +5,11 @@ import { TimelineRepository } from '../repositories/timeline.repository';
 import { IssueController } from './issue.controller';
 import { IssueService } from '../services/issue.service';
 import { IssueRepository } from '../repositories/issue.repository';
+import { ImageRepository } from '../repositories/image.repository';
+
+const imageRepository = new ImageRepository()
+const timelineService = new TimelineService(new TimelineRepository(), imageRepository);
+const issueService = new IssueService(new IssueRepository, imageRepository);
 import { AuthRepository } from '../repositories/auth.repository';
 
 const timelineService = new TimelineService(new TimelineRepository(), new AuthRepository);
@@ -21,7 +26,9 @@ export class TimelineController {
       await issueService.updateStatus(String(req.params.issueId), req.body.status);
       //add an entry to the timeline
       const result = await timelineService.postUpdate(req.body, String(issueId), userId);
-
+      result.imageIds.forEach((imageId) => {
+        imageRepository.updateSource(result.id, { source: "TIMELINE_ENTRY", sourceId: imageId })
+      })
       res.status(201).json(result);
 
     } catch (error: any) {

@@ -77,7 +77,7 @@ export default function IssueCard({ issue, variant = 'compact', onPress, style, 
         {/* Thumbnail */}
         {issue.images?.length > 0 && (
           <Image
-            source={{ uri: issue.images[0] }}
+            source={{ uri: issue.images[0].link }}
             style={isExpanded ? { ...styles.thumbnail } : { ...styles.thumbnail, width: size.xxl, height: size.xxl }}
             resizeMode="cover"
           />

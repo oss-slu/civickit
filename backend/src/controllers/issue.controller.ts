@@ -6,10 +6,13 @@ import { PostUpdateDTO } from '@civickit/shared';
 import { TimelineService } from '../services/timeline.service';
 import { TimelineRepository } from '../repositories/timeline.repository';
 import { AuthRepository } from '../repositories/auth.repository';
+import { ImageService } from '../services/image.service';
+import { ImageRepository } from '../repositories/image.repository';
 
-const issueRepository = new IssueRepository();
-const issueService = new IssueService(issueRepository);
-const timelineService = new TimelineService(new TimelineRepository(), new AuthRepository);
+const imageRepository = new ImageRepository
+const issueService = new IssueService(new IssueRepository(), imageRepository);
+const timelineService = new TimelineService(new TimelineRepository(), imageRepository, new AuthRepository);
+const imageService = new ImageService(imageRepository)
 
 // Parses an optional `limit` query param, clamped to [1, 200], defaulting to 100.
 function parseLimit(raw: unknown): number {
@@ -39,6 +42,7 @@ export class IssueController {
       if (isNaN(latitude) || isNaN(longitude)) {
         return res.status(400).json({ error: 'Invalid coordinates' });
       }
+
       const issue = await issueService.createIssue(
         {
           ...req.body,
@@ -47,26 +51,38 @@ export class IssueController {
         }, userId);
       res.status(201).json(issue);
 
+      //update images with source
+      issue.imageIds.forEach((imageId) => {
+        imageService.updateImageSource(imageId, "ISSUE", issue.id)
+      })
+
       // Seed the issue's timeline. Posted after the response, as on main --
       // see "Known gaps" in plans/013 before changing that ordering.
       const reported: PostUpdateDTO = {
         message: "Report Submitted",
         createdAt: new Date(issue.createdAt),
         status: issue.status,
-        images: issue.images
+        imageIds: issue.imageIds
       }
       await timelineService.postUpdate(reported, String(issue.id), userId);
 
-      const photoTaken: PostUpdateDTO = {
-        message: "Photo Taken",
-        createdAt: issue.photoTakenAt != null ? issue.photoTakenAt : issue.createdAt,
-        status: issue.status,
-        images: issue.images
-      }
-      await timelineService.postUpdate(photoTaken, String(issue.id), userId);
+      issue.imageIds.forEach(async (imageId) => {
+        const image = await imageService.getImageById(imageId)
+        const photoTaken: PostUpdateDTO = {
+          message: "Photo Taken",
+          createdAt: image.photoTakenAt != null ? image.photoTakenAt : image.createdAt,
+          status: issue.status,
+          imageIds: issue.imageIds
+        }
+        await timelineService.postUpdate(photoTaken, String(issue.id), userId);
+      })
+
     } catch (error) {
       next(error);
     }
+
+
+
   }
 
   async getNearbyIssues(req: Request, res: Response, next: NextFunction) {
