@@ -163,7 +163,7 @@ export default function CameraScreen() {
                 <View style={[styles.messageContainer,
                 {
                     position: "absolute",
-                    top: spacing.xxxl + spacing.sm
+                    top: spacing.xxxl + spacing.xl
                 },]}>
                     <WarningIcon size={typography.sizeLg} color={colors.textContrast} />
                     <Text style={styles.text}>Your are outside of our service area</Text>
