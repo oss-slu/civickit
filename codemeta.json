@@ -22,7 +22,7 @@
     "civic engagement",
     "city reporting"
   ],
-  "license": "https://spdx.org/licenses/MIT",
+  "license": "https://spdx.org/licenses/Apache-2.0",
   "programmingLanguage": [
     "TypeScript",
     "React",
