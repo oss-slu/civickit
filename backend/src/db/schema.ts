@@ -366,7 +366,7 @@ export const organizations = pgTable(
     geofence: geography('geofence'),
     createdAt: timestamp3('createdAt').notNull().defaultNow(),
     updatedAt: updatedAt(),
-    profileImage: text('profileImage'),
+    profileImageId: text('profileImageId'),
   },
   (table) => [
     index('Organization_status_idx').on(table.status),

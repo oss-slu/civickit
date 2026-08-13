@@ -78,6 +78,13 @@
       "when": 1786549102932,
       "tag": "0010_easy_felicia_hardy",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1786632210383,
+      "tag": "0011_peaceful_alex_power",
+      "breakpoints": true
     }
   ]
 }

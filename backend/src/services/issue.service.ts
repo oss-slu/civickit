@@ -1,7 +1,7 @@
 // backend/src/services/issue.service.ts
 
 import { IssueRepository, NearbyIssue } from '../repositories/issue.repository';
-import { CreateIssueDTO, Issue, IssueStatus } from '@civickit/shared';
+import { CreateIssueDTO, IssueStatus } from '@civickit/shared';
 import { Issue, issueStatus } from '../db/schema';
 import { AppError } from '../utils/errors';
 import { OrgRepository } from '../repositories/org.repository';
@@ -38,17 +38,11 @@ export class IssueService {
     }
 
     const issue = await this.issueRepository.create({ ...data, userId, status: 'REPORTED' });
-    const images = await this.getIssueImages(issue.imageIds)
-    const fullIssue: any = {
-      ...issue,
-      images: images
-    }
-    delete fullIssue.imageIds
-
-    return fullIssue;
+    const newIssues = await this.getExtendedIssueInfo([issue])
+    return newIssues[0]
   }
 
-  private async getClaimedByInfo(issues: Issue[]) {
+  private async getClaimedByInfo(issues: any[]) {
     let newIssues: any[] = []
     for (let i = 0; i < issues.length; i++) {
       let user = null
@@ -58,17 +52,19 @@ export class IssueService {
         const membershipOrgId = (await membershipRepository.findByUser(String(issues[i].claimedById)))?.organizationId
         org = await orgRepository.findById(String(membershipOrgId))
       }
+
+      //get profile image objs
       newIssues[i] = {
         ...issues[i],
         claimedByUser: {
           name: user?.name,
           id: user?.id,
-          profileImage: user?.profileImage
+          profileImage: user?.profileImageId && this.imageRepository.findById(user.profileImageId)
         },
         claimedByOrg: {
           name: org?.name,
           id: org?.id,
-          profileImage: org?.profileImage
+          profileImageId: org?.profileImageId && this.imageRepository.findById(org.profileImageId)
         },
       }
     }
@@ -86,14 +82,13 @@ export class IssueService {
     return images
   }
 
-  async getNearbyIssues(lat: number, lng: number, radius?: number, limit?: number) {
-    const issues = await this.issueRepository.findNearby(lat, lng, radius, limit);
-    const newIssues = this.getClaimedByInfo(issues)
-    return newIssues
-    const issues = await this.issueRepository.findNearby(lat, lng, radius, limit);
+
+  async getExtendedIssueInfo(issues: any[]) {
+    const issuesWithClaims = await this.getClaimedByInfo(issues)
+
     let newIssues: any[] = []
-    for (let i = 0; i < issues.length; i++) {
-      const images = await this.getIssueImages(issues[i].imageIds)
+    for (let i = 0; i < issuesWithClaims.length; i++) {
+      const images = await this.getIssueImages(issuesWithClaims[i].imageIds)
       const newIssue: any = {
         ...issues[i],
         images: images
@@ -103,6 +98,12 @@ export class IssueService {
     }
 
     return newIssues
+  }
+
+
+  async getNearbyIssues(lat: number, lng: number, radius?: number, limit?: number) {
+    const issues = await this.issueRepository.findNearby(lat, lng, radius, limit);
+    return await this.getExtendedIssueInfo(issues)
   }
 
   async getIssueById(id: string) {
@@ -110,51 +111,19 @@ export class IssueService {
     if (!issue) {
       throw new AppError('Issue not found', 404);
     }
+    const newIssues = await this.getExtendedIssueInfo([issue])
 
-    const newIssue = (await this.getClaimedByInfo([issue]))[0]
-
-    const images = await this.getIssueImages(issue.imageIds)
-    const fullIssue: any = {
-      ...issue,
-      images: images
-    }
-    delete fullIssue.imageIds
-
-    // findById already counts upvotes in the same statement that reads the row.
-    // This used to issue a second countUpvotes query and return both values.
-    return fullIssue;
+    return newIssues[0]
   }
 
   async getIssuesByUser(id: string, limit?: number) {
     const issues = await this.issueRepository.findByUser(id, limit);
-    let newIssues: any[] = []
-    for (let i = 0; i < issues.length; i++) {
-      const images = await this.getIssueImages(issues[i].imageIds)
-      const newIssue: any = {
-        ...issues[i],
-        images: images
-      }
-      delete newIssue.imageIds
-      newIssues[i] = newIssue
-    }
-
-    return newIssues
+    return await this.getExtendedIssueInfo(issues)
   }
 
   async getIssuesByUserUpvotes(id: string, limit?: number) {
     const issues = await this.issueRepository.findByUpvoter(id, limit);
-    let newIssues: any[] = []
-    for (let i = 0; i < issues.length; i++) {
-      const images = await this.getIssueImages(issues[i].imageIds)
-      const newIssue: any = {
-        ...issues[i],
-        images: images
-      }
-      delete newIssue.imageIds
-      newIssues[i] = newIssue
-    }
-
-    return newIssues
+    return await this.getExtendedIssueInfo(issues)
   }
 
   // update status tag
@@ -168,7 +137,9 @@ export class IssueService {
       throw new AppError('A valid status is required', 400);
     }
 
-    return this.issueRepository.updateStatus(id, { status });
+    const issue = await this.issueRepository.updateStatus(id, { status });
+    const newIssues = await this.getExtendedIssueInfo([issue])
+    return newIssues[0]
   }
 
   // claim an issue
@@ -180,7 +151,8 @@ export class IssueService {
   async claimIssue(issueId: string, claimedById: string) {
     const claimed = await this.issueRepository.claimIssue(issueId, { claimedById });
     if (claimed) {
-      return claimed;
+      const newIssues = await this.getExtendedIssueInfo([claimed])
+      return newIssues[0]
     }
 
     // The conditional update matched nothing. Read back to say why.
@@ -201,6 +173,8 @@ export class IssueService {
   // release an issue
   // Callers must gate this behind requirePermission('update:release_issue').
   async releaseIssue(issueId: string) {
-    return this.issueRepository.releaseIssue(issueId);
+    const issues = await this.issueRepository.releaseIssue(issueId);
+    const newIssues = await this.getExtendedIssueInfo([issues])
+    return newIssues[0]
   }
 }

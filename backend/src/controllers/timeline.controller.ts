@@ -6,14 +6,17 @@ import { IssueController } from './issue.controller';
 import { IssueService } from '../services/issue.service';
 import { IssueRepository } from '../repositories/issue.repository';
 import { ImageRepository } from '../repositories/image.repository';
+import { AuthRepository } from '../repositories/auth.repository';
+import { Image } from '@civickit/shared';
 
 const imageRepository = new ImageRepository()
-const timelineService = new TimelineService(new TimelineRepository(), imageRepository);
-const issueService = new IssueService(new IssueRepository, imageRepository);
-import { AuthRepository } from '../repositories/auth.repository';
+const issueRepository = new IssueRepository()
+const timelineRepository = new TimelineRepository()
+const authRepository = new AuthRepository()
 
-const timelineService = new TimelineService(new TimelineRepository(), new AuthRepository);
-const issueService = new IssueService(new IssueRepository);
+const issueService = new IssueService(issueRepository, imageRepository);
+const timelineService = new TimelineService(timelineRepository, imageRepository, authRepository);
+
 
 export class TimelineController {
 
@@ -26,8 +29,8 @@ export class TimelineController {
       await issueService.updateStatus(String(req.params.issueId), req.body.status);
       //add an entry to the timeline
       const result = await timelineService.postUpdate(req.body, String(issueId), userId);
-      result.imageIds.forEach((imageId) => {
-        imageRepository.updateSource(result.id, { source: "TIMELINE_ENTRY", sourceId: imageId })
+      result.images.forEach((image: Image) => {
+        imageRepository.updateSource(result.id, { source: "TIMELINE_ENTRY", sourceId: image.id })
       })
       res.status(201).json(result);
 
