@@ -32,7 +32,6 @@ export default function CalloutListPopup({ style, cluster, onClosePress }: any) 
                             key={issue.id}
                             issue={issue}
                             animated={true}
-                            onPress={() => { navigation.navigate("Issue Details", { issue: issue }) }}
                         />
                     )}
                 </ScrollView>

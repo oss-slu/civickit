@@ -80,7 +80,8 @@ export default function IssueCreationNav() {
                 <Stack.Screen name="Error" component={ErrorScreen}
                     options={{
                         headerTitle: "",
-                        headerShadowVisible: false
+                        headerShadowVisible: false,
+                        headerBackVisible: false,
                     }} />
             </Stack.Navigator>
         </ContextWrapper>

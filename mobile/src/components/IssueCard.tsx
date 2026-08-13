@@ -63,7 +63,7 @@ export default function IssueCard({ issue, variant = 'compact', onPress, style, 
     <Animated.View
       style={[
         globalStyles.card,
-        isExpanded ? { height: size.cardExpanded } : { height: size.cardCompact },
+        isExpanded && { height: size.cardExpanded },// : { height: size.cardCompact },
         { transform: [{ scale }] },
         style
       ]}
@@ -112,8 +112,16 @@ export default function IssueCard({ issue, variant = 'compact', onPress, style, 
           {/* Footer row */}
           <View style={styles.footer}>
 
-            {/* Status badge */}
-            <StatusBadge status={issue.status} />
+            <View style={{ flexDirection: "row", alignItems: "center", columnGap: spacing.xs }}>
+              {/* Status badge */}
+              <StatusBadge status={issue.status} />
+              {/* Org that claimed issue */}
+              {issue.claimedById &&
+                issue.claimedByOrg?.profileImage &&
+                <Image source={{ uri: issue.claimedByOrg.profileImage }} style={styles.orgProfilePic} />
+
+              }
+            </View>
 
             <View style={{ flexDirection: "row", columnGap: spacing.xs }}>
               {!isExpanded && (
@@ -156,6 +164,12 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     justifyContent: 'space-between',
+  },
+
+  orgProfilePic: {
+    width: size.lg,
+    height: size.lg,
+    borderRadius: borderRadius.full
   },
   row: {
     flexDirection: 'row',

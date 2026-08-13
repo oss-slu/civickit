@@ -29,9 +29,11 @@ router.patch('/:issueId/status', authMiddleware, requirePermission('update:issue
 
 // timeline functionality
 // postUpdate changes the issue status, so it needs the same gate as PATCH /status.
-router.post('/:issueId/update', authMiddleware, requirePermission('update:issue_status'), timelineController.postUpdate);
+router.post('/:issueId/update', authMiddleware, requirePermission('create:timeline_entry'), timelineController.postUpdate);
 router.get('/:issueId/updates', authMiddleware, timelineController.getIssueUpdates)
 router.get('/:userId/userUpdates', authMiddleware, timelineController.getUserUpdates)
 
-
+//claiming an issue
+router.post('/:issueId/claim', authMiddleware, requirePermission('update:claim_issue'), issueController.claimIssue)
+router.post('/:issueId/release', authMiddleware, requirePermission('update:release_issue'), issueController.releaseIssue)
 export default router;

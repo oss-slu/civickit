@@ -6,6 +6,7 @@ import { describe, beforeEach, vi, it, expect, Mocked, Mock } from 'vitest';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { AppError } from '../../../utils/errors';
+import { UserRole } from '@civickit/shared/src/enums/user';
 
 // mock repository
 vi.mock('../../../src/repositories/login.repository');
@@ -38,6 +39,7 @@ describe('LoginService', () => {
     });
 
     const date = new Date();
+    const role: UserRole = "REPORTER"
     const mockUser = () => ({
         id: '1',
         email: 'test@example.com',
@@ -45,7 +47,8 @@ describe('LoginService', () => {
         passwordHash: 'hashedPassword',
         profileImage: '',
         createdAt: date,
-        updatedAt: date
+        updatedAt: date,
+        role: role
     });
 
     it('should login successfully and return token + user', async () => {
@@ -80,7 +83,8 @@ describe('LoginService', () => {
                 name: 'Test User',
                 email: 'test@example.com',
                 createdAt: date.toString(),
-                profileImage: ''
+                profileImage: '',
+                role: "REPORTER"
             },
         });
     });

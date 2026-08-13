@@ -2,8 +2,11 @@
 
 import { IssueRepository } from '../repositories/issue.repository';
 import { CreateIssueDTO, IssueStatus } from '@civickit/shared';
-import { issueStatus } from '../db/schema';
+import { Issue, issueStatus } from '../db/schema';
 import { AppError } from '../utils/errors';
+import { OrgRepository } from '../repositories/org.repository';
+import { AuthRepository } from '../repositories/auth.repository';
+import { MembershipRepository } from '../repositories/membership.repository';
 
 /** Checked against the database enum, so the two cannot drift apart. */
 function isIssueStatus(value: unknown): value is IssueStatus {
@@ -12,6 +15,11 @@ function isIssueStatus(value: unknown): value is IssueStatus {
     (issueStatus.enumValues as readonly string[]).includes(value)
   );
 }
+
+
+const orgRepository = new OrgRepository()
+const authRepository = new AuthRepository()
+const membershipRepository = new MembershipRepository()
 
 export class IssueService {
   constructor(private issueRepository: IssueRepository) { }
@@ -32,8 +40,37 @@ export class IssueService {
     return this.issueRepository.create({ ...data, userId, status: 'REPORTED' });
   }
 
+  private async getClaimedByInfo(issues: Issue[]) {
+    let newIssues: any[] = []
+    for (let i = 0; i < issues.length; i++) {
+      let user = null
+      let org = null
+      if (issues[i].claimedById != null) {
+        user = await authRepository.findById(String(issues[i].claimedById))
+        const membershipOrgId = (await membershipRepository.findByUser(String(issues[i].claimedById)))?.organizationId
+        org = await orgRepository.findById(String(membershipOrgId))
+      }
+      newIssues[i] = {
+        ...issues[i],
+        claimedByUser: {
+          name: user?.name,
+          id: user?.id,
+          profileImage: user?.profileImage
+        },
+        claimedByOrg: {
+          name: org?.name,
+          id: org?.id,
+          profileImage: org?.profileImage
+        },
+      }
+    }
+    return newIssues
+  }
+
   async getNearbyIssues(lat: number, lng: number, radius?: number, limit?: number) {
-    return this.issueRepository.findNearby(lat, lng, radius, limit);
+    const issues = await this.issueRepository.findNearby(lat, lng, radius, limit);
+    const newIssues = this.getClaimedByInfo(issues)
+    return newIssues
   }
 
   async getIssueById(id: string) {
@@ -42,9 +79,11 @@ export class IssueService {
       throw new AppError('Issue not found', 404);
     }
 
+    const newIssue = (await this.getClaimedByInfo([issue]))[0]
+
     // findById already counts upvotes in the same statement that reads the row.
     // This used to issue a second countUpvotes query and return both values.
-    return issue;
+    return newIssue;
   }
 
   async getIssuesByUser(id: string, limit?: number) {
@@ -67,5 +106,38 @@ export class IssueService {
     }
 
     return this.issueRepository.updateStatus(id, { status });
+  }
+
+  // claim an issue
+  // Callers must gate this behind requirePermission('update:claim_issue').
+  //
+  // A claim is exclusive -- it is what marks the issue as one organization's to
+  // work -- so claiming one that is already held has to fail rather than
+  // silently reassign it.
+  async claimIssue(issueId: string, claimedById: string) {
+    const claimed = await this.issueRepository.claimIssue(issueId, { claimedById });
+    if (claimed) {
+      return claimed;
+    }
+
+    // The conditional update matched nothing. Read back to say why.
+    const existing = await this.issueRepository.findById(issueId);
+    if (!existing) {
+      throw new AppError('Issue not found', 404);
+    }
+
+    // Already held by the caller: treat as a no-op rather than an error, so a
+    // double-tap on Claim does not surface a failure.
+    if (existing.claimedById === claimedById) {
+      return existing;
+    }
+
+    throw new AppError('Issue is already claimed', 409);
+  }
+
+  // release an issue
+  // Callers must gate this behind requirePermission('update:release_issue').
+  async releaseIssue(issueId: string) {
+    return this.issueRepository.releaseIssue(issueId);
   }
 }

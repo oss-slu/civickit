@@ -1,9 +1,11 @@
 // backend/src/services/timeline.service.ts
 import { PostUpdateDTO } from '@civickit/shared/src/types/api';
 import { TimelineRepository } from '../repositories/timeline.repository';
+import { AuthRepository } from '../repositories/auth.repository';
+import { AuthService } from './auth.service';
 
 export class TimelineService {
-  constructor(private readonly timelineRepository: TimelineRepository) { }
+  constructor(private readonly timelineRepository: TimelineRepository, private readonly authRepository: AuthRepository) { }
 
   async postUpdate(data: PostUpdateDTO, issueId: string, userId: string) {
     try {
@@ -13,18 +15,36 @@ export class TimelineService {
     }
   }
 
+
+
   async getIssueUpdates(issueId: string) {
     const updates = await this.timelineRepository.findByIssue(issueId)
 
+    let newUp: any[] = []
+    for (let i = 0; i < updates.length; i++) {
+      newUp[i] = {
+        ...updates[i],
+        userName: (await this.authRepository.findById(updates[i].userId))?.name
+      }
+    }
     return {
-      updates
+      updates: newUp
     };
   }
 
   async getUserUpdates(userId: string) {
     const updates = await this.timelineRepository.findByUser(userId)
+
+
+    let newUp: any[] | any = []
+    for (let i = 0; i < updates.length; i++) {
+      newUp[i] = {
+        ...updates[i],
+        username: (await this.authRepository.findById(updates[i].userId))?.name
+      }
+    }
     return {
-      updates
+      updates: newUp
     };
   }
 

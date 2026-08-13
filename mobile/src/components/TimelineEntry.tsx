@@ -7,14 +7,12 @@ import CategoryIcon from "./CategoryIcon";
 import ModalPopUp from "./ModalPopup";
 import ImageGallery from "./ImageGallery";
 import { statusColors } from "../styles/theme";
-import { getUserById } from "../api/auth";
 import { authApi } from "../api";
 
 export default function TimelineEntry({ timelineEntry, issueCategory = "OTHER", first = false, last = false, anonymous = false }: any) {
 
     const [date, setDate] = useState(new Date(timelineEntry.createdAt))
     const [height, setHeight] = useState(0)
-    const [author, setAuthor] = useState<any>()
     const HOURS24 = 86400000
     const isNew = new Date().valueOf() - new Date(timelineEntry.createdAt).valueOf() < HOURS24
 
@@ -23,16 +21,6 @@ export default function TimelineEntry({ timelineEntry, issueCategory = "OTHER", 
         pictures = timelineEntry.images.map((image: any, index: number) =>
             <Image source={{ uri: image }} key={index} style={styles.picture} />)
     }
-
-    useEffect(() => {
-        const getEntries = async () => {
-            const user = await authApi.getUserById(timelineEntry.userId)
-            setAuthor(user)
-        }
-
-        getEntries()
-
-    }, [timelineEntry]);
 
     return (
         <View style={styles.container}>
@@ -65,11 +53,11 @@ export default function TimelineEntry({ timelineEntry, issueCategory = "OTHER", 
             <View style={styles.rightContainer} onLayout={(e) => setHeight(e.nativeEvent.layout.height)}>
                 <View style={{
                     flexDirection: "row", columnGap: spacing.sm, flexWrap: "wrap",
-                    marginHorizontal: spacing.sm
+                    marginHorizontal: spacing.xs,
                 }}>
                     {/* eventually check if user is reporter or responder and hide based on that */}
-                    {(!anonymous && author != undefined) &&
-                        <Text style={styles.author}>{author.name}</Text>}
+                    {(!anonymous && timelineEntry.userName != undefined) &&
+                        <Text style={styles.author}>{timelineEntry.userName}</Text>}
                     {(anonymous) &&
                         <Text style={styles.author}>User</Text>}
                     <Text style={styles.timestamp}>{
@@ -170,11 +158,13 @@ const styles = StyleSheet.create({
     timestamp: {
         fontSize: typography.sizeMd,
         color: colors.textSecondary,
+        alignSelf: "center"
     },
     author: {
         fontSize: typography.sizeMd,
         color: colors.textSecondary,
-        fontWeight: typography.weightMedium
+        fontWeight: typography.weightMedium,
+        alignSelf: "center"
     },
     statusText: {
         fontSize: typography.sizeLg,
