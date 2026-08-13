@@ -1,18 +1,20 @@
 // backend/src/routes/__tests__/issue.routes.authz.test.ts
 //
-// Every route that can change an issue's status must sit behind
-// requirePermission('update:issue_status'). PATCH /:issueId/status was gated
-// when roles landed but POST /:issueId/update, which also writes the status,
-// was not — these tests keep both closed.
+// Every route that can change an issue's status must sit behind a permission
+// gate. PATCH /:issueId/status was gated when roles landed but POST
+// /:issueId/update, which also writes the status, was not — these tests keep
+// both closed. (The update route now gates on create:timeline_entry; what
+// matters here is that a REPORTER is still refused by both.)
 
 import express from 'express';
 import request from 'supertest';
 import { describe, beforeEach, vi, it, expect } from 'vitest';
 import { errorHandler } from '../../middleware/error.middleware';
 
-const { findById, updateStatus } = vi.hoisted(() => ({
+const { findById, updateStatus, findByUser } = vi.hoisted(() => ({
   findById: vi.fn(),
   updateStatus: vi.fn(),
+  findByUser: vi.fn(),
 }));
 
 vi.mock('../../middleware/auth.middleware', () => ({
@@ -34,6 +36,16 @@ vi.mock('../../services/issue.service', () => ({
   },
 }));
 
+// The status gate falls through to an org-membership check. Left unmocked it
+// reaches the real database, and the connection failure -- not the role -- is
+// what the assertion would be measuring.
+vi.mock('../../repositories/membership.repository', () => ({
+  MembershipRepository: class {
+    findByUser = findByUser;
+    findByUserAndOrg = vi.fn().mockResolvedValue(null);
+  },
+}));
+
 import issueRoutes from '../issue.routes';
 
 const app = express();
@@ -50,6 +62,9 @@ describe('issue status authorization', () => {
   beforeEach(() => {
     findById.mockReset();
     updateStatus.mockReset();
+    findByUser.mockReset();
+    // A REPORTER responds for no organization, so the org branch denies too.
+    findByUser.mockResolvedValue(null);
     updateStatus.mockResolvedValue({ id: 'issue-1', status: 'RESOLVED' });
   });
 

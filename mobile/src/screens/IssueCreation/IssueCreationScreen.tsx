@@ -156,8 +156,6 @@ export default function IssueCreationScreen() {
         )
     }
 
-    console.log(photoMetadata)
-
     const handleCancel = () => {
         setImages([])
         setPhotoMetadata([])

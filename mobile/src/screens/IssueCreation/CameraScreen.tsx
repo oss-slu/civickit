@@ -140,6 +140,11 @@ export default function CameraScreen() {
 
                 </WrapperButton>
 
+
+                <View style={[styles.warningContainer]}>
+                    <Text style={styles.warningText}>If you believe this is an emergency, please exit the app and dial 911 immediately.</Text>
+                </View>
+
                 <WrapperButton onPress={toggleFlash} style={{
                     ...styles.roundButton,
                 }}>
@@ -205,8 +210,7 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         rowGap: spacing.sm,
         alignContent: "center",
-        alignItems: "center",
-        alignSelf: "flex-end",
+        alignItems: "flex-start",
         width: "100%"
     },
     lowerButtonRow: {
@@ -263,5 +267,23 @@ const styles = StyleSheet.create({
         color: colors.textContrast,
         fontWeight: typography.weightMedium,
         fontSize: typography.sizeLg,
+
+    },
+    warningContainer: {
+        backgroundColor: palette.ckDark,
+        opacity: 0.6,
+        width: "65%",
+        alignSelf: "center",
+        borderRadius: borderRadius.lg,
+        paddingVertical: spacing.sm,
+        paddingHorizontal: spacing.sm
+    },
+    warningText: {
+        color: colors.textContrast,
+        fontSize: typography.sizeLg,
+        fontWeight: typography.weightRegular,
+        textAlign: "center",
+        // lineHeight: typography.sizeLg + spacing.xs,
+        // letterSpacing: 0.5
     }
 })

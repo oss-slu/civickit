@@ -5,9 +5,9 @@ import { TimelineRepository } from '../repositories/timeline.repository';
 import { IssueController } from './issue.controller';
 import { IssueService } from '../services/issue.service';
 import { IssueRepository } from '../repositories/issue.repository';
+import { AuthRepository } from '../repositories/auth.repository';
 
-
-const timelineService = new TimelineService(new TimelineRepository());
+const timelineService = new TimelineService(new TimelineRepository(), new AuthRepository);
 const issueService = new IssueService(new IssueRepository);
 
 export class TimelineController {

@@ -1,9 +1,11 @@
 // backend/src/repositories/org.repository.ts
 
 import { IssueCategory } from '@civickit/shared';
-import { sql } from 'drizzle-orm';
-import db from '../db';
+import { eq, getTableColumns, sql } from 'drizzle-orm';
+import db, { first } from '../db';
 import { Issue, issues, organizations } from '../db/schema';
+import { CreateOrgDTO } from '@civickit/shared/src/types/api';
+import { MembershipRepository } from './membership.repository';
 
 /**
  * A row from findOrgsForIssue. Raw SQL, so the shape is asserted rather than
@@ -16,7 +18,41 @@ export interface OrgMatch {
   categoryScope: string[];
 }
 
+const membershipRepository = new MembershipRepository();
+
 export class OrgRepository {
+
+  async create(data: CreateOrgDTO & { adminId: string }) {
+    const [inserted] = await db
+      .insert(organizations)
+      .values({
+        name: data.name,
+        slug: data.slug,
+        type: data.type,
+        status: data.status,
+        tier: data.tier,
+        categoryScope: data.categoryScope,
+        boundaryRef: data.boundaryRef,
+        boundarySource: data.boundarySource,
+        boundarySyncedAt: data.boundarySyncedAt,
+        //TODO: add in geofence
+      })
+      .returning({ id: organizations.id });
+
+    const membership = membershipRepository.create({
+      userId: data.adminId,
+      organizationId: inserted.id,
+      role: "ORG_ADMIN"
+    })
+
+    // Re-read so create returns the same shape as findById.
+    return (await this.findById(inserted.id))!;
+  }
+
+  async findById(id: string) {
+    return first(await db.select().from(organizations).where(eq(organizations.id, id)).limit(1));
+  }
+
   // Orgs whose geofence contains the issue's point AND whose categoryScope
   // includes the issue's category AND are ACTIVE.
   //

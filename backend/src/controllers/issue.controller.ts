@@ -5,10 +5,11 @@ import { IssueRepository } from '../repositories/issue.repository';
 import { PostUpdateDTO } from '@civickit/shared';
 import { TimelineService } from '../services/timeline.service';
 import { TimelineRepository } from '../repositories/timeline.repository';
+import { AuthRepository } from '../repositories/auth.repository';
 
 const issueRepository = new IssueRepository();
 const issueService = new IssueService(issueRepository);
-const timelineService = new TimelineService(new TimelineRepository());
+const timelineService = new TimelineService(new TimelineRepository(), new AuthRepository);
 
 // Parses an optional `limit` query param, clamped to [1, 200], defaulting to 100.
 function parseLimit(raw: unknown): number {
@@ -120,6 +121,27 @@ export class IssueController {
   async updateStatus(req: Request, res: Response, next: NextFunction) {
     try {
       const issue = await issueService.updateStatus(String(req.params.issueId), req.body.status);
+      res.json(issue);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // claim issue
+  async claimIssue(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = req.userId!
+      const issue = await issueService.claimIssue(String(req.params.issueId), userId);
+      res.json(issue);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  //release issue
+  async releaseIssue(req: Request, res: Response, next: NextFunction) {
+    try {
+      const issue = await issueService.releaseIssue(String(req.params.issueId));
       res.json(issue);
     } catch (error) {
       next(error);

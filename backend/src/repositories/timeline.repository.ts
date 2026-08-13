@@ -28,10 +28,10 @@ export class TimelineRepository {
   }
 
   async findByIssue(id: string) {
-    return db.select().from(timelineEntries).where(eq(timelineEntries.issueId, id));
+    return await db.select().from(timelineEntries).where(eq(timelineEntries.issueId, id));
   }
 
   async findByUser(id: string) {
-    return db.select().from(timelineEntries).where(eq(timelineEntries.userId, id));
+    return await db.select().from(timelineEntries).where(eq(timelineEntries.userId, id));
   }
 }

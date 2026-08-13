@@ -165,6 +165,7 @@ const styles = StyleSheet.create({
     flex: {
         flex: 1,
         backgroundColor: colors.surface,
+        paddingVertical: spacing.md
     },
     container: {
         //paddingTop is supplied inline from the safe-area inset

@@ -52,6 +52,7 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
     //get contexts from above layer(s)
     const location = useLocation().location
     const onMarkerPress = (element: MapElement) => {
+
         //large clusters zoom the map in instead of rendering a huge callout (#174)
         if (isCluster(element) && element.issues.length > 10) {
             ref?.current?.animateToRegion({
@@ -248,9 +249,6 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
                             closeCallout(() => {
                                 setCurrentElement(undefined)
                             })
-                        }}
-                        onForwardPress={() => {
-                            navigation.navigate("Issue Details", { issue: currentElement! })
                         }}
                     />
                 }
