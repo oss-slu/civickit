@@ -158,6 +158,8 @@ const IssueDetailScreen = () => {
   const [category, setCategory] = useState<String>(issue.category.replace(/_/g, " ").toLowerCase())
   const imageLinks = issue.images.map((image) => image.link)
 
+  console.log(issue)
+
   return (
     <View style={{ ...styles.page, }}>
       <ScrollView contentContainerStyle={{ ...styles.container, paddingTop: headerOffset + spacing.md, rowGap: spacing.sm }}

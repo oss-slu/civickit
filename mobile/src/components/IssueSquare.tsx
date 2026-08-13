@@ -175,7 +175,7 @@ export default function IssueSquare({ issue, variant = 'compact', onPress = null
                 <View>
                     {localIssue.images?.length > 0 && (
                         <Image
-                            source={{ uri: localIssue.images[0] }}
+                            source={{ uri: issue.images[0].link }}
                             style={styles.thumbnail}
                             resizeMode="cover"
                         />

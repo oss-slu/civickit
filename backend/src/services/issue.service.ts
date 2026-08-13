@@ -37,7 +37,15 @@ export class IssueService {
       throw new AppError('Latitude and longitude are required', 400);
     }
 
-    return this.issueRepository.create({ ...data, userId, status: 'REPORTED' });
+    const issue = await this.issueRepository.create({ ...data, userId, status: 'REPORTED' });
+    const images = await this.getIssueImages(issue.imageIds)
+    const fullIssue: any = {
+      ...issue,
+      images: images
+    }
+    delete fullIssue.imageIds
+
+    return fullIssue;
   }
 
   private async getClaimedByInfo(issues: Issue[]) {
@@ -75,7 +83,6 @@ export class IssueService {
         images[i] = image
       }
     }
-    console.log(images)
     return images
   }
 

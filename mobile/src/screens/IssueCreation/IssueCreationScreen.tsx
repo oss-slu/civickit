@@ -72,15 +72,15 @@ export default function IssueCreationScreen() {
         const fallbackTakenAt = new Date().toISOString();
         const resolved = resolvePhotoMetadata(photoMetadata, { ...deviceLocation, takenAt: fallbackTakenAt });
 
-        setLocation({ latitude: resolved.latitude, longitude: resolved.longitude });
-        setLocationSource(resolved.locationSource);
+        setLocation({ latitude: resolved[0].latitude, longitude: resolved[0].longitude });
+        setLocationSource(resolved[0].locationSource);
         setLocationMetadata({});
-        setAddress(resolved.locationSource === 'exif' ? 'Detecting photo location...' : 'Detecting phone location...');
+        setAddress(resolved[0].locationSource === 'exif' ? 'Detecting photo location...' : 'Detecting phone location...');
 
         (async () => {
             const geocode = await Location.reverseGeocodeAsync({
-                latitude: resolved.latitude,
-                longitude: resolved.longitude,
+                latitude: resolved[0].latitude,
+                longitude: resolved[0].longitude,
             });
 
             //reverseGeocodeAsync does not work on web, will return []
@@ -170,8 +170,8 @@ export default function IssueCreationScreen() {
                 takenAt: new Date().toISOString(),
             });
 
-            formData.append('latitude', resolvedPhotoMetadata.latitude.toString());
-            formData.append('longitude', resolvedPhotoMetadata.longitude.toString());
+            // formData.append('latitude', resolvedPhotoMetadata.latitude.toString());
+            // formData.append('longitude', resolvedPhotoMetadata.longitude.toString());
             formData.append('address', address);
             images.forEach(uri => {
                 formData.append('images', { uri: uri, type: 'image/jpeg', name: 'photo.jpg' } as unknown as File);
@@ -212,10 +212,10 @@ export default function IssueCreationScreen() {
                         try {
                             const newImage = await imagesApi.createImage({
                                 link: imageUrls[i],
-                                photoTakenAt: resolvedPhotoMetadata.photoTakenAt,
-                                photoTakenAtSource: resolvedPhotoMetadata.photoTakenAtSource,
-                                width: 100,
-                                height: 100,
+                                photoTakenAt: resolvedPhotoMetadata[i].photoTakenAt,
+                                photoTakenAtSource: resolvedPhotoMetadata[i].photoTakenAtSource,
+                                width: resolvedPhotoMetadata[i].width ?? -1,
+                                height: resolvedPhotoMetadata[i].height ?? -1,
                             })
 
                             imageIds[i] = newImage.id
@@ -224,10 +224,6 @@ export default function IssueCreationScreen() {
                         }
 
                     }
-
-                    console.log("***", imageIds)
-
-
 
 
                 } catch (uploadError) {
@@ -243,13 +239,13 @@ export default function IssueCreationScreen() {
                 title,
                 description,
                 category: category!,
-                latitude: resolvedPhotoMetadata.latitude,
-                longitude: resolvedPhotoMetadata.longitude,
+                latitude: resolvedPhotoMetadata[0].latitude,
+                longitude: resolvedPhotoMetadata[0].longitude,
                 address,
                 district: locationMetadata.district,
                 subregion: locationMetadata.subregion,
                 name: locationMetadata.name,
-                locationSource: resolvedPhotoMetadata.locationSource,
+                locationSource: resolvedPhotoMetadata[0].locationSource,
                 imageIds: imageIds
             };
 

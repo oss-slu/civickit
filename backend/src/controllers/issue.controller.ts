@@ -2,7 +2,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { IssueService } from '../services/issue.service';
 import { IssueRepository } from '../repositories/issue.repository';
-import { PostUpdateDTO } from '@civickit/shared';
+import { Image, PostUpdateDTO } from '@civickit/shared';
 import { TimelineService } from '../services/timeline.service';
 import { TimelineRepository } from '../repositories/timeline.repository';
 import { AuthRepository } from '../repositories/auth.repository';
@@ -52,8 +52,8 @@ export class IssueController {
       res.status(201).json(issue);
 
       //update images with source
-      issue.imageIds.forEach((imageId) => {
-        imageService.updateImageSource(imageId, "ISSUE", issue.id)
+      issue.images.forEach((image: Image) => {
+        imageService.updateImageSource(image.id, "ISSUE", issue.id)
       })
 
       // Seed the issue's timeline. Posted after the response, as on main --
@@ -66,13 +66,12 @@ export class IssueController {
       }
       await timelineService.postUpdate(reported, String(issue.id), userId);
 
-      issue.imageIds.forEach(async (imageId) => {
-        const image = await imageService.getImageById(imageId)
+      issue.images.forEach(async (image: Image) => {
         const photoTaken: PostUpdateDTO = {
           message: "Photo Taken",
           createdAt: image.photoTakenAt != null ? image.photoTakenAt : image.createdAt,
           status: issue.status,
-          imageIds: issue.imageIds
+          imageIds: [image.id]
         }
         await timelineService.postUpdate(photoTaken, String(issue.id), userId);
       })

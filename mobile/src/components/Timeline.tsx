@@ -14,6 +14,8 @@ export default function Timeline({ entries }: any) {
         [entries]
     );
 
+    //finds earliest "Report Submitted" and makes everything submitted before that anonymous
+    const reportSubmitted = sorted.findLastIndex(entry => entry.message == 'Report Submitted')
     return (
         <View style={styles.timeline}>
             {sorted.map((entry: any, i: number) => (
@@ -24,7 +26,7 @@ export default function Timeline({ entries }: any) {
                     last={i === sorted.length - 1}
                     // the two oldest entries are the auto-generated "Report
                     // Submitted" / "Photo Taken" pair, which stay unattributed
-                    anonymous={i >= sorted.length - 2}
+                    anonymous={i >= reportSubmitted}
                 />
             ))}
         </View>

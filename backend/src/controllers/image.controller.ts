@@ -7,8 +7,6 @@ const imageService = new ImageService(new ImageRepository)
 
 export class ImageController {
   async createImage(req: Request, res: Response, next: NextFunction) {
-
-    console.log(req.body)
     try {
       const userId = req.userId!
 
