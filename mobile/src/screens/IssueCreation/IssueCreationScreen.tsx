@@ -159,24 +159,12 @@ export default function IssueCreationScreen() {
 
     const handleSubmit = async () => {
         try {
-            const formData = new FormData();
-            formData.append('title', title);
-            formData.append('description', description);
-            formData.append('category', category!);
             const fallbackLocation = deviceLocation ?? location!;
             const resolvedPhotoMetadata = resolvePhotoMetadata(photoMetadata, {
                 latitude: fallbackLocation.latitude,
                 longitude: fallbackLocation.longitude,
                 takenAt: new Date().toISOString(),
             });
-
-            // formData.append('latitude', resolvedPhotoMetadata.latitude.toString());
-            // formData.append('longitude', resolvedPhotoMetadata.longitude.toString());
-            formData.append('address', address);
-            images.forEach(uri => {
-                formData.append('images', { uri: uri, type: 'image/jpeg', name: 'photo.jpg' } as unknown as File);
-            });
-
             if (!authToken) {
                 setIsLoading(false)
                 navigation.push('Error', { errorMessage: 'Not authenticated' });
@@ -322,7 +310,7 @@ export default function IssueCreationScreen() {
                             images.length > 0 ? { display: "none" } : { display: "flex" }]} />
 
 
-                        <SelectedImageGallery images={images} onDeletePressed={onImageDeletePressed}
+                        <SelectedImageGallery images={images} metadata={photoMetadata} onDeletePressed={onImageDeletePressed}
                             width={imageWidth} height={imageHeight} />
                     </View>
 

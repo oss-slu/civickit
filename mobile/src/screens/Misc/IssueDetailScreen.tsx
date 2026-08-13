@@ -201,7 +201,7 @@ const IssueDetailScreen = () => {
         {issue.claimedById &&
           <View style={{ ...styles.claimedByContainter }}>
             {issue.claimedByOrg?.profileImage &&
-              <Image source={{ uri: issue.claimedByOrg.profileImage }} style={styles.orgProfilePic} />
+              <Image source={{ uri: issue.claimedByOrg.profileImage.link }} style={styles.orgProfilePic} />
             }
 
             <View style={{ paddingLeft: !issue.claimedByOrg?.profileImage ? spacing.sm : 0 }}>

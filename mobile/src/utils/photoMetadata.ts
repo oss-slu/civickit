@@ -5,7 +5,8 @@ export interface PhotoMetadata {
     longitude?: number;
     takenAt?: string;
     width?: number;
-    height?: number
+    height?: number;
+    orientation?: number
 }
 
 export interface ResolvedPhotoMetadata {
@@ -69,7 +70,8 @@ export function extractPhotoMetadataFromExif(exif?: Record<string, unknown> | nu
         longitude: hasUsableLocation ? resolvedLongitude : undefined,
         takenAt: parseDate(exif.DateTimeOriginal ?? exif.DateTimeDigitized ?? exif.DateTime ?? exif.timestamp),
         width: width,
-        height: height
+        height: height,
+        orientation: toNumber(exif.Orientation)
     };
 }
 

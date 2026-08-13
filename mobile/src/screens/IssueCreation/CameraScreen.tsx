@@ -1,12 +1,12 @@
 // mobile/src/screens/IssueScreation/CameraScreen.tsx
 import * as ImagePicker from 'expo-image-picker';
-import { useContext, useRef, useState } from 'react';
+import { useCallback, useContext, useRef, useState } from 'react';
 import { StyleSheet, View, } from 'react-native';
 import { CameraView, CameraType, useCameraPermissions, FlashMode } from 'expo-camera';
 import { MessageView } from '../../components/MessageView';
 import Button from '../../components/Button';
 import { borderRadius, colors, palette, size, spacing, typography } from '../../styles';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { StackParams } from '../../types/StackParams';
 import { FlashlightOffIcon, FlashlightOnIcon, FlipCameraIcon, LightingFillIcon, LightingOutlineIcon, PictureIcon } from '../../components/Icons';
@@ -26,6 +26,7 @@ export default function CameraScreen() {
     const [enableTorch, setEnableTorch] = useState<boolean>(false)
     const [permissions, requestPermission] = useCameraPermissions();
     const { formStarted, setFormStarted } = useContext(FormStartedContext)
+    const [mounted, setMounted] = useState(true)
 
     const { data, isLoading, error } = useNearbyIssues()
     const ref = useRef<CameraView>(null);
@@ -35,6 +36,14 @@ export default function CameraScreen() {
     //be called conditionally
     const insets = useSafeAreaInsets();
 
+    useFocusEffect(
+        useCallback(() => {
+            setMounted(true)
+            return () => {
+                setMounted(false)
+            };
+        }, [])
+    );
 
     //Permissions
     if (!permissions) {
@@ -93,7 +102,7 @@ export default function CameraScreen() {
                 quality: 0.8,
                 exif: true,
                 allowsMultipleSelection: true,
-                selectionLimit: 5 - images.length
+                selectionLimit: 5 - images.length,
             })
             if (!results.canceled) {
                 const resultList = results.assets.map(r => r.uri)
@@ -115,14 +124,14 @@ export default function CameraScreen() {
 
     return (
         <View style={styles.container}>
-            <CameraView ref={ref}
+            {mounted && <CameraView ref={ref}
                 style={{ flex: 1 }}
                 animateShutter={false}
                 facing={facing}
                 mirror={true}
                 flash={flashOn}
                 enableTorch={enableTorch}
-            />
+            />}
 
             <View style={[styles.upperButtonRow]}>
                 <WrapperButton onPress={() => { setEnableTorch(!enableTorch) }} style={{
