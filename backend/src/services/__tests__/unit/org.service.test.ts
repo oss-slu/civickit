@@ -33,6 +33,8 @@ describe('OrgService', () => {
       findNearby: vi.fn(),
     } as unknown as Mocked<IssueRepository>;
 
+
+
     orgService = new OrgService(mockOrgRepository, mockImageRepository, mockIssueRepository);
   });
 

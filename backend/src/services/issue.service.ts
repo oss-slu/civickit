@@ -19,12 +19,12 @@ function isIssueStatus(value: unknown): value is IssueStatus {
 }
 
 
-const orgRepository = new OrgRepository()
-const authRepository = new AuthRepository()
-const membershipRepository = new MembershipRepository()
-
 export class IssueService {
-  constructor(private issueRepository: IssueRepository, private imageRepository: ImageRepository) { }
+  constructor(private issueRepository: IssueRepository,
+    private imageRepository: ImageRepository,
+    private orgRepository: OrgRepository,
+    private authRepository: AuthRepository,
+    private membershipRepository: MembershipRepository) { }
 
   async createIssue(data: CreateIssueDTO, userId: string) {
     if (!data.title || data.title.length < 3) {
@@ -48,9 +48,9 @@ export class IssueService {
       let user = null
       let org = null
       if (issues[i].claimedById != null) {
-        user = await authRepository.findById(String(issues[i].claimedById))
-        const membershipOrgId = (await membershipRepository.findByUser(String(issues[i].claimedById)))?.organizationId
-        org = await orgRepository.findById(String(membershipOrgId))
+        user = await this.authRepository.findById(String(issues[i].claimedById))
+        const membershipOrgId = (await this.membershipRepository.findByUser(String(issues[i].claimedById)))?.organizationId
+        org = await this.orgRepository.findById(String(membershipOrgId))
       }
 
       //get profile image objs

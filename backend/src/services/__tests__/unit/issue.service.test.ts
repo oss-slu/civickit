@@ -10,6 +10,9 @@ import { describe, beforeEach, vi, it, expect, Mocked } from 'vitest';
 import { CreateIssueDTO, extractPhotoMetadataFromExif, resolvePhotoMetadata } from '@civickit/shared';
 import { mock } from 'node:test';
 import { ImageRepository } from '../../../repositories/image.repository';
+import { AuthRepository } from '../../../repositories/auth.repository';
+import { OrgRepository } from '../../../repositories/org.repository';
+import { MembershipRepository } from '../../../repositories/membership.repository';
 
 // Mock the repository, not integration test
 vi.mock('../../../src/repositories/issue.repository');
@@ -18,6 +21,9 @@ describe('IssueService', () => {
   let issueService: IssueService;
   let mockIssueRepository: Mocked<IssueRepository>;
   let mockImageRepository: Mocked<ImageRepository>
+  let mockAuthRepository: Mocked<AuthRepository>
+  let mockOrgRepository: Mocked<OrgRepository>
+  let mockMembershipRepository: Mocked<MembershipRepository>
 
   beforeEach(() => {
     // Create mock repository
@@ -34,8 +40,27 @@ describe('IssueService', () => {
       create: vi.fn(),
       findById: vi.fn(),
     } as unknown as Mocked<ImageRepository>;
+    mockAuthRepository = {
+      create: vi.fn(),
+      findById: vi.fn(),
+      findNearby: vi.fn(),
+    } as unknown as Mocked<AuthRepository>;
 
-    issueService = new IssueService(mockIssueRepository, mockImageRepository);
+    mockOrgRepository = {
+      findOrgsForIssue: vi.fn(),
+      findIssuesForOrg: vi.fn(),
+      findById: vi.fn()
+    } as unknown as Mocked<OrgRepository>;
+
+    mockMembershipRepository = {
+      create: vi.fn(),
+      findById: vi.fn(),
+      findByUser: vi.fn(),
+      findByUserAndOrg: vi.fn(),
+      findByOrganization: vi.fn(),
+    } as unknown as Mocked<MembershipRepository>;
+
+    issueService = new IssueService(mockIssueRepository, mockImageRepository, mockOrgRepository, mockAuthRepository, mockMembershipRepository);
   });
 
   const makeInput = (
@@ -387,7 +412,7 @@ describe('IssueService', () => {
 
       const result = await issueService.claimIssue('issue-1', 'user-1');
 
-      expect(result).toEqual(claimed);
+      expect(result).toEqual({ id: claimed.id, claimedById: 'user-1', images: [], ...otherInfo });
       expect(mockIssueRepository.claimIssue).toHaveBeenCalledWith('issue-1', {
         claimedById: 'user-1',
       });

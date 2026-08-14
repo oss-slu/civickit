@@ -8,6 +8,8 @@ import { IssueService } from '../../issue.service';
 import { IssueRepository } from '../../../repositories/issue.repository';
 import { AuthRepository } from '../../../repositories/auth.repository';
 import { ImageRepository } from '../../../repositories/image.repository';
+import { OrgRepository } from '../../../repositories/org.repository';
+import { MembershipRepository } from '../../../repositories/membership.repository';
 
 // mock repository
 vi.mock('../../../src/repositories/timeline.repository');
@@ -20,6 +22,8 @@ describe('TimelineService', () => {
     let mockIssueRepository: Mocked<IssueRepository>;
     let mockAuthRepository: Mocked<AuthRepository>;
     let mockImageRepository: Mocked<ImageRepository>
+    let mockOrgRepository: Mocked<OrgRepository>
+    let mockMembershipRepository: Mocked<MembershipRepository>
 
 
     beforeEach(() => {
@@ -48,8 +52,21 @@ describe('TimelineService', () => {
             findNearby: vi.fn(),
         } as unknown as Mocked<ImageRepository>;
 
+        mockOrgRepository = {
+            findOrgsForIssue: vi.fn(),
+            findIssuesForOrg: vi.fn(),
+        } as unknown as Mocked<OrgRepository>;
+
+        mockMembershipRepository = {
+            create: vi.fn(),
+            findById: vi.fn(),
+            findByUser: vi.fn(),
+            findByUserAndOrg: vi.fn(),
+            findByOrganization: vi.fn(),
+        } as unknown as Mocked<MembershipRepository>;
+
         timelineService = new TimelineService(mockTimelineRepository, mockImageRepository, mockAuthRepository);
-        issueService = new IssueService(mockIssueRepository, mockImageRepository);
+        issueService = new IssueService(mockIssueRepository, mockImageRepository, mockOrgRepository, mockAuthRepository, mockMembershipRepository);
         vi.clearAllMocks();
     });
 
