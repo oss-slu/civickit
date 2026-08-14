@@ -32,7 +32,7 @@ export interface SeedUserTemplate {
     email: string;
     name: string;
     password: string;
-    profileImage?: string;
+    profileImageId?: string;
 }
 
 const baseUserTemplates: SeedUserTemplate[] = [

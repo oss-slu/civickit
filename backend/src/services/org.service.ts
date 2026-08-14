@@ -9,8 +9,10 @@ import { Org } from '@civickit/shared/src/types/org';
 import { ImageRepository } from '../repositories/image.repository';
 import { IssueService } from './issue.service';
 import { IssueRepository } from '../repositories/issue.repository';
+import { AuthRepository } from '../repositories/auth.repository';
 
 const membershipRepository = new MembershipRepository()
+const authRepository = new AuthRepository()
 
 export class OrgService {
   constructor(private orgRepository: OrgRepository,
@@ -74,7 +76,7 @@ export class OrgService {
     if (!organizationId) {
       throw new AppError('organizationId is required', 400);
     }
-    const issueService = new IssueService(this.issueRepository, this.imageRepository)
+    const issueService = new IssueService(this.issueRepository, this.imageRepository, this.orgRepository, authRepository, membershipRepository)
     const issues = await this.orgRepository.findIssuesForOrg(organizationId);
     const extIssues = await issueService.getExtendedIssueInfo(issues)
     return extIssues

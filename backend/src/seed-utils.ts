@@ -111,7 +111,7 @@ async function createUsers(userTemplates: SeedUserTemplate[]) {
                 email: userTemplate.email,
                 name: userTemplate.name,
                 passwordHash,
-                profileImage: userTemplate.profileImage || null,
+                profileImageId: userTemplate.profileImageId || null,
             })
             .returning();
 
@@ -134,7 +134,7 @@ async function createIssues(
         const randomUser = users[crypto.randomInt(users.length)];
 
         // Upload all images for this issue
-        const imageUrls: string[] = [];
+        const imageIds: string[] = [];
 
         for (const imageFile of template.imageFiles) {
             const imagePath = path.join(IMAGES_DIR, imageFile);
@@ -144,16 +144,30 @@ async function createIssues(
                     log('info', ` Uploading ${imageFile}...`);
                     const imageBuffer = fs.readFileSync(imagePath);
                     const imageUrl = await uploadImageToCloudinary(imageBuffer);
-                    imageUrls.push(imageUrl);
+
+                    const [image] = await db
+                        .insert(schema.images)
+                        .values({
+                            link: imageUrl,
+                            userId: randomUser.id,
+                            photoTakenAt: new Date(),
+                            photoTakenAtSource: 'device',
+                            width: -1,
+                            height: -1,
+                            createdAt: new Date(),
+                        })
+                        .returning({ id: schema.images.id });
+
+                    imageIds.push(image.id);
                     log('info', `   Uploaded: ${imageFile}`);
                 } catch (error) {
                     log('warn', `  Failed to upload ${imageFile}: ${error}`);
                     // Use a placeholder URL if upload fails
-                    imageUrls.push(`https://placehold.co/600x400?text=${encodeURIComponent(template.category)}`);
+                    imageIds.push(`https://placehold.co/600x400?text=${encodeURIComponent(template.category)}`);
                 }
             } else {
                 log('warn', `  Image not found: ${imageFile}, using placeholder`);
-                imageUrls.push(`https://placehold.co/600x400?text=${encodeURIComponent(template.category)}`);
+                imageIds.push(`https://placehold.co/600x400?text=${encodeURIComponent(template.category)}`);
             }
         }
 
@@ -171,14 +185,14 @@ async function createIssues(
                 district: template.district || null,
                 subregion: template.subregion || null,
                 name: template.name || null,
-                images: imageUrls,
+                imageIds: imageIds,
                 userId: randomUser.id,
             })
             .returning();
 
         await createRandomEndorsements(issue.id, randomUser.id, users);
 
-        log('info', `  Created issue: ${issue.title} (${imageUrls.length} images)`);
+        log('info', `  Created issue: ${issue.title} (${imageIds.length} images)`);
     }
 }
 
