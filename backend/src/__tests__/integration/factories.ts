@@ -38,7 +38,7 @@ export function issueInput(overrides: Partial<CreateIssueDTO> = {}): CreateIssue
     category: 'POTHOLE',
     status: 'REPORTED',
     address: '100 Main St',
-    images: [],
+    imageIds: [],
     ...ORIGIN,
     ...overrides,
   };

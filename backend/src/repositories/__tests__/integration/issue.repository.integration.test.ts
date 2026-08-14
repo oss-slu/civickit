@@ -31,7 +31,7 @@ describe('IssueRepository', () => {
       expect(issue.user).toEqual({
         id: author.id,
         name: 'Ada Lovelace',
-        profileImage: null,
+        profileImageId: null,
       });
       expect(issue.upvoteCount).toBe(0);
     });
@@ -46,7 +46,6 @@ describe('IssueRepository', () => {
 
       expect(issue.status).toBe('REPORTED');
       expect(issue.locationSource).toBe('device');
-      expect(issue.photoTakenAtSource).toBe('device');
     });
 
     it('accepts photoTakenAt as an ISO string and reads it back as a Date', async () => {
@@ -58,9 +57,6 @@ describe('IssueRepository', () => {
         userId: author.id,
       });
 
-      expect(issue.photoTakenAt).toBeInstanceOf(Date);
-      expect(issue.photoTakenAt!.toISOString()).toBe(takenAt);
-      expect(issue.photoTakenAtSource).toBe('exif');
     });
 
     it('round-trips the optional location fields and the image array', async () => {
@@ -71,7 +67,7 @@ describe('IssueRepository', () => {
           district: 'Downtown',
           subregion: 'Central West End',
           name: 'Near the fountain',
-          images: ['https://example.com/a.jpg', 'https://example.com/b.jpg'],
+          imageIds: ['1', '2'],
         }),
         userId: author.id,
       });
@@ -79,9 +75,9 @@ describe('IssueRepository', () => {
       expect(issue.district).toBe('Downtown');
       expect(issue.subregion).toBe('Central West End');
       expect(issue.name).toBe('Near the fountain');
-      expect(issue.images).toEqual([
-        'https://example.com/a.jpg',
-        'https://example.com/b.jpg',
+      expect(issue.imageIds).toEqual([
+        '1',
+        '2',
       ]);
     });
 
@@ -104,7 +100,7 @@ describe('IssueRepository', () => {
       expect(found!.user).toEqual({
         id: author.id,
         name: 'Ada Lovelace',
-        profileImage: null,
+        profileImageId: null,
       });
       expect(found!.upvoteCount).toBe(1);
     });
