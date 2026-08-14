@@ -10,5 +10,5 @@ abstract: CivicKit is an open-source platform for geospatial reporting and
 keywords:
   - civic engagement
   - city reporting
-license: MIT
+license: Apache-2.0
 repository-code: https://github.com/oss-slu/civickit

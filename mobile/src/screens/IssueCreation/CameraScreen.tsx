@@ -1,7 +1,7 @@
 // mobile/src/screens/IssueScreation/CameraScreen.tsx
 import * as ImagePicker from 'expo-image-picker';
 import { useCallback, useContext, useRef, useState } from 'react';
-import { StyleSheet, View, } from 'react-native';
+import { StyleSheet, View, Text } from 'react-native';
 import { CameraView, CameraType, useCameraPermissions, FlashMode } from 'expo-camera';
 import { MessageView } from '../../components/MessageView';
 import Button from '../../components/Button';
@@ -149,6 +149,11 @@ export default function CameraScreen() {
 
                 </WrapperButton>
 
+
+                <View style={[styles.warningContainer]}>
+                    <Text style={styles.warningText}>If you believe this is an emergency, please exit the app and dial 911 immediately.</Text>
+                </View>
+
                 <WrapperButton onPress={toggleFlash} style={{
                     ...styles.roundButton,
                 }}>
@@ -162,6 +167,10 @@ export default function CameraScreen() {
 
                 </WrapperButton>
             </View>
+
+
+
+
             <View style={styles.lowerButtonRow}>
 
                 <WrapperButton onPress={pickImage} style={{
@@ -202,8 +211,7 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         rowGap: spacing.sm,
         alignContent: "center",
-        alignItems: "center",
-        alignSelf: "flex-end",
+        alignItems: "flex-start",
         width: "100%"
     },
     lowerButtonRow: {
@@ -245,5 +253,22 @@ const styles = StyleSheet.create({
         backgroundColor: palette.ckDark,
         opacity: 0.8
 
+    },
+    warningContainer: {
+        backgroundColor: palette.ckDark,
+        opacity: 0.6,
+        width: "65%",
+        alignSelf: "center",
+        borderRadius: borderRadius.lg,
+        paddingVertical: spacing.sm,
+        paddingHorizontal: spacing.sm
+    },
+    warningText: {
+        color: colors.textContrast,
+        fontSize: typography.sizeLg,
+        fontWeight: typography.weightRegular,
+        textAlign: "center",
+        // lineHeight: typography.sizeLg + spacing.xs,
+        // letterSpacing: 0.5
     }
 })

@@ -44,4 +44,4 @@ cd civickit
 ### 2. Go to [Setup Guide](docs/SETUP.md)
 
 ## License
-MIT License
+[Apache License 2.0](LICENSE)
