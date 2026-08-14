@@ -8,13 +8,18 @@ import { IssueRepository } from '../repositories/issue.repository';
 import { ImageRepository } from '../repositories/image.repository';
 import { AuthRepository } from '../repositories/auth.repository';
 import { Image } from '@civickit/shared';
+import { OrgRepository } from '../repositories/org.repository';
+import { MembershipRepository } from '../repositories/membership.repository';
 
 const imageRepository = new ImageRepository()
 const issueRepository = new IssueRepository()
 const timelineRepository = new TimelineRepository()
+const orgRepository = new OrgRepository()
 const authRepository = new AuthRepository()
+const membershipRepository = new MembershipRepository()
 
-const issueService = new IssueService(issueRepository, imageRepository);
+
+const issueService = new IssueService(issueRepository, imageRepository, orgRepository, authRepository, membershipRepository);
 const timelineService = new TimelineService(timelineRepository, imageRepository, authRepository);
 
 

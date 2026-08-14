@@ -8,9 +8,17 @@ import { TimelineRepository } from '../repositories/timeline.repository';
 import { AuthRepository } from '../repositories/auth.repository';
 import { ImageService } from '../services/image.service';
 import { ImageRepository } from '../repositories/image.repository';
+import { OrgRepository } from '../repositories/org.repository';
+import { MembershipRepository } from '../repositories/membership.repository';
 
-const imageRepository = new ImageRepository
-const issueService = new IssueService(new IssueRepository(), imageRepository);
+const imageRepository = new ImageRepository()
+const issueRepository = new IssueRepository()
+const orgRepository = new OrgRepository()
+const authRepository = new AuthRepository()
+const membershipRepository = new MembershipRepository()
+
+
+const issueService = new IssueService(issueRepository, imageRepository, orgRepository, authRepository, membershipRepository);
 const timelineService = new TimelineService(new TimelineRepository(), imageRepository, new AuthRepository);
 const imageService = new ImageService(imageRepository)
 
