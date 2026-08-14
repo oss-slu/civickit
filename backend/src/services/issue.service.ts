@@ -59,12 +59,12 @@ export class IssueService {
         claimedByUser: {
           name: user?.name,
           id: user?.id,
-          profileImage: user?.profileImageId && this.imageRepository.findById(user.profileImageId)
+          profileImage: user?.profileImageId && await this.imageRepository.findById(user.profileImageId)
         },
         claimedByOrg: {
           name: org?.name,
           id: org?.id,
-          profileImageId: org?.profileImageId && this.imageRepository.findById(org.profileImageId)
+          profileImage: org?.profileImageId && await this.imageRepository.findById(org.profileImageId)
         },
       }
     }
@@ -86,11 +86,12 @@ export class IssueService {
   async getExtendedIssueInfo(issues: any[]) {
     const issuesWithClaims = await this.getClaimedByInfo(issues)
 
+
     let newIssues: any[] = []
     for (let i = 0; i < issuesWithClaims.length; i++) {
       const images = await this.getIssueImages(issuesWithClaims[i].imageIds)
       const newIssue: any = {
-        ...issues[i],
+        ...issuesWithClaims[i],
         images: images
       }
       delete newIssue.imageIds

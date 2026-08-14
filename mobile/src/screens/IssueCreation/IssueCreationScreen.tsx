@@ -72,26 +72,29 @@ export default function IssueCreationScreen() {
         const fallbackTakenAt = new Date().toISOString();
         const resolved = resolvePhotoMetadata(photoMetadata, { ...deviceLocation, takenAt: fallbackTakenAt });
 
-        setLocation({ latitude: resolved[0].latitude, longitude: resolved[0].longitude });
-        setLocationSource(resolved[0].locationSource);
-        setLocationMetadata({});
-        setAddress(resolved[0].locationSource === 'exif' ? 'Detecting photo location...' : 'Detecting phone location...');
+        if (resolved.length > 0) {
+            setLocation({ latitude: resolved[0].latitude, longitude: resolved[0].longitude });
+            setLocationSource(resolved[0].locationSource);
+            setLocationMetadata({});
+            setAddress(resolved[0].locationSource === 'exif' ? 'Detecting photo location...' : 'Detecting phone location...');
 
-        (async () => {
-            const geocode = await Location.reverseGeocodeAsync({
-                latitude: resolved[0].latitude,
-                longitude: resolved[0].longitude,
-            });
 
-            //reverseGeocodeAsync does not work on web, will return []
-            if (geocode.length > 0) {
-                const formattedAddress = formatResolvedAddress(geocode[0]);
-                if (formattedAddress) {
-                    setAddress(formattedAddress);
+            (async () => {
+                const geocode = await Location.reverseGeocodeAsync({
+                    latitude: resolved[0].latitude,
+                    longitude: resolved[0].longitude,
+                });
+
+                //reverseGeocodeAsync does not work on web, will return []
+                if (geocode.length > 0) {
+                    const formattedAddress = formatResolvedAddress(geocode[0]);
+                    if (formattedAddress) {
+                        setAddress(formattedAddress);
+                    }
+                    setLocationMetadata(extractResolvedLocationMetadata(geocode[0]));
                 }
-                setLocationMetadata(extractResolvedLocationMetadata(geocode[0]));
-            }
-        })();
+            })();
+        }
     }, [deviceLocation, photoMetadata]);
 
     useFocusEffect(
@@ -198,6 +201,7 @@ export default function IssueCreationScreen() {
                     //add images to database
                     for (let i = 0; i < imageUrls.length; i++) {
                         try {
+
                             const newImage = await imagesApi.createImage({
                                 link: imageUrls[i],
                                 photoTakenAt: resolvedPhotoMetadata[i].photoTakenAt,
@@ -317,7 +321,7 @@ export default function IssueCreationScreen() {
 
 
                     <WrapperButton onPress={() => { navigation.navigate("Camera", { uri: images }) }}
-                        style={images.length < 5 ? styles.photoButton : styles.disabledPhotoButton}
+                        style={images.length < 3 ? styles.photoButton : styles.disabledPhotoButton}
                         isDisabled={images.length >= 3}>
                         <PlusIcon color={colors.textContrast}
                             size={size.xl} />

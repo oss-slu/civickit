@@ -58,20 +58,24 @@ export function extractPhotoMetadataFromExif(exif?: Record<string, unknown> | nu
     const longitude = toNumber(exif.GPSLongitude ?? exif.longitude);
     const latitudeRef = typeof exif.GPSLatitudeRef === 'string' ? exif.GPSLatitudeRef : '';
     const longitudeRef = typeof exif.GPSLongitudeRef === 'string' ? exif.GPSLongitudeRef : '';
-    const width = toNumber(exif.ImageWidth)
-    const height = toNumber(exif.ImageLength)
+    let width = toNumber(exif.ImageWidth)
+    let height = toNumber(exif.ImageLength)
 
     const resolvedLatitude = latitude === undefined ? undefined : latitudeRef.toUpperCase() === 'S' ? -Math.abs(latitude) : latitude;
     const resolvedLongitude = longitude === undefined ? undefined : longitudeRef.toUpperCase() === 'W' ? -Math.abs(longitude) : longitude;
     const hasUsableLocation = isUsableCoordinate(resolvedLatitude, resolvedLongitude);
-
+    console.log(width)
+    if (toNumber(exif.Orientation) == 6) {
+        width = toNumber(exif.ImageLength)
+        height = toNumber(exif.ImageWidth)
+    }
+    console.log(width)
     return {
         latitude: hasUsableLocation ? resolvedLatitude : undefined,
         longitude: hasUsableLocation ? resolvedLongitude : undefined,
         takenAt: parseDate(exif.DateTimeOriginal ?? exif.DateTimeDigitized ?? exif.DateTime ?? exif.timestamp),
         width: width,
         height: height,
-        orientation: toNumber(exif.Orientation)
     };
 }
 
@@ -90,7 +94,7 @@ export function resolvePhotoMetadata(
             photoTakenAt: metadata.takenAt ?? fallback.takenAt,
             photoTakenAtSource: photoTakenAtSource,
             width: metadata.width,
-            height: metadata.height
+            height: metadata.height,
         }
 
     })

@@ -158,8 +158,6 @@ const IssueDetailScreen = () => {
   const [category, setCategory] = useState<String>(issue.category.replace(/_/g, " ").toLowerCase())
   const imageLinks = issue.images.map((image) => image.link)
 
-  console.log(issue)
-
   return (
     <View style={{ ...styles.page, }}>
       <ScrollView contentContainerStyle={{ ...styles.container, paddingTop: headerOffset + spacing.md, rowGap: spacing.sm }}
@@ -200,11 +198,11 @@ const IssueDetailScreen = () => {
         {/* Claimed By */}
         {issue.claimedById &&
           <View style={{ ...styles.claimedByContainter }}>
-            {issue.claimedByOrg?.profileImage &&
-              <Image source={{ uri: issue.claimedByOrg.profileImage.link }} style={styles.orgProfilePic} />
+            {issue.claimedByOrg?.profileImage?.link &&
+              <Image source={{ uri: issue.claimedByOrg.profileImage?.link }} style={styles.orgProfilePic} />
             }
 
-            <View style={{ paddingLeft: !issue.claimedByOrg?.profileImage ? spacing.sm : 0 }}>
+            <View style={{ paddingLeft: !issue.claimedByOrg?.profileImage?.link ? spacing.sm : 0 }}>
               <Text style={styles.claimedByLabel}>Issue Claimed By</Text>
               <View style={{ flexDirection: "row", columnGap: spacing.xs, paddingLeft: !issue.claimedByOrg?.profileImage ? spacing.xs : 0 }}>
                 <Text style={{ ...styles.claimedByText, fontWeight: typography.weightBold }}>{issue.claimedByUser?.name}</Text>

@@ -118,7 +118,7 @@ export default function IssueCard({ issue, variant = 'compact', onPress, style, 
               {/* Org that claimed issue */}
               {issue.claimedById &&
                 issue.claimedByOrg?.profileImage &&
-                <Image source={{ uri: issue.claimedByOrg.profileImage }} style={styles.orgProfilePic} />
+                <Image source={{ uri: issue.claimedByOrg.profileImage.link }} style={styles.orgProfilePic} />
 
               }
             </View>

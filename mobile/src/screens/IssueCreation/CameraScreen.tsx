@@ -96,17 +96,19 @@ export default function CameraScreen() {
 
     const pickImage = async () => {
 
-        if (images.length < 5) {
+        if (images.length < 3) {
             const results = await ImagePicker.launchImageLibraryAsync({
                 mediaTypes: ['images'],
                 quality: 0.8,
                 exif: true,
                 allowsMultipleSelection: true,
-                selectionLimit: 5 - images.length,
+                selectionLimit: 3 - images.length,
             })
+            // console.log(results)
             if (!results.canceled) {
                 const resultList = results.assets.map(r => r.uri)
-                const metadataList = results.assets.map(r => extractPhotoMetadataFromExif(r.exif))
+                const metadataList = results.assets.map(r => extractPhotoMetadataFromExif({ ...r.exif, ImageLength: r.height, ImageWidth: r.width }))
+                // console.log(results.assets[0].exif)
                 setPhotoMetadata([...photoMetadata, ...metadataList]);
                 setImages([...images, ...resultList]);
                 if (!formStarted && data.issues.filter((i: any) => i.distance <= 15.24).length > 0) {

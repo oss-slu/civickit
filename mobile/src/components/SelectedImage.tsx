@@ -6,16 +6,17 @@ import { CloseXIcon } from './Icons';
 
 export default function SelectedImage({ source, metadata, onDeletePressed, width, height, style }: any) {
 
-    let imageWidth = width
-    let imageHeight = height * metadata.height / metadata.width
-    if (metadata.orientation == 6) {
+    let imageWidth
+    let imageHeight
+    if (metadata.height >= metadata.width) {//portrait
         imageHeight = height
         imageWidth = width * metadata.width / metadata.height
+    } else { //landscape
+        imageWidth = width
+        imageHeight = height * metadata.height / metadata.width
     }
 
-    console.log(metadata)
-    console.log(imageWidth, imageHeight)
-    console.log(width, height)
+    // console.log(metadata)
 
 
     const styles = StyleSheet.create({
@@ -49,7 +50,7 @@ export default function SelectedImage({ source, metadata, onDeletePressed, width
     });
 
     return (
-        <View style={{ ...styles.container, ...style, borderWidth: 2 }}>
+        <View style={{ ...styles.container, ...style }}>
             <Image source={{ uri: source }} style={styles.image} />
             <View style={styles.buttonContainer}>
                 <WrapperButton onPress={() => onDeletePressed(source)}
