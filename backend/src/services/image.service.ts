@@ -5,12 +5,12 @@ import { CreateIssueDTO, IssueStatus, PhotoSource } from '@civickit/shared';
 import { issueStatus } from '../db/schema';
 import { AppError } from '../utils/errors';
 import { ImageRepository } from '../repositories/image.repository';
-import { createImageDTO } from '@civickit/shared/src/types/api';
+import { CreateImageDTO } from '@civickit/shared/src/types/api';
 
 export class ImageService {
   constructor(private imageRepository: ImageRepository) { }
 
-  async createImage(data: createImageDTO, userId: string) {
+  async createImage(data: CreateImageDTO, userId: string) {
 
     return this.imageRepository.create({ ...data, userId });
   }

@@ -3,7 +3,7 @@
 import { desc, eq, exists, getTableColumns, sql } from 'drizzle-orm';
 import db, { first } from '../db';
 import { images, Issue, issues, upvotes, users } from '../db/schema';
-import { createImageDTO } from '@civickit/shared/src/types/api';
+import { CreateImageDTO } from '@civickit/shared/src/types/api';
 import { PhotoSource } from '@civickit/shared';
 import { RecordNotFoundError } from '../db/errors';
 
@@ -12,7 +12,7 @@ import { RecordNotFoundError } from '../db/errors';
 
 export class ImageRepository {
 
-  async create(data: createImageDTO & { userId: string }) {
+  async create(data: CreateImageDTO & { userId: string }) {
     const [inserted] = await db
       .insert(images)
       .values({

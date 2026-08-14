@@ -30,7 +30,7 @@ export interface CreateIssueDTO {
     photoTakenAtSource?: PhotoMetadataSource;
 }
 
-export interface createImageDTO {
+export interface CreateImageDTO {
     link: string,
     createdAt?: Date,
     photoTakenAt: string,
