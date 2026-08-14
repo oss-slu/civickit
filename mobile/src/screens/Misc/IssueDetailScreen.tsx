@@ -303,8 +303,9 @@ const IssueDetailScreen = () => {
               </TouchableOpacity>
             </View>
           </ModalPopUp>
-
         }
+
+
       </ScrollView>
 
       <Header title={issue.title}
@@ -341,10 +342,15 @@ const IssueDetailScreen = () => {
               }
             </TouchableOpacity>
 
+            <ModalPopUp
+              buttonStyle={{ ...styles.longButton, backgroundColor: palette.ckGreen, width: "100%" }}
+              buttonBody={<Text style={styles.longButtonText}>Update</Text>}
+              containerStyle={{ flexGrow: 1 }}>
 
-            <TouchableOpacity style={{ ...styles.longButton, backgroundColor: palette.ckGreen }} onPress={handleUpdate}>
-              <Text style={styles.longButtonText}>Update</Text>
-            </TouchableOpacity>
+
+
+            </ModalPopUp>
+
           </View> :
 
           <View style={styles.buttonBar}>
