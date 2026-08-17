@@ -30,7 +30,6 @@ export default function LandingScreen({ children }: any) {
     const [visibleStatuses, setVisibleStatuses] = useState(IssueStatusArray)
     const navigation = useNavigation<StackNavigationProp<StackParams>>()
 
-    console.log("hello??")
     //get contexts from above layer(s)
     const { data, isLoading, isFetching, error, refetch } = useNearbyIssues()
     const location = useLocation().location

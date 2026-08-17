@@ -26,11 +26,9 @@ export default function DispatchNav() {
 
         }}
         >
-            <Stack.Screen name="Dispatch" component={DispatchNav}
+            <Stack.Screen name="Dispatch" component={DispatchScreen}
                 options={{
-                    headerShown: true,
-                    headerShadowVisible: false,
-                    headerTitle: "Unclaimed Issues"
+                    headerShown: false,
                 }} />
             <Stack.Screen name="Camera" component={CameraScreen}
                 options={{
