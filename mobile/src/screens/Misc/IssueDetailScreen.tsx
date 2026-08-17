@@ -275,7 +275,8 @@ const IssueDetailScreen = () => {
       {/*TODO: add check for service area/*}
       {/* Endorse / Claim / Update Button */}
       {((role != "ORG_ADMIN" && role != "ORG_MEMBER") || //user is a reporter
-        (issue.claimedById != null && issue.claimedByOrg?.id != organization.id)) ? //issue claimed by a different org
+        (issue.claimedById != null && issue.claimedByOrg?.id != organization.id) || //issue claimed by a different org
+        !organization.categoryScope.includes(issue.category)) ? //issue is not a category this org serves
 
         <TouchableOpacity style={{ ...globalStyles.longButton, ...globalStyles.shadow, backgroundColor: hasEndorsed ? palette.ckGreen : palette.ckRed, bottom: spacing.ml, marginHorizontal: spacing.ml }} onPress={handleEndorse}>
           {hasEndorsed ?
