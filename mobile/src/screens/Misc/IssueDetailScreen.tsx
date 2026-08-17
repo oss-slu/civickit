@@ -135,8 +135,6 @@ const IssueDetailScreen = () => {
     }
   }
 
-
-
   const imageLinks = issue.images.map((image) => image.link)
 
   return (
@@ -304,7 +302,7 @@ const IssueDetailScreen = () => {
             </TouchableOpacity>
 
 
-            <UpdatePopup issue={route.params.issue} setIssue={setIssue} />
+            <UpdatePopup issue={issue} setIssue={setIssue} />
 
           </View> :
 

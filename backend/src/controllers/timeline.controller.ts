@@ -35,7 +35,7 @@ export class TimelineController {
       //add an entry to the timeline
       const result = await timelineService.postUpdate(req.body, String(issueId), userId);
       result.images.forEach((image: Image) => {
-        imageRepository.updateSource(result.id, { source: "TIMELINE_ENTRY", sourceId: image.id })
+        imageRepository.updateSource(image.id, { source: "TIMELINE_ENTRY", sourceId: result.id })
       })
       res.status(201).json(result);
 

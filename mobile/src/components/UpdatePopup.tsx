@@ -44,16 +44,20 @@ export default function UpdatePopup({ issue, setIssue }: any) {
     const handleUpdateStates = (isOpen: boolean) => {
         setUpdateOpen(isOpen)
         if (isOpen) {
+            let localStatus = status
             if (currentIssue == null || (currentIssue as unknown as Issue).id != issue.id) {
                 clearUpdateForm()
+                localStatus = null
             }
             setCurrentIssue(issue)
-            setStatus(status ?? issue.status)
+            setStatus(localStatus ?? issue.status)
             setFormStarted(true)
         } else {
             setFormStarted(false)
         }
     }
+
+    console.log(status)
 
     const handleSubmitUpdate = async () => {
         let submitMessage = message
@@ -169,9 +173,10 @@ export default function UpdatePopup({ issue, setIssue }: any) {
         setStatus(dbFormatted(status))
     }
     const clearUpdateForm = () => {
+        console.log("!")
+        setStatus(null)
         setImages([])
         setMessage("")
-        setStatus(null)
         setCurrentIssue(null)
         setPhotoMetadata([])
     }
