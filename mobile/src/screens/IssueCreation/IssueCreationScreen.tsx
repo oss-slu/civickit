@@ -26,10 +26,7 @@ import { userLocation } from '../../types/userLocation';
 import { PhotoMetadataSource } from '../../utils/photoMetadata';
 import { useNearbyIssues } from '../../contexts/NearbyIssuesContext';
 import SelectedImageGallery from '../../components/SelectedImageGallery';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import ModalPopUp from '../../components/ModalPopup';
-import MiniMap from '../../components/MiniMap';
-import MapView from 'react-native-maps';
+import LocationAdjustmentPopup from '../../components/LocationAdjustmentPopup';
 
 export default function IssueCreationScreen() {
     const { images, setImages } = useContext(ImagesContext);
@@ -43,21 +40,16 @@ export default function IssueCreationScreen() {
     const { refetch, isLoading, error } = useNearbyIssues();
     const [locationMetadata, setLocationMetadata] = useState<ResolvedLocationMetadata>({});
     const [deviceLocation, setDeviceLocation] = useState<userLocation | null>(null);
-    const [miniMapLocation, setMiniMapLocation] = useState<userLocation | null>(null)
-    const [miniMapAddress, setMiniMapAddress] = useState<string>("")
-    const [miniMapSource, setMiniMapSource] = useState<PhotoMetadataSource | null>(null)
     const [locationSource, setLocationSource] = useState<PhotoMetadataSource | null>(null);
     const [submitAllowed, setSubmitAllowed] = useState<boolean>(false)
-    const [isPopUpVisible, setIsPopupVisible] = useState(false)
     const [isAddressValid, setIsAddressValid] = useState(false)
-
     const [isLoadingLocal, setIsLoading] = useState(false)
     const navigation = useNavigation<StackNavigationProp<StackParams>>()
     const { authToken } = useAuth();
     //must stay above the isLoadingLocal early return below — hooks cannot be
     //called conditionally
 
-    const mapRef = useRef<MapView | null>(null);
+
 
     const imageWidth = size.imageLg;
     const imageHeight = size.imageLg;
@@ -76,15 +68,7 @@ export default function IssueCreationScreen() {
         getLocation()
     }, []);
 
-    useEffect(() => {
-        setMiniMapAddress(address)
-    }, [address])
-    useEffect(() => {
-        setMiniMapLocation(location)
-    }, [location])
-    useEffect(() => {
-        setMiniMapSource(locationSource)
-    }, [locationSource])
+
 
     useEffect(() => {
         if (!deviceLocation) return;
@@ -301,63 +285,8 @@ export default function IssueCreationScreen() {
 
     };
 
-    const onMarkerDragEnd = async (coordinate: any) => {
-        setMiniMapLocation(coordinate)
-        setMiniMapSource("user")
-        const geocode = await Location.reverseGeocodeAsync({
-            latitude: coordinate.latitude,
-            longitude: coordinate.longitude,
-        });
 
-        if (geocode.length > 0) {
-            const formattedAddress = formatResolvedAddress(geocode[0]);
-            formattedAddress && setMiniMapAddress(formattedAddress)
-        }
-    }
 
-    const onNewLocationSubmit = async () => {
-        setLocationSource(miniMapSource)
-        setLocation(miniMapLocation)
-        if (miniMapLocation) {
-            const geocode = await Location.reverseGeocodeAsync({
-                latitude: miniMapLocation.latitude,
-                longitude: miniMapLocation.longitude,
-            });
-
-            if (geocode.length > 0) {
-                const formattedAddress = formatResolvedAddress(geocode[0]);
-                formattedAddress && setAddress(formattedAddress)
-                setMiniMapAddress(formattedAddress)
-            }
-        }
-        setIsPopupVisible(false)
-    }
-
-    const onUserEditsAddress = async (newAddress: string) => {
-        setMiniMapAddress(newAddress)
-        setMiniMapSource("user")
-        const geocode = await Location.geocodeAsync(newAddress);
-
-        if (geocode.length == 0) {
-            setIsAddressValid(false)
-            setMiniMapLocation({ latitude: 0, longitude: 0 })
-        } else {
-            setMiniMapLocation({ latitude: geocode[0].latitude, longitude: geocode[0].longitude })
-            setIsAddressValid(true)
-        }
-
-    }
-
-    const recenterMiniMap = () => {
-        if (!miniMapLocation?.latitude || !miniMapLocation?.longitude) return;
-
-        mapRef.current?.animateToRegion({
-            latitude: miniMapLocation.latitude,
-            longitude: miniMapLocation.longitude,
-            latitudeDelta: 0.01,
-            longitudeDelta: 0.01,
-        });
-    };
 
     return (
         <View style={{ flex: 1 }}>
@@ -401,69 +330,11 @@ export default function IssueCreationScreen() {
                             <Text style={styles.locationSourceText}>{locationSource === 'exif' ? 'From photo EXIF.' :
                                 locationSource === 'device' ? 'From phone GPS.' : 'From user input.'}</Text>
                         )}
-                        <ModalPopUp
-                            buttonBody={
-                                <Text style={{ ...styles.locationSourceText, textDecorationLine: 'underline' }}>This address doesn't look right.</Text>}
-                            buttonStyle={{ backgroundColor: colors.backgroundSecondary }}
-                            isVisible={isPopUpVisible}
-                            setIsVisible={setIsPopupVisible}
-                        >
-                            <View style={styles.popup}>
-                                <Text style={{ ...styles.locationSourceText, textAlign: "center" }}>Location accuracy is very important. Only change the address if you are sure it's incorrect.</Text>
 
-                                <View>
-
-                                    <MiniMap issue={{
-                                        status: "REPORTED",
-                                        latitude: miniMapLocation?.latitude,
-                                        longitude: miniMapLocation?.longitude,
-                                        category: category ? category : "OTHER"
-                                    }}
-                                        draggable
-                                        onMarkerDragEnd={onMarkerDragEnd}
-                                        ref={mapRef}
-                                    />
-
-                                    <View style={{ flexDirection: "row", position: "absolute", margin: spacing.xs, bottom: 0, right: 0, columnGap: spacing.xs }}>
-                                        <WrapperButton style={styles.mapButton} onPress={getLocation}>
-                                            <RefreshIcon color={colors.textPrimary} size={typography.sizeXl} />
-                                        </WrapperButton>
-                                        <WrapperButton style={styles.mapButton} onPress={recenterMiniMap}>
-                                            <RecenterIcon color={colors.textPrimary} size={typography.sizeXl} />
-                                        </WrapperButton>
-                                    </View>
-                                </View>
-
-                                <Text style={{ ...styles.locationSourceText, paddingBottom: spacing.sm }}>Press and hold on the pin to move it.</Text>
-
-                                <View style={styles.addressTextBox}>
-
-                                    {!isAddressValid && <View style={{ flexDirection: "row", columnGap: spacing.xs, alignItems: "center", paddingTop: spacing.xs }}>
-                                        <WarningIcon color={styles.locationSourceText.color} size={styles.locationSourceText.fontSize} />
-                                        <Text style={{ ...styles.locationSourceText, fontWeight: typography.weightMedium }}>Invalid Address</Text>
-                                    </View>}
-
-                                    <TextInput onChangeText={onUserEditsAddress}
-                                        value={miniMapAddress}
-                                        placeholder='Address...'
-                                        style={{ color: colors.textPrimary }}
-                                        multiline
-                                        numberOfLines={5}
-                                        maxLength={500}
-                                        focusable
-                                    />
-                                    {(miniMapLocation && miniMapLocation.latitude != 0 && miniMapLocation.longitude != 0) &&
-                                        <Text style={{ ...styles.locationSourceText }}>{"(" + miniMapLocation?.latitude}, {miniMapLocation?.longitude + ")"}</Text>
-                                    }
-                                </View>
-
-                                <WrapperButton style={styles.customLocationButton}
-                                    onPress={onNewLocationSubmit}
-                                    isDisabled={!isAddressValid}>
-                                    <CheckMarkIcon color={colors.textContrast} size={typography.sizeXl} />
-                                </WrapperButton>
-                            </View>
-                        </ModalPopUp>
+                        {!address.startsWith("Detecting ") && <LocationAdjustmentPopup
+                            locationSource={locationSource} setLocationSource={setLocationSource}
+                            isAddressValid={isAddressValid} setIsAddressValid={setIsAddressValid}
+                            category={category} getLocation={getLocation} />}
                     </View>
                 </View>
 
@@ -575,9 +446,6 @@ const styles = StyleSheet.create({
         height: "auto",
         color: colors.textPrimary,
     },
-    addressTextBox: {
-        ...globalStyles.textBox,
-    },
     addressText: {
         color: colors.textPrimary,
         fontSize: typography.sizeLg
@@ -591,19 +459,6 @@ const styles = StyleSheet.create({
     locationSourceText: {
         color: colors.textSecondary,
         fontSize: typography.sizeSm
-    },
-    customLocationButton: {
-        paddingVertical: spacing.sm
-    },
-    popup: {
-        flexDirection: "column",
-        rowGap: spacing.sm,
-        paddingBottom: spacing.sm
-    },
-    mapButton: {
-        backgroundColor: colors.background,
-        padding: spacing.sm,
-        ...globalStyles.shadow
     },
     addressContainer: {
         gap: spacing.xs,
