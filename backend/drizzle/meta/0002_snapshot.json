@@ -1,6 +1,6 @@
 {
-  "id": "971d119e-fdfb-44da-9d6c-7e511e7b22d3",
-  "prevId": "dd91e996-8c6b-44a0-8a7c-8bbd099a7b71",
+  "id": "21ac7a02-8acf-41f5-a77a-316a18f80587",
+  "prevId": "5296fc8f-c301-4494-955a-3198c8a6f887",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -403,6 +403,12 @@
           "notNull": true,
           "default": "now()"
         },
+        "link": {
+          "name": "link",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
         "photoTakenAt": {
           "name": "photoTakenAt",
           "type": "timestamp (3)",
@@ -417,9 +423,16 @@
           "notNull": true,
           "default": "'device'"
         },
-        "issueId": {
-          "name": "issueId",
+        "sourceId": {
+          "name": "sourceId",
           "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "source": {
+          "name": "source",
+          "type": "PhotoSource",
+          "typeSchema": "public",
           "primaryKey": false,
           "notNull": false
         },
@@ -427,31 +440,22 @@
           "name": "userId",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
-        "link": {
-          "name": "link",
-          "type": "text",
+        "width": {
+          "name": "width",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "height": {
+          "name": "height",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true
         }
       },
       "indexes": {
-        "Image_issueId_idx": {
-          "name": "Image_issueId_idx",
-          "columns": [
-            {
-              "expression": "issueId",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
         "Image_createdAt_idx": {
           "name": "Image_createdAt_idx",
           "columns": [
@@ -469,49 +473,10 @@
         }
       },
       "foreignKeys": {
-        "Image_issueId_Issue_id_fk": {
-          "name": "Image_issueId_Issue_id_fk",
-          "tableFrom": "Image",
-          "tableTo": "Issue",
-          "columnsFrom": [
-            "issueId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        },
         "Image_userId_user_id_fk": {
           "name": "Image_userId_user_id_fk",
           "tableFrom": "Image",
           "tableTo": "user",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "restrict",
-          "onUpdate": "cascade"
-        },
-        "Image_userId_Organization_id_fk": {
-          "name": "Image_userId_Organization_id_fk",
-          "tableFrom": "Image",
-          "tableTo": "Organization",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "restrict",
-          "onUpdate": "cascade"
-        },
-        "Image_userId_TimelineEntry_id_fk": {
-          "name": "Image_userId_TimelineEntry_id_fk",
-          "tableFrom": "Image",
-          "tableTo": "TimelineEntry",
           "columnsFrom": [
             "userId"
           ],
@@ -636,6 +601,12 @@
         },
         "cityRefNumber": {
           "name": "cityRefNumber",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "claimedById": {
+          "name": "claimedById",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -950,6 +921,12 @@
           "type": "timestamp (3)",
           "primaryKey": false,
           "notNull": true
+        },
+        "profileImageId": {
+          "name": "profileImageId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {
@@ -1346,8 +1323,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "profileImage": {
-          "name": "profileImage",
+        "profileImageId": {
+          "name": "profileImageId",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -1379,12 +1356,6 @@
           "primaryKey": false,
           "notNull": true,
           "default": false
-        },
-        "imageId": {
-          "name": "imageId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
         }
       },
       "indexes": {
@@ -1569,6 +1540,16 @@
         "NONPROFIT",
         "CITY_DEPARTMENT",
         "OTHER"
+      ]
+    },
+    "public.PhotoSource": {
+      "name": "PhotoSource",
+      "schema": "public",
+      "values": [
+        "ISSUE",
+        "TIMELINE_ENTRY",
+        "ORGANIZATION",
+        "USER"
       ]
     },
     "public.Role": {
