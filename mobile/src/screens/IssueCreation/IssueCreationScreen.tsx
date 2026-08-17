@@ -47,9 +47,6 @@ export default function IssueCreationScreen() {
     const { refetch, isLoading, error } = useNearbyIssues();
     const [locationMetadata, setLocationMetadata] = useState<ResolvedLocationMetadata>({});
     const [deviceLocation, setDeviceLocation] = useState<userLocation | null>(null);
-    const [miniMapLocation, setMiniMapLocation] = useState<userLocation | null>(null)
-    const [miniMapAddress, setMiniMapAddress] = useState<string>("")
-    const [miniMapSource, setMiniMapSource] = useState<PhotoMetadataSource | null>(null)
     const [locationSource, setLocationSource] = useState<PhotoMetadataSource | null>(null);
     const [submitAllowed, setSubmitAllowed] = useState<boolean>(false)
     const [isAddressValid, setIsAddressValid] = useState(false)
@@ -80,15 +77,7 @@ export default function IssueCreationScreen() {
         getLocation()
     }, []);
 
-    useEffect(() => {
-        setMiniMapAddress(address)
-    }, [address])
-    useEffect(() => {
-        setMiniMapLocation(location)
-    }, [location])
-    useEffect(() => {
-        setMiniMapSource(locationSource)
-    }, [locationSource])
+
 
     useEffect(() => {
         if (!deviceLocation) return;
@@ -510,19 +499,6 @@ const styles = StyleSheet.create({
     locationSourceText: {
         color: colors.textSecondary,
         fontSize: typography.sizeSm
-    },
-    customLocationButton: {
-        paddingVertical: spacing.sm
-    },
-    popup: {
-        flexDirection: "column",
-        rowGap: spacing.sm,
-        paddingBottom: spacing.sm
-    },
-    mapButton: {
-        backgroundColor: colors.background,
-        padding: spacing.sm,
-        ...globalStyles.shadow
     },
     addressContainer: {
         gap: spacing.xs,
