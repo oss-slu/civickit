@@ -12,7 +12,7 @@ import { StackParams } from "../../types/StackParams";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { useCallback, useContext, useEffect, useState } from "react";
-import { AddressContext, CategoryContext, DescriptionContext, FormStartedContext, ImagesContext, TitleContext, UserLocationContext } from "../../contexts/FormContexts";
+import { AddressContext, CategoryContext, DescriptionContext, FormStartedContext, ImagesContext, TitleContext, UserLocationContext } from "../../contexts/CreationFormContexts";
 
 //mobile/src/screens/DuplicateCheckScreen.tsx
 export default function DuplicateCheckScreen() {
@@ -39,7 +39,7 @@ export default function DuplicateCheckScreen() {
     const handleCancel = () => {
         setImages([])
         setFormStarted(false)
-        navigation.popTo("Camera", {})
+        navigation.popTo("Camera", { source: 'ISSUE_CREATION' })
     }
 
 

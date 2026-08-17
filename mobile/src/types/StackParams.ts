@@ -1,6 +1,7 @@
 //mobile/src/types/StackParams.ts
 import { GetNearbyIssueResponse, Issue, User } from "@civickit/shared"
 import type { PhotoMetadata } from "../utils/photoMetadata"
+import { FormSource } from "./FormSource"
 
 export type StackParams = {
     "Nearby Issues": {},
@@ -15,10 +16,13 @@ export type StackParams = {
     "Main": {},
     "Register": {},
     "Login": {},
-    "Camera": {},
+    "Camera": {
+        source: FormSource,
+    },
     "Photo Validation": {
         uri: string
-        metadata?: PhotoMetadata
+        metadata?: PhotoMetadata,
+        source: FormSource,
     },
     "Statistics": {},
     "Stats Nav": {},

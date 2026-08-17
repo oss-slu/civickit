@@ -52,7 +52,7 @@ const isUsableCoordinate = (latitude?: number, longitude?: number): latitude is 
 export function extractPhotoMetadataFromExif(exif?: Record<string, unknown> | null): PhotoMetadata {
     if (!exif) return {};
 
-    console.log(exif)
+
 
     const latitude = toNumber(exif.GPSLatitude ?? exif.latitude);
     const longitude = toNumber(exif.GPSLongitude ?? exif.longitude);
@@ -64,12 +64,12 @@ export function extractPhotoMetadataFromExif(exif?: Record<string, unknown> | nu
     const resolvedLatitude = latitude === undefined ? undefined : latitudeRef.toUpperCase() === 'S' ? -Math.abs(latitude) : latitude;
     const resolvedLongitude = longitude === undefined ? undefined : longitudeRef.toUpperCase() === 'W' ? -Math.abs(longitude) : longitude;
     const hasUsableLocation = isUsableCoordinate(resolvedLatitude, resolvedLongitude);
-    console.log(width)
+
     if (toNumber(exif.Orientation) == 6) {
         width = toNumber(exif.ImageLength)
         height = toNumber(exif.ImageWidth)
     }
-    console.log(width)
+
     return {
         latitude: hasUsableLocation ? resolvedLatitude : undefined,
         longitude: hasUsableLocation ? resolvedLongitude : undefined,

@@ -6,6 +6,8 @@ import StatsScreen from './StatsScreen';
 import LeaderBoardScreen from '../Misc/LeaderboardScreen';
 import IssueDetailScreen from '../Misc/IssueDetailScreen';
 import ErrorScreen from '../Misc/ErrorScreen';
+import PhotoValidationScreen from '../IssueCreation/PhotoValidationScreen';
+import CameraScreen from '../IssueCreation/CameraScreen';
 
 const Stack = createNativeStackNavigator<StackParams>();
 
@@ -43,6 +45,14 @@ export default function StatsNav() {
                     headerShown: false
                 }} />
             <Stack.Screen name="Error" component={ErrorScreen} />
+            <Stack.Screen name="Photo Validation" component={PhotoValidationScreen}
+                options={{
+                    headerShown: false
+                }} />
+            <Stack.Screen name="Camera" component={CameraScreen}
+                options={{
+                    headerShown: false,
+                }} />
         </Stack.Navigator>
     );
 

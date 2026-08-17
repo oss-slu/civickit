@@ -8,6 +8,8 @@ import LandingScreen from './LandingScreen';
 import Header from '../../components/Header';
 import { Text } from 'react-native';
 import ProfileNav from '../Profile/ProfileNav';
+import PhotoValidationScreen from '../IssueCreation/PhotoValidationScreen';
+import CameraScreen from '../IssueCreation/CameraScreen';
 
 const Stack = createNativeStackNavigator<StackParams>();
 
@@ -44,6 +46,14 @@ export default function LandingScreenNav() {
                     },
                     headerShown: false
                 })} />
+            <Stack.Screen name="Photo Validation" component={PhotoValidationScreen}
+                options={{
+                    headerShown: false
+                }} />
+            <Stack.Screen name="Camera" component={CameraScreen}
+                options={{
+                    headerShown: false,
+                }} />
             <Stack.Screen name="Error" component={ErrorScreen} />
         </Stack.Navigator>
     );

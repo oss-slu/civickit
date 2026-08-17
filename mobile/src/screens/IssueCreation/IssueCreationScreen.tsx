@@ -21,12 +21,14 @@ import WrapperButton from '../../components/WrapperButton';
 import SelectedImage from '../../components/SelectedImage';
 import ModalDropdown from '../../components/ModalDropdown';
 import { NetworkError, imagesApi, issuesApi } from '../../api';
-import { ImagesContext, PhotoMetadataContext, UserLocationContext, AddressContext, TitleContext, CategoryContext, DescriptionContext, FormStartedContext } from '../../contexts/FormContexts';
+import { ImagesContext, PhotoMetadataContext, UserLocationContext, AddressContext, TitleContext, CategoryContext, DescriptionContext, FormStartedContext } from '../../contexts/CreationFormContexts';
 import { userLocation } from '../../types/userLocation';
 import { PhotoMetadataSource } from '../../utils/photoMetadata';
 import { useNearbyIssues } from '../../contexts/NearbyIssuesContext';
 import SelectedImageGallery from '../../components/SelectedImageGallery';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import ImageSelection from '../../components/ImageSelection';
+import { dbFormatted } from '../../utils/dbValues';
 
 export default function IssueCreationScreen() {
     const { images, setImages } = useContext(ImagesContext);
@@ -106,18 +108,9 @@ export default function IssueCreationScreen() {
         }, [setFormStarted])
     )
 
-    const onImageDeletePressed = (image: any) => {
-        const imageIndex = images.indexOf(image);
-        setImages(
-            images.filter(i => i != image)
-        )
-        if (imageIndex >= 0) {
-            setPhotoMetadata(photoMetadata.filter((_, index) => index !== imageIndex))
-        }
-    }
 
     const handleSetCategory = (issueCategory: any) => {
-        setCategory(issueCategory.replace(/ /g, "_").toUpperCase())
+        setCategory(dbFormatted(issueCategory))
     }
 
     //determine if ready to submit
@@ -157,7 +150,7 @@ export default function IssueCreationScreen() {
         setDescription("")
         setFormStarted(false)
 
-        navigation.popTo("Camera", {})
+        navigation.popTo("Camera", { source: 'ISSUE_CREATION' })
     }
 
     const handleSubmit = async () => {
@@ -271,7 +264,7 @@ export default function IssueCreationScreen() {
             setCategory(null)
             setDescription("")
             setFormStarted(false)
-            navigation.replace("Camera", {})
+            navigation.replace("Camera", { source: 'ISSUE_CREATION' })
             navigation.navigate('Issue Details', { issue: issue });
 
         } catch (error: any) {
@@ -306,27 +299,14 @@ export default function IssueCreationScreen() {
                     style={styles.titleTextBox}
                     maxLength={100} />
 
-                <View style={{ ...styles.imageContainer, height: imageHeight + spacing.sm * 2 }}>
-
-                    <View style={{ alignItems: "center" }}>
-                        <PictureIcon color={colors.textMuted}
-                            size={size.imageLg} style={[styles.defaultImage,
-                            images.length > 0 ? { display: "none" } : { display: "flex" }]} />
-
-
-                        <SelectedImageGallery images={images} metadata={photoMetadata} onDeletePressed={onImageDeletePressed}
-                            width={imageWidth} height={imageHeight} />
-                    </View>
-
-
-
-                    <WrapperButton onPress={() => { navigation.navigate("Camera", { uri: images }) }}
-                        style={images.length < 3 ? styles.photoButton : styles.disabledPhotoButton}
-                        isDisabled={images.length >= 3}>
-                        <PlusIcon color={colors.textContrast}
-                            size={size.xl} />
-                    </WrapperButton>
-                </View>
+                <ImageSelection
+                    images={images}
+                    photoMetadata={photoMetadata}
+                    imageWidth={imageWidth}
+                    imageHeight={imageHeight}
+                    setImages={setImages}
+                    setPhotoMetadata={setPhotoMetadata}
+                />
 
                 <View style={styles.addressContainer}>
                     <Text style={styles.locationLabel}>Location</Text>
@@ -346,7 +326,7 @@ export default function IssueCreationScreen() {
                 <TextInput onChangeText={setDescription}
                     value={description}
                     placeholder='Issue Description...'
-                    style={styles.descTextBox}
+                    style={globalStyles.textBoxBig}
                     multiline
                     numberOfLines={5}
                     maxLength={500}
@@ -382,18 +362,7 @@ const styles = StyleSheet.create({
         padding: spacing.md,
         paddingTop: spacing.xl
     },
-    imageContainer: {
-        backgroundColor: colors.backgroundSecondary,
-        borderRadius: borderRadius.lg,
-        justifyContent: "space-between",
-        alignContent: "center",
-        paddingVertical: spacing.sm,
-        gap: spacing.sm,
 
-    },
-    defaultImage: {
-        alignSelf: "center",
-    },
     buttonRow: {
         paddingHorizontal: spacing.md,
         gap: spacing.md,
@@ -407,22 +376,7 @@ const styles = StyleSheet.create({
     //WrapperButton contributes borderRadius.full but no dimensions, so without
     //an explicit size these collapse to the icon's own 32pt box with the glyph
     //touching every edge. Sized to match the delete button on SelectedImage.
-    photoButton: {
-        backgroundColor: palette.ckBlue,
-        position: "absolute",
-        bottom: spacing.sm,
-        right: spacing.sm,
-        padding: spacing.sm,
-        ...globalStyles.shadow
-    },
-    disabledPhotoButton: {
-        backgroundColor: palette.ckMediumGray,
-        position: "absolute",
-        bottom: spacing.sm,
-        right: spacing.sm,
-        padding: spacing.sm,
-        ...globalStyles.shadow
-    },
+
     submitButton: {
         fontSize: typography.sizeXxl,
         fontWeight: typography.weightBold,
@@ -436,15 +390,6 @@ const styles = StyleSheet.create({
         fontSize: typography.sizeXxl,
         textAlign: "center"
     },
-    descTextBox: {
-        ...globalStyles.textBox,
-        ...globalStyles.bodyText,
-        minHeight: size.x4l,
-        justifyContent: "flex-start",
-        height: "auto",
-        color: colors.textPrimary,
-    },
-
     addressText: {
         color: colors.textPrimary,
         fontSize: typography.sizeLg

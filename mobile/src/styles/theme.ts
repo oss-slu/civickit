@@ -108,37 +108,37 @@ export const size = {
 };
 
 export const statusColors: Record<string, { background: string, stroke: string, text: string }> = {
-    reported: {
+    REPORTED: {
         background: colors.statusReported,
         stroke: palette.ckDarkRed,
         text: colors.textContrast
     },
-    resolved: {
+    RESOLVED: {
         background: colors.statusResolved,
         stroke: palette.ckDarkGreen,
         text: colors.textContrast
     },
-    acknowledged: {
+    ACKNOWLEDGED: {
         background: colors.statusAcknowledged,
         stroke: palette.ckDarkOrange,
         text: colors.textContrast
     },
-    in_progress: {
+    IN_PROGRESS: {
         background: colors.statusInProgress,
         stroke: palette.ckDarkYellow,
         text: colors.textPrimary
     },
-    community_resolved: {
+    COMMUNITY_RESOLVED: {
         background: colors.statusCommunityResolved,
         stroke: palette.ckMediumGreen,
         text: colors.textPrimary
     },
-    closed: {
+    CLOSED: {
         background: colors.statusClosed,
         stroke: palette.ckDarkGray,
         text: colors.textContrast
     },
-    default: {
+    DEFAULT: {
         background: colors.background,
         stroke: colors.backgroundSecondary,
         text: colors.textPrimary

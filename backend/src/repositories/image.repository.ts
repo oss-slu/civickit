@@ -57,7 +57,7 @@ export class ImageRepository {
     const [updated] = await db
       .update(images)
       .set(data)
-      .where(eq(images.id, id))
+      .where(eq(images.id, String(data.sourceId)))
       .returning();
 
     if (!updated) {

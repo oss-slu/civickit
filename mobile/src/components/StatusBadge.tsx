@@ -5,7 +5,7 @@ import { statusColors } from '../styles/theme';
 
 
 export default function StatusBadge({ status, style, textStyle }: any) {
-    const statusColor = statusColors[status.toLowerCase()] || statusColors.default;
+    const statusColor = statusColors[status] || statusColors.default;
 
     return (
         <View

@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { IssueStatusArray } from "../types/IssueStatusArray";
 import { borderRadius, colors, spacing, statusColors, typography } from "../styles/theme";
+import { dbFormatted } from "../utils/dbValues";
 
 type StatusNumbers = Record<string, number>;
 
@@ -16,8 +17,8 @@ type StatusRow = {
 export default function StatusSummaryCard({ statusNumbers }: { statusNumbers: StatusNumbers }) {
     const rows = useMemo<StatusRow[]>(() => {
         const values = IssueStatusArray.map((status) => {
-            const key = status.toUpperCase().replace(/ /g, "_");
-            const colorKey = status.toLowerCase().replace(/ /g, "_");
+            const key = dbFormatted(status);
+            const colorKey = dbFormatted(status);
             const value = statusNumbers?.[key] ?? 0;
 
             return {

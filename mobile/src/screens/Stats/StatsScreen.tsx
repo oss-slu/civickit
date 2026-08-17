@@ -24,6 +24,7 @@ import { radiusOptions } from "../../types/RadiusOptions";
 import { timeOptions } from "../../types/TimeOptions";
 import Leaderboard from "../../components/Leaderboard";
 import Header from "../../components/Header";
+import { dbFormatted } from "../../utils/dbValues";
 
 type record = Record<string, number>;
 
@@ -133,9 +134,9 @@ export default function StatsScreen() {
             const newCategoryNumbers: record = {}
 
             IssueStatusArray.map((status) =>
-                newStatusNumbers[status.toUpperCase().replace(" ", "_")] = 0
+                newStatusNumbers[dbFormatted(status)] = 0
             )
-            IssueCategoryArray.map((status) => newCategoryNumbers[status.toUpperCase().replace(" ", "_")] = 0)
+            IssueCategoryArray.map((status) => newCategoryNumbers[dbFormatted(status)] = 0)
 
 
             filteredData.map((issue: Issue) => {

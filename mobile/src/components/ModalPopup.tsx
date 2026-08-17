@@ -2,14 +2,21 @@
 
 import { FlatList, Modal, TouchableOpacity, View, StyleSheet } from "react-native";
 import WrapperButton from "./WrapperButton";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Checkbox from "expo-checkbox";
-import { palette, typography, colors, borderRadius, spacing, globalStyles } from "../styles";
+import { palette, typography, colors, borderRadius, spacing } from "../styles";
 import Button from "./Button";
 
-export default function ModalPopUp({ buttonStyle, buttonBody, closeButtonBody, closeButtonStyle, style, children, containerStyle }: any) {
-    const [isVisible, setIsVisible] = useState(false)
-    const toggleModal = () => setIsVisible(!isVisible)
+export default function ModalPopUp({ buttonStyle, buttonBody, style, children, isVisible = false, setIsVisible = (isVisible: boolean) => null, containerStyle, closeButtonBody, closeButtonStyle }: any) {
+    const [isLocalVisible, setIsLocalVisible] = useState(isVisible)
+    const toggleModal = () => {
+        setIsLocalVisible(!isLocalVisible)
+        setIsVisible(!isLocalVisible)
+    }
+
+    useEffect(() => {
+        setIsLocalVisible(isVisible)
+    }, [isVisible])
 
     return (
         <View style={{ ...containerStyle }}>
@@ -17,22 +24,19 @@ export default function ModalPopUp({ buttonStyle, buttonBody, closeButtonBody, c
                 {buttonBody}
             </WrapperButton>
 
-            <Modal visible={isVisible} transparent animationType="fade">
+            <Modal visible={isLocalVisible} transparent animationType="fade">
                 <View style={{ ...styles.modalBackground, }}>
                     <View style={{ ...styles.modalContent, ...style }}>
                         {children}
-
                         {closeButtonBody ?
                             <TouchableOpacity style={{ ...styles.closeButton, ...closeButtonStyle }} onPress={toggleModal}>
                                 {closeButtonBody}
                             </TouchableOpacity>
                             :
-                            <Button style={styles.closeButton} onPress={toggleModal}
+                            <Button style={{ ...styles.closeButton, ...closeButtonStyle }} onPress={toggleModal}
                                 text="Close">
                             </Button>
                         }
-
-
                     </View>
                 </View>
             </Modal>
@@ -71,8 +75,7 @@ const styles = StyleSheet.create({
         fontSize: typography.sizeLg
     },
     closeButton: {
-        ...globalStyles.button,
         backgroundColor: palette.ckRed,
-        fontSize: typography.sizeLg,
+        fontSize: typography.sizeLg
     }
 })

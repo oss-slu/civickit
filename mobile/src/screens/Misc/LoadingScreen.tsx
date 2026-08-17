@@ -24,7 +24,7 @@ const styles = StyleSheet.create({
     },
     text: {
         ...globalStyles.heading1,
-        color: colors.textSecondary,
+        color: colors.textPrimary,
         marginVertical: spacing.xs
     },
 });

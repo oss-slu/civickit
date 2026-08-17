@@ -1,4 +1,4 @@
-//mobile/src/types/FormContexts.tsx
+//mobile/src/types/CreationFormContexts.tsx
 
 import { createContext } from "react"
 import type { PhotoMetadata } from "../utils/photoMetadata"

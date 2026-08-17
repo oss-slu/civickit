@@ -21,6 +21,7 @@ import Button from "../../components/Button";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { StackParams } from "../../types/StackParams";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { dbFormatted } from "../../utils/dbValues";
 
 export default function LandingScreen({ children }: any) {
     const insets = useSafeAreaInsets()
@@ -95,8 +96,8 @@ export default function LandingScreen({ children }: any) {
     };
 
     const visibleIssues = data.issues.filter((issue: any) =>
-        visibleCategories.map(i => i.toLowerCase()).includes(issue.category.replace(/_/g, " ").toLowerCase()) &&
-        visibleStatuses.map(i => i.toUpperCase().replace(/ /g, "_")).includes(issue.status)
+        visibleCategories.map(i => dbFormatted(i)).includes(issue.category) &&
+        visibleStatuses.map(i => dbFormatted(i)).includes(issue.status)
     )
 
     return (

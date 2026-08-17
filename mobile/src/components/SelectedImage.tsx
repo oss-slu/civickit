@@ -16,8 +16,6 @@ export default function SelectedImage({ source, metadata, onDeletePressed, width
         imageHeight = height * metadata.height / metadata.width
     }
 
-    // console.log(metadata)
-
 
     const styles = StyleSheet.create({
         container: {

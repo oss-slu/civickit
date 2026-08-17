@@ -17,6 +17,7 @@ import ExtendedIssueCard from "../../components/ExtendedIssueCard";
 import ModalPopUp from "../../components/ModalPopup";
 import Header from "../../components/Header";
 import Button from "../../components/Button";
+import { dbFormatted } from "../../utils/dbValues";
 
 type Props = StaticScreenProps<{
     issues: any[];
@@ -69,8 +70,8 @@ export default function LeaderBoardScreen({ route }: Props) {
 
     useEffect(() => {
         const visibleIssues = route.params.issues.filter((issue: any) =>
-            visibleCategories.map(i => i.toLowerCase()).includes(issue.category.replace(/_/g, " ").toLowerCase()) &&
-            visibleStatuses.map(i => i.toUpperCase().replace(/ /g, "_")).includes(issue.status)
+            visibleCategories.map(i => dbFormatted(i)).includes(issue.category) &&
+            visibleStatuses.map(i => dbFormatted(i)).includes(issue.status)
         )
 
         if (sort == "Endorsements") {

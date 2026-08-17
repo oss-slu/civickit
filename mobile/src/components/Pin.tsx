@@ -7,7 +7,7 @@ import Svg, { Path } from "react-native-svg";
 import { statusColors } from "../styles/theme";
 
 export default function Pin({ issue }: any) {
-    const statusColor = statusColors[issue.status.toLowerCase()] || statusColors.default;
+    const statusColor = statusColors[issue.status] || statusColors.default;
 
     const [icon, setIcon] = useState(
         <View style={{ ...styles.icon, paddingTop: spacing.xs + 2 }}>
