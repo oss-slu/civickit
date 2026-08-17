@@ -456,3 +456,13 @@ export function TextIcon(props: IconProps) {
             style={props.style} />
     )
 }
+
+
+export function ClipBoardIcon(props: IconProps) {
+    return (
+        <Feather name="clipboard"
+            color={props.color}
+            size={props.size}
+            style={props.style} />
+    )
+}
