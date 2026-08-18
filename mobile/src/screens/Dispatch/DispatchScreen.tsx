@@ -96,7 +96,7 @@ export default function DispatchScreen() {
     })
 
     return (
-        <View style={{ ...globalStyles.container, padding: 0 }}>
+        <View style={{ ...globalStyles.container, padding: 0, paddingHorizontal: spacing.sm }}>
             <ScrollView
                 refreshControl={<RefreshControl
                     refreshing={refreshing}
