@@ -7,7 +7,7 @@ import Checkbox from "expo-checkbox";
 import { palette, typography, colors, borderRadius, spacing, globalStyles } from "../styles";
 import Button from "./Button";
 
-export default function ModalPopUp({ buttonStyle, buttonBody, style, children, isVisible = false, setIsVisible = (isVisible: boolean) => null }: any) {
+export default function ModalPopUp({ buttonStyle, buttonBody, style, children, isVisible = false, setIsVisible = (isVisible: boolean) => null, closeButtonBody, closeButtonStyle }: any) {
     const [isLocalVisible, setIsLocalVisible] = useState(isVisible)
     const toggleModal = () => {
         setIsLocalVisible(!isLocalVisible)
