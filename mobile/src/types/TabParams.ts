@@ -4,6 +4,6 @@ export type TabParams = {
     "Map": {},
     "Stats Nav": {},
     "ReportIssue": {},
-    "Events": {},
+    "Dispatch Nav": {},
     "Profile Nav": {}
 }

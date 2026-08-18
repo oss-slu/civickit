@@ -456,3 +456,12 @@ export function TextIcon(props: IconProps) {
             style={props.style} />
     )
 }
+
+export function MenuIcon(props: IconProps) {
+    return (
+        <Feather name="menu"
+            color={props.color}
+            size={props.size}
+            style={props.style} />
+    )
+}

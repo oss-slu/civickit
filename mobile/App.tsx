@@ -10,7 +10,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { TabParams } from './src/types/TabParams'
 import { borderRadius, colors, globalStyles, palette, size, spacing, typography } from './src/styles';
 import { View, StyleSheet, Dimensions } from 'react-native';
-import { BarGraphIcon, CalendarIcon, LineGraphIcon, MapIcon, PlusIcon, SearchIcon, UserIcon } from './src/components/Icons';
+import { BarGraphIcon, CalendarIcon, LineGraphIcon, MapIcon, MenuIcon, PlusIcon, SearchIcon, UserIcon } from './src/components/Icons';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import FlashMessage from 'react-native-flash-message';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -26,6 +26,7 @@ import LoadingScreen from './src/screens/Misc/LoadingScreen';
 import { StatusBar } from "expo-status-bar";
 import Constants from 'expo-constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import DispatchNav from './src/screens/Dispatch/DispatchNav';
 
 const Tab = createBottomTabNavigator<TabParams>();
 
@@ -47,6 +48,8 @@ const Stack = createNativeStackNavigator<StackParams>();
 
 function MainTabNavigator() {
   const { width, height } = Dimensions.get("window")
+  const { role } = useAuth()
+  console.log(role)
   return (
     <SafeAreaView style={{
       width,
@@ -89,12 +92,29 @@ function MainTabNavigator() {
                     <MapIcon
                       color={color}
                       size={size.lg}
-                      style={{ ...styles.icon, ...styles.navIcons }}
+                      style={{ ...styles.icon }}
                     />
                   </View>
                 ),
                 headerShown: false
               }} />
+
+            {(role === 'ORG_ADMIN' || role === 'ORG_MEMBER') && <Tab.Screen name="Dispatch Nav" component={DispatchNav}
+              options={{
+                tabBarIcon: ({ color, focused }) => (
+                  <View style={{
+                    ...styles.iconBackground,
+                    backgroundColor: focused ? palette.ckGrayBlue : palette.ckVeryLightGray
+                  }}>
+                    <MenuIcon
+                      color={color}
+                      size={size.xl}
+                      style={{ ...styles.icon, marginTop: 0 }}
+                    />
+                  </View>
+                ),
+                headerShown: false
+              }} />}
 
 
             <Tab.Screen name="ReportIssue" component={IssueCreationNav}
@@ -125,7 +145,7 @@ function MainTabNavigator() {
                     <LineGraphIcon
                       color={color}
                       size={size.lg}
-                      style={{ ...styles.icon, ...styles.navIcons }}
+                      style={{ ...styles.icon }}
                     />
                   </View>
                 ),
@@ -223,9 +243,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignContent: "center",
     alignItems: "center"
-  },
-  navIcons: {
-
   },
   iconBackground: {
     marginTop: spacing.md,
