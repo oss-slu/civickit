@@ -97,7 +97,7 @@ function MainTabNavigator() {
                 headerShown: false
               }} />
 
-            {(role != 'REPORTER') && <Tab.Screen name="Dispatch Nav" component={DispatchNav}
+            {(role === 'ORG_ADMIN' || role === 'ORG_MEMBER') && <Tab.Screen name="Dispatch Nav" component={DispatchNav}
               options={{
                 tabBarIcon: ({ color, focused }) => (
                   <View style={{

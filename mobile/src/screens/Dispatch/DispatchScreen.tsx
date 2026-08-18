@@ -34,8 +34,20 @@ export default function DispatchScreen() {
     const sortOptions = ["Endorsements", "Date Reported", "Distance"]
 
     //TODO replace with formatted function when merged
-    const orgCategories = organization.categoryScope.map((cat: any) => cat.toLowerCase().replace("_", " "))
-    const [visibleCategories, setVisibleCategories] = useState(orgCategories)
+    //organization is null until AuthContext resolves getOrgByUserId, and that is
+    //a separate fetch from the one that sets role -- role can win, so this screen
+    //can mount before the scope exists. Read it defensively here and hold the
+    //loading state below until it arrives.
+    const orgCategories: string[] = organization?.categoryScope
+        ? organization.categoryScope.map((cat: any) => cat.toLowerCase().replace("_", " "))
+        : []
+    const [visibleCategories, setVisibleCategories] = useState<string[]>(orgCategories)
+
+    //seeding useState above only runs on first render, so a scope that arrives
+    //afterwards would leave the filter stuck empty and hide every issue
+    useEffect(() => {
+        setVisibleCategories(orgCategories)
+    }, [organization])
 
     useEffect(() => {
         if (data.issues != null) {
@@ -84,7 +96,7 @@ export default function DispatchScreen() {
         }, [])
     )
 
-    if (isLoading) {
+    if (isLoading || organization == null) {
         return <LoadingScreen />
     } else if (error) {
         navigation.navigate('Error', { errorMessage: "There was an Error" })
