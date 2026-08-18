@@ -32,7 +32,7 @@ export default function DispatchScreen() {
     const [sort, setSort] = useState("Endorsements")
     const [isAscending, setIsAscending] = useState(true)
     const sortOptions = ["Endorsements", "Date Reported", "Date Updated", "Distance"]
-    const [visibleStatuses, setVisibleStatuses] = useState(IssueStatusArray)
+
 
     const claimOptions = ["My Claims", `${organization.name}'s Claims`]
     const [visibleClaimers, setVisibleClaimers] = useState(claimOptions)
@@ -45,9 +45,11 @@ export default function DispatchScreen() {
     const orgCategories = organization.categoryScope.map((cat: any) => cat.toLowerCase().replace("_", " "))
     const [visibleCategories, setVisibleCategories] = useState(orgCategories)
 
+    const queueStatuses = IssueStatusArray.filter((status: any) => !status.includes("Resolved") && status != "Closed")
+    const [visibleStatuses, setVisibleStatuses] = useState(queueStatuses)
     const resetFilter = () => {
         setVisibleCategories(orgCategories)
-        setVisibleStatuses(IssueStatusArray)
+        setVisibleStatuses(queueStatuses)
     }
 
 
@@ -135,6 +137,22 @@ export default function DispatchScreen() {
         }, [])
     )
 
+    const compareArrs = (arr1: any, arr2: any) => {
+        if (arr1.length != arr2.length) {
+            return false
+        }
+
+        for (let i = 0; i < arr1.length; i++) {
+            if (!arr1.includes(arr2[i])) {
+                return false
+            }
+            if (!arr2.includes(arr1[i])) {
+                return false
+            }
+        }
+        return true
+    }
+
     if (isLoading) {
         return <LoadingScreen />
     } else if (error) {
@@ -196,7 +214,7 @@ export default function DispatchScreen() {
                         buttonStyle={{
                             ...styles.modalButton,
                             borderColor: (visibleCategories.length == orgCategories.length &&
-                                visibleStatuses.length == IssueStatusArray.length &&
+                                compareArrs(visibleStatuses, queueStatuses) &&
                                 visibleClaimers.length == claimOptions.length
                             )
                                 ? colors.backgroundSecondary :
