@@ -178,7 +178,7 @@ export default function LandingScreen({ children }: any) {
                     top: spacing.xxxl + spacing.sm
                 },]}>
                     <WarningIcon size={typography.sizeLg} color={colors.textContrast} />
-                    <Text style={styles.text}>Your are outside of our service area</Text>
+                    <Text style={styles.text}>You are outside of our service area</Text>
                 </View>
 
             }

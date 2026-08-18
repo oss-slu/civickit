@@ -188,7 +188,6 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
 
 
     const checkUserLocation = (coordinate: any) => {
-        coordinate = { latitude: -40, longitude: 90 }
         const coords = cityBounds.features[0].geometry.coordinates[0][1].map((point) => {
             return {
                 latitude: point[1],
@@ -198,7 +197,8 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
         setInBounds(isPointInPolygon(coordinate, coords))
     }
 
-    console.log(cityBounds.features[0].geometry.coordinates[0][1].map((point: any) => { return { latitude: point[1], longitude: point[0] } }))
+    const stlPoints = cityBounds.features[0].geometry.coordinates[0][1].map((point: any) => { return { latitude: point[1], longitude: point[0] } })
+    const worldPoints = cityBounds.features[0].geometry.coordinates[0][0].map((point: any) => { return { latitude: point[1], longitude: point[0] } })
 
     return (
         <View style={{ flex: 1 }}>
@@ -222,8 +222,7 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
             // cameraZoomRange={{ maxCenterCoordinateDistance: 11 }}
             >
                 {markerList}
-                {/* <Geojson geojson={cityBounds as any} fillColor='rgba(0, 0, 0, 0.15)' /> */}
-                <Polygon coordinates={cityBounds.features[0].geometry.coordinates[0][1].map((point: any) => { return { latitude: point[1], longitude: point[0] } })} />
+                <Polygon key={Math.random()} coordinates={worldPoints} holes={[stlPoints]} fillColor='rgba(0,0,0,0.25)' />
             </MapView>
 
             <Animated.View
