@@ -23,6 +23,7 @@ import { popup } from 'leaflet';
 import { StackParams } from '../../types/StackParams';
 import { StackNavigationProp } from '@react-navigation/stack';
 import MiniMap from '../../components/MiniMap';
+import MiniMap from '../../components/MiniMap';
 
 let MapView: any = null;
 let Marker: any = null;
