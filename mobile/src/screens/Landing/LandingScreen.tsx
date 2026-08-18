@@ -29,6 +29,7 @@ export default function LandingScreen({ children }: any) {
     const [visibleCategories, setVisibleCategories] = useState(IssueCategoryArray)
     const [visibleStatuses, setVisibleStatuses] = useState(IssueStatusArray)
     const navigation = useNavigation<StackNavigationProp<StackParams>>()
+    const { inBounds } = useLocation()
 
     //get contexts from above layer(s)
     const { data, isLoading, isFetching, error, refetch } = useNearbyIssues()
@@ -169,6 +170,18 @@ export default function LandingScreen({ children }: any) {
                     <RecenterIcon size={styles.recenterButton.fontSize} color={styles.recenterButton.color} />
                 </WrapperButton>
             </View>
+
+            {!inBounds &&
+                <View style={[styles.textContainer,
+                {
+                    position: "absolute",
+                    top: spacing.xxxl + spacing.sm
+                },]}>
+                    <WarningIcon size={typography.sizeLg} color={colors.textContrast} />
+                    <Text style={styles.text}>You are outside of our service area</Text>
+                </View>
+
+            }
 
             <View style={[styles.textContainer,
             {
