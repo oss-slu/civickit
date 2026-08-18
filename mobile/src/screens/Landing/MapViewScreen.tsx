@@ -204,6 +204,10 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
         []
     )
 
+    //wrap the hole once too — an inline [stlPoints] literal is a new array on
+    //every render, which rebuilds the native path and can drop the overlay
+    const boundaryHoles = useMemo(() => [stlPoints], [stlPoints])
+
     return (
         <View style={{ flex: 1 }}>
             <MapView
@@ -234,7 +238,7 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
                 <Polygon
                     key="stl-shading"
                     coordinates={worldPoints}
-                    holes={[stlPoints]}
+                    holes={boundaryHoles}
                     strokeWidth={0}
                     fillColor='rgba(0,0,0,0.25)'
                 />
