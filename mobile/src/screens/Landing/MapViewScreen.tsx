@@ -3,7 +3,7 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { View, Animated, useAnimatedValue } from 'react-native';
-import { Marker, PROVIDER_GOOGLE, Geojson, Polygon } from 'react-native-maps';
+import { Marker, PROVIDER_GOOGLE, Polygon } from 'react-native-maps';
 import { StackParams } from '../../types/StackParams';
 import { useLocation } from '../../contexts/LocationContext';
 import Pin from '../../components/Pin';
@@ -16,7 +16,7 @@ import Cluster from '../../components/Cluster';
 import { getDistance, isPointInPolygon } from 'geolib';
 import CalloutListPopup from '../../components/CalloutListPopup';
 import { GetNearbyIssueResponse } from '@civickit/shared';
-import cityBounds from '../../../assets/shapes/stl_boundary_inverted.json'
+import cityBounds from '../../../assets/shapes/stl_boundary.json'
 // import Geojson from 'react-native-geojson';
 
 interface IssueCluster {
@@ -188,17 +188,16 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
 
 
     const checkUserLocation = (coordinate: any) => {
-        const coords = cityBounds.features[0].geometry.coordinates[0][1].map((point) => {
-            return {
-                latitude: point[1],
-                longitude: point[0]
-            }
-        })
-        setInBounds(isPointInPolygon(coordinate, coords))
+        setInBounds(isPointInPolygon(coordinate, stlPoints))
     }
 
-    const stlPoints = cityBounds.features[0].geometry.coordinates[0][1].map((point: any) => { return { latitude: point[1], longitude: point[0] } })
-    const worldPoints = cityBounds.features[0].geometry.coordinates[0][0].map((point: any) => { return { latitude: point[1], longitude: point[0] } })
+    //cityBounds is a static import, so these never change — build them once.
+    //rebuilding them per render hands Polygon new arrays every time, which
+    //rebuilds the native path and can drop the overlay on iOS
+    const stlPoints = useMemo(
+        () => cityBounds.features[0].geometry.coordinates[0].map((point: any) => ({ latitude: point[1], longitude: point[0] })),
+        []
+    )
 
     return (
         <View style={{ flex: 1 }}>
@@ -222,7 +221,13 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
             // cameraZoomRange={{ maxCenterCoordinateDistance: 11 }}
             >
                 {markerList}
-                <Polygon key={Math.random()} coordinates={worldPoints} holes={[stlPoints]} fillColor='rgba(0,0,0,0.25)' />
+                <Polygon
+                    key="stl-outline"
+                    coordinates={stlPoints}
+                    strokeColor={colors.primary}
+                    strokeWidth={2}
+                    fillColor='rgba(0,0,0,0)'
+                />
             </MapView>
 
             <Animated.View
