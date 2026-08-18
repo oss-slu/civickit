@@ -82,14 +82,15 @@ export default function IssueCreationScreen() {
             setLocationSource(resolved[0].locationSource);
             setLocationMetadata({});
             setAddress(resolved[0].locationSource === 'exif' ? 'Detecting photo location...' : 'Detecting phone location...');
+
             const coords = cityBounds.features[0].geometry.coordinates[0][1].map((point) => {
                 return {
                     latitude: point[1],
                     longitude: point[0]
-                }
+                };
             })
-            setInBounds(isPointInPolygon({ latitude: resolved.latitude, longitude: resolved.longitude }, coords))
-          
+            let ib = isPointInPolygon({ latitude: resolved[0].latitude, longitude: resolved[0].longitude }, coords);
+            setInBounds(ib);
 
             (async () => {
                 const geocode = await Location.reverseGeocodeAsync({
@@ -104,7 +105,7 @@ export default function IssueCreationScreen() {
                         setAddress(formattedAddress);
                     }
                     setLocationMetadata(extractResolvedLocationMetadata(geocode[0]));
-                  
+
                 }
             })();
         }
