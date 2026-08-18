@@ -204,8 +204,6 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
         []
     )
 
-    console.log(worldPoints)
-
     return (
         <View style={{ flex: 1 }}>
             <MapView
