@@ -101,7 +101,7 @@ export default function DispatchScreen() {
                 refreshControl={<RefreshControl
                     refreshing={refreshing}
                     onRefresh={refetch} />}
-                style={{ ...styles.list, paddingTop: headerOffset + spacing.sm }}
+                style={{ ...styles.list, paddingTop: headerOffset + spacing.md }}
                 contentContainerStyle={styles.listContainter}
             >
                 {issueList}
@@ -170,8 +170,8 @@ export default function DispatchScreen() {
 const styles = StyleSheet.create({
     header: {
         rowGap: spacing.sm,
-        marginTop: spacing.sm,
         flexDirection: "column",
+        borderBottomWidth: 3,
         borderColor: colors.backgroundSecondary,
         alignItems: "flex-start",
         width: "100%",
@@ -222,5 +222,6 @@ const styles = StyleSheet.create({
         columnGap: spacing.xs,
         justifyContent: "flex-start",
         width: "100%",
+        paddingHorizontal: spacing.sm,
     },
 })
