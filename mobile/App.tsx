@@ -59,23 +59,25 @@ function MainTabNavigator() {
       />
       <LocationProvider>
         <NearbyIssuesProvider>
-          <Tab.Navigator screenOptions={{
-            tabBarStyle: {
-              backgroundColor: palette.ckVeryLightGray,
-              //an explicit height makes getTabBarHeight return it verbatim and
-              //skip adding insets.bottom, but BottomTabBar still applies
-              //paddingBottom: insets.bottom — so the inset has to be added here
-              //or it eats the space the icons need.
-              height: size.xxl + spacing.sm,
-              elevation: 0,
-            },
-            tabBarShowLabel: false,
-            tabBarActiveTintColor: colors.textPrimary,
-            tabBarInactiveTintColor: colors.textPrimary,
-            animation: "shift",
-            headerTitleAlign: "left",
+          <Tab.Navigator
+            screenOptions={{
+              tabBarStyle: {
+                backgroundColor: palette.ckVeryLightGray,
+                //an explicit height makes getTabBarHeight return it verbatim and
+                //skip adding insets.bottom, but BottomTabBar still applies
+                //paddingBottom: insets.bottom — so the inset has to be added here
+                //or it eats the space the icons need.
+                height: size.navBarHeight,
+                elevation: 0,
+              },
+              tabBarShowLabel: false,
+              tabBarActiveTintColor: colors.textPrimary,
+              tabBarInactiveTintColor: colors.textPrimary,
+              animation: "shift",
+              headerTitleAlign: "left",
+              tabBarHideOnKeyboard: true
 
-          }}
+            }}
           >
             <Tab.Screen name="Map" component={LandingScreenNav}
               options={{

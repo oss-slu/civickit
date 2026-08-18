@@ -68,7 +68,7 @@ export default function IssueCreationNav() {
                         headerBackVisible: false,
                         headerShadowVisible: false,
                         headerTitle: "",
-                        headerShown: false
+                        headerShown: false,
                     }}
                 />
                 <Stack.Screen name="DuplicateCheck" component={DuplicateCheckScreen}

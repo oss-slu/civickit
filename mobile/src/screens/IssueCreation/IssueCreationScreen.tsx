@@ -2,14 +2,14 @@
 import * as Location from 'expo-location';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { uploadImagesToCloudinary } from '../../services/cloudinaryService';
-import { View, StyleSheet, ScrollView, TextInput, Text, FlatList, useWindowDimensions } from 'react-native';
-import { useFocusEffect, useNavigation, } from '@react-navigation/native';
+import { View, StyleSheet, ScrollView, TextInput, Text, FlatList, useWindowDimensions, Dimensions } from 'react-native';
+import { useFocusEffect, useLocale, useNavigation, } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { showMessage } from "react-native-flash-message";
 import { StackParams } from '../../types/StackParams';
 import { borderRadius, colors, globalStyles, spacing, palette, size, typography } from '../../styles';
-import { CaretDownIcon, PictureIcon, PlusIcon } from '../../components/Icons';
+import { CaretDownIcon, PictureIcon, PlusIcon, WarningIcon } from '../../components/Icons';
 import { IssueCategoryArray } from '../../types/IssueCategoryArray';
 import { extractResolvedLocationMetadata, formatResolvedAddress, ResolvedLocationMetadata } from '../../hooks/useResolvedAddress';
 import { useAuth } from '../../contexts/AuthContext';
@@ -27,6 +27,9 @@ import { PhotoMetadataSource } from '../../utils/photoMetadata';
 import { useNearbyIssues } from '../../contexts/NearbyIssuesContext';
 import SelectedImageGallery from '../../components/SelectedImageGallery';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import cityBounds from '../../../assets/shapes/stl_boundary_inverted.json'
+import { isPointInPolygon } from 'geolib';
+import { useLocation } from '../../contexts/LocationContext';
 
 export default function IssueCreationScreen() {
     const { images, setImages } = useContext(ImagesContext);
@@ -42,6 +45,7 @@ export default function IssueCreationScreen() {
     const [deviceLocation, setDeviceLocation] = useState<userLocation | null>(null);
     const [locationSource, setLocationSource] = useState<PhotoMetadataSource | null>(null);
     const [submitAllowed, setSubmitAllowed] = useState<boolean>(false)
+    const { inBounds, setInBounds } = useLocation()
 
     const [isLoadingLocal, setIsLoading] = useState(false)
     const navigation = useNavigation<StackNavigationProp<StackParams>>()
@@ -72,12 +76,20 @@ export default function IssueCreationScreen() {
         const fallbackTakenAt = new Date().toISOString();
         const resolved = resolvePhotoMetadata(photoMetadata, { ...deviceLocation, takenAt: fallbackTakenAt });
 
+
         if (resolved.length > 0) {
             setLocation({ latitude: resolved[0].latitude, longitude: resolved[0].longitude });
             setLocationSource(resolved[0].locationSource);
             setLocationMetadata({});
             setAddress(resolved[0].locationSource === 'exif' ? 'Detecting photo location...' : 'Detecting phone location...');
-
+            const coords = cityBounds.features[0].geometry.coordinates[0][1].map((point) => {
+                return {
+                    latitude: point[1],
+                    longitude: point[0]
+                }
+            })
+            setInBounds(isPointInPolygon({ latitude: resolved.latitude, longitude: resolved.longitude }, coords))
+          
 
             (async () => {
                 const geocode = await Location.reverseGeocodeAsync({
@@ -92,6 +104,7 @@ export default function IssueCreationScreen() {
                         setAddress(formattedAddress);
                     }
                     setLocationMetadata(extractResolvedLocationMetadata(geocode[0]));
+                  
                 }
             })();
         }
@@ -126,7 +139,8 @@ export default function IssueCreationScreen() {
         description.length > 0 &&
         category != null &&
         images.length > 0 &&
-        !address.startsWith("Detecting ")
+        !address.startsWith("Detecting ") &&
+        inBounds
     ) {
         setSubmitAllowed(true)
     } else if (submitAllowed && (
@@ -134,7 +148,8 @@ export default function IssueCreationScreen() {
         description.length == 0 ||
         category == null ||
         images.length == 0 ||
-        address.startsWith("Detecting "))) {
+        address.startsWith("Detecting ") ||
+        !inBounds)) {
         setSubmitAllowed(false)
     }
 
@@ -293,9 +308,9 @@ export default function IssueCreationScreen() {
     };
 
     const locationSourceLabel = locationSource === 'exif' ? 'From photo EXIF' : 'From phone GPS';
-
+    const { width, height } = Dimensions.get("window")
     return (
-        <View style={{ flex: 1 }}>
+        <View style={{ height: height }}>
             <KeyboardAwareScrollView enableOnAndroid enableAutomaticScroll extraScrollHeight={100}
                 style={[styles.container, { paddingTop: spacing.md }]}
                 contentContainerStyle={{ gap: spacing.sm }}>
@@ -354,6 +369,13 @@ export default function IssueCreationScreen() {
                 />
             </KeyboardAwareScrollView>
 
+            {!inBounds &&
+                <View style={[styles.warningContainer]}>
+                    <WarningIcon size={typography.sizeLg} color={colors.textContrast} />
+                    <Text style={styles.warningText}>This issue is outside of our service area.</Text>
+                </View>
+            }
+
             <View style={styles.buttonRow}>
 
                 <Button onPress={handleCancel}
@@ -402,7 +424,7 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         width: "100%",
         position: "absolute",
-        bottom: spacing.lg,
+        bottom: spacing.lg + size.navBarHeight
     },
     //WrapperButton contributes borderRadius.full but no dimensions, so without
     //an explicit size these collapse to the icon's own 32pt box with the glyph
@@ -414,6 +436,24 @@ const styles = StyleSheet.create({
         right: spacing.sm,
         padding: spacing.sm,
         ...globalStyles.shadow
+    },
+    warningContainer: {
+        borderRadius: borderRadius.full,
+        backgroundColor: palette.ckDark,
+        paddingVertical: spacing.sm,
+        paddingHorizontal: spacing.md,
+        alignSelf: "center",
+        flexDirection: "row",
+        alignItems: "center",
+        columnGap: spacing.sm,
+        position: "absolute",
+        bottom: spacing.xxxl + spacing.lg + size.navBarHeight,
+        ...globalStyles.shadow
+    },
+    warningText: {
+        color: colors.textContrast,
+        fontWeight: typography.weightMedium,
+        fontSize: typography.sizeLg,
     },
     disabledPhotoButton: {
         backgroundColor: palette.ckMediumGray,
