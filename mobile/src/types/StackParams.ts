@@ -51,4 +51,5 @@ export type StackParams = {
     },
     "DuplicateCheck": {},
     "Queue": {}
+    "Dispatch": {}
 }

@@ -1,9 +1,9 @@
 // mobile/src/screens/Landing/MapViewScreen.tsx
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { View, Animated, useAnimatedValue } from 'react-native';
-import { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import { Marker, PROVIDER_GOOGLE, Polygon } from 'react-native-maps';
 import { StackParams } from '../../types/StackParams';
 import { useLocation } from '../../contexts/LocationContext';
 import Pin from '../../components/Pin';
@@ -13,9 +13,11 @@ import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet';
 import IssueListScreen from './IssueListScreen';
 import CalloutPopup from '../../components/CalloutPopup';
 import Cluster from '../../components/Cluster';
-import { getDistance } from 'geolib';
+import { getDistance, isPointInPolygon } from 'geolib';
 import CalloutListPopup from '../../components/CalloutListPopup';
 import { GetNearbyIssueResponse } from '@civickit/shared';
+import cityBounds from '../../../assets/shapes/stl_boundary_inverted.json'
+// import Geojson from 'react-native-geojson';
 
 interface IssueCluster {
     issues: GetNearbyIssueResponse[]
@@ -40,6 +42,7 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
     const fadeAnim = useAnimatedValue(0);
     const posAnim = useAnimatedValue(0);
     const [paddingBottom, setPaddingBottom] = useState("110%")
+    const { setInBounds } = useLocation()
     //initial value matches the initialRegion delta (0.05) with the same
     //zoom factor used in onRegionChange, so the first render clusters the
     //same way as every render after the map settles
@@ -48,7 +51,6 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
 
     //get contexts from above layer(s)
     const location = useLocation().location
-
     const onMarkerPress = (element: MapElement) => {
 
         //large clusters zoom the map in instead of rendering a huge callout (#174)
@@ -184,6 +186,28 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
         }
     }
 
+
+    const checkUserLocation = (coordinate: any) => {
+        setInBounds(isPointInPolygon(coordinate, stlPoints))
+    }
+
+    //cityBounds is a static import, so these never change — build them once.
+    //rebuilding them per render hands Polygon new arrays every time, which
+    //rebuilds the native path and can drop the overlay on iOS
+    const stlPoints = useMemo(
+        () => cityBounds.features[0].geometry.coordinates[0][1].map((point: any) => ({ latitude: point[1], longitude: point[0] })),
+        []
+    )
+
+    const worldPoints = useMemo(
+        () => cityBounds.features[0].geometry.coordinates[0][0].map((point: any) => ({ latitude: point[1], longitude: point[0] })),
+        []
+    )
+
+    //wrap the hole once too — an inline [stlPoints] literal is a new array on
+    //every render, which rebuilds the native path and can drop the overlay
+    const boundaryHoles = useMemo(() => [stlPoints], [stlPoints])
+
     return (
         <View style={{ flex: 1 }}>
             <MapView
@@ -195,6 +219,7 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
                 style={{ flex: 1 }}
                 toolbarEnabled={false}
                 onRegionChangeComplete={(Region) => onRegionChange(Region)}
+                onUserLocationChange={(e) => { checkUserLocation(e.nativeEvent.coordinate) }}
                 initialRegion={location ? {
                     latitude: location.latitude,
                     longitude: location.longitude,
@@ -203,6 +228,20 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
                 } : undefined}
             >
                 {markerList}
+                <Polygon
+                    key="stl-outline"
+                    coordinates={stlPoints}
+                    strokeColor={'black'}
+                    strokeWidth={1}
+                    fillColor='rgba(0,0,0,0)'
+                />
+                <Polygon
+                    key="stl-shading"
+                    coordinates={worldPoints}
+                    holes={boundaryHoles}
+                    strokeWidth={0}
+                    fillColor='rgba(0,0,0,0.25)'
+                />
             </MapView>
 
             <Animated.View
@@ -236,7 +275,6 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
                 }
 
             </Animated.View>
-
             <BottomSheet
                 ref={bottomSheetRef}
                 snapPoints={snapPoints}
