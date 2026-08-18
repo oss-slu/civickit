@@ -16,7 +16,7 @@ import Cluster from '../../components/Cluster';
 import { getDistance, isPointInPolygon } from 'geolib';
 import CalloutListPopup from '../../components/CalloutListPopup';
 import { GetNearbyIssueResponse } from '@civickit/shared';
-import cityBounds from '../../../assets/shapes/stl_boundary.json'
+import cityBounds from '../../../assets/shapes/stl_boundary_inverted.json'
 // import Geojson from 'react-native-geojson';
 
 interface IssueCluster {
@@ -195,9 +195,16 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
     //rebuilding them per render hands Polygon new arrays every time, which
     //rebuilds the native path and can drop the overlay on iOS
     const stlPoints = useMemo(
-        () => cityBounds.features[0].geometry.coordinates[0].map((point: any) => ({ latitude: point[1], longitude: point[0] })),
+        () => cityBounds.features[0].geometry.coordinates[0][1].map((point: any) => ({ latitude: point[1], longitude: point[0] })),
         []
     )
+
+    const worldPoints = useMemo(
+        () => cityBounds.features[0].geometry.coordinates[0][0].map((point: any) => ({ latitude: point[1], longitude: point[0] })),
+        []
+    )
+
+    console.log(worldPoints)
 
     return (
         <View style={{ flex: 1 }}>
@@ -217,16 +224,21 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
                     latitudeDelta: 0.05,
                     longitudeDelta: 0.05,
                 } : undefined}
-            // minZoomLevel={11}
-            // cameraZoomRange={{ maxCenterCoordinateDistance: 11 }}
             >
                 {markerList}
                 <Polygon
                     key="stl-outline"
                     coordinates={stlPoints}
-                    strokeColor={colors.primary}
-                    strokeWidth={2}
+                    strokeColor={'black'}
+                    strokeWidth={1}
                     fillColor='rgba(0,0,0,0)'
+                />
+                <Polygon
+                    key="stl-shading"
+                    coordinates={worldPoints}
+                    holes={[stlPoints]}
+                    strokeWidth={0}
+                    fillColor='rgba(0,0,0,0.25)'
                 />
             </MapView>
 
