@@ -27,6 +27,7 @@ import { StatusBar } from "expo-status-bar";
 import Constants from 'expo-constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import DispatchNav from './src/screens/Dispatch/DispatchNav';
+import { PointsProvider } from './src/contexts/PointsContext';
 
 const Tab = createBottomTabNavigator<TabParams>();
 
@@ -61,100 +62,102 @@ function MainTabNavigator() {
         hidden={false}
       />
       <LocationProvider>
-        <NearbyIssuesProvider>
-          <Tab.Navigator
-            screenOptions={{
-              tabBarStyle: {
-                backgroundColor: palette.ckVeryLightGray,
-                //an explicit height makes getTabBarHeight return it verbatim and
-                //skip adding insets.bottom, but BottomTabBar still applies
-                //paddingBottom: insets.bottom — so the inset has to be added here
-                //or it eats the space the icons need.
-                height: size.navBarHeight,
-                elevation: 0,
-              },
-              tabBarShowLabel: false,
-              tabBarActiveTintColor: colors.textPrimary,
-              tabBarInactiveTintColor: colors.textPrimary,
-              animation: "shift",
-              headerTitleAlign: "left",
-              tabBarHideOnKeyboard: true
+        <PointsProvider>
+          <NearbyIssuesProvider>
+            <Tab.Navigator
+              screenOptions={{
+                tabBarStyle: {
+                  backgroundColor: palette.ckVeryLightGray,
+                  //an explicit height makes getTabBarHeight return it verbatim and
+                  //skip adding insets.bottom, but BottomTabBar still applies
+                  //paddingBottom: insets.bottom — so the inset has to be added here
+                  //or it eats the space the icons need.
+                  height: size.navBarHeight,
+                  elevation: 0,
+                },
+                tabBarShowLabel: false,
+                tabBarActiveTintColor: colors.textPrimary,
+                tabBarInactiveTintColor: colors.textPrimary,
+                animation: "shift",
+                headerTitleAlign: "left",
+                tabBarHideOnKeyboard: true
 
-            }}
-          >
-            <Tab.Screen name="Map" component={LandingScreenNav}
-              options={{
-                tabBarIcon: ({ color, focused }) => (
-                  <View style={{
-                    ...styles.iconBackground,
-                    backgroundColor: focused ? palette.ckGrayBlue : palette.ckVeryLightGray
-                  }}>
-                    <MapIcon
-                      color={color}
-                      size={size.lg}
-                      style={{ ...styles.icon }}
-                    />
-                  </View>
-                ),
-                headerShown: false
-              }} />
-
-            {(role === 'ORG_ADMIN' || role === 'ORG_MEMBER') && <Tab.Screen name="Dispatch Nav" component={DispatchNav}
-              options={{
-                tabBarIcon: ({ color, focused }) => (
-                  <View style={{
-                    ...styles.iconBackground,
-                    backgroundColor: focused ? palette.ckGrayBlue : palette.ckVeryLightGray
-                  }}>
-                    <MenuIcon
-                      color={color}
-                      size={size.xl}
-                      style={{ ...styles.icon, marginTop: 0 }}
-                    />
-                  </View>
-                ),
-                headerShown: false
-              }} />}
-
-
-            <Tab.Screen name="ReportIssue" component={IssueCreationNav}
-              options={{
-                tabBarIcon: ({ focused }) => (
-                  <View
-                    style={{
-                      ...styles.plusButton,
-                      backgroundColor: focused ? palette.ckYellow : palette.ckRed
+              }}
+            >
+              <Tab.Screen name="Map" component={LandingScreenNav}
+                options={{
+                  tabBarIcon: ({ color, focused }) => (
+                    <View style={{
+                      ...styles.iconBackground,
+                      backgroundColor: focused ? palette.ckGrayBlue : palette.ckVeryLightGray
                     }}>
-                    <PlusIcon
-                      color={colors.textContrast}
-                      size={size.xl}
-                      style={styles.plusIcon}
-                    />
-                  </View>
-                ),
-                headerShown: false
-              }} />
+                      <MapIcon
+                        color={color}
+                        size={size.lg}
+                        style={{ ...styles.icon }}
+                      />
+                    </View>
+                  ),
+                  headerShown: false
+                }} />
 
-            <Tab.Screen name="Stats Nav" component={StatsNav}
-              options={{
-                tabBarIcon: ({ color, focused }) => (
-                  <View style={{
-                    ...styles.iconBackground,
-                    backgroundColor: focused ? palette.ckGrayBlue : palette.ckVeryLightGray
-                  }}>
-                    <LineGraphIcon
-                      color={color}
-                      size={size.lg}
-                      style={{ ...styles.icon }}
-                    />
-                  </View>
-                ),
-                headerShown: false
-              }} />
+              {(role === 'ORG_ADMIN' || role === 'ORG_MEMBER') && <Tab.Screen name="Dispatch Nav" component={DispatchNav}
+                options={{
+                  tabBarIcon: ({ color, focused }) => (
+                    <View style={{
+                      ...styles.iconBackground,
+                      backgroundColor: focused ? palette.ckGrayBlue : palette.ckVeryLightGray
+                    }}>
+                      <MenuIcon
+                        color={color}
+                        size={size.xl}
+                        style={{ ...styles.icon, marginTop: 0 }}
+                      />
+                    </View>
+                  ),
+                  headerShown: false
+                }} />}
 
 
-          </Tab.Navigator>
-        </NearbyIssuesProvider>
+              <Tab.Screen name="ReportIssue" component={IssueCreationNav}
+                options={{
+                  tabBarIcon: ({ focused }) => (
+                    <View
+                      style={{
+                        ...styles.plusButton,
+                        backgroundColor: focused ? palette.ckYellow : palette.ckRed
+                      }}>
+                      <PlusIcon
+                        color={colors.textContrast}
+                        size={size.xl}
+                        style={styles.plusIcon}
+                      />
+                    </View>
+                  ),
+                  headerShown: false
+                }} />
+
+              <Tab.Screen name="Stats Nav" component={StatsNav}
+                options={{
+                  tabBarIcon: ({ color, focused }) => (
+                    <View style={{
+                      ...styles.iconBackground,
+                      backgroundColor: focused ? palette.ckGrayBlue : palette.ckVeryLightGray
+                    }}>
+                      <LineGraphIcon
+                        color={color}
+                        size={size.lg}
+                        style={{ ...styles.icon }}
+                      />
+                    </View>
+                  ),
+                  headerShown: false
+                }} />
+
+
+            </Tab.Navigator>
+          </NearbyIssuesProvider>
+        </PointsProvider>
       </LocationProvider>
     </SafeAreaView>
   )

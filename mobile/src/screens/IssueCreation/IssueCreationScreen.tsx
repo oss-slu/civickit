@@ -1,15 +1,15 @@
 // mobile/src/screens/IssueCreation/IssueCreationScreen.tsx
 import * as Location from 'expo-location';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { uploadImagesToCloudinary } from '../../services/cloudinaryService';
-import { View, StyleSheet, ScrollView, TextInput, Text, FlatList, useWindowDimensions, Dimensions } from 'react-native';
 import { useFocusEffect, useLocale, useNavigation, } from '@react-navigation/native';
+import { View, StyleSheet, ScrollView, TextInput, Text, FlatList, useWindowDimensions, TouchableOpacity, Dimensions } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { showMessage } from "react-native-flash-message";
 import { StackParams } from '../../types/StackParams';
 import { borderRadius, colors, globalStyles, spacing, palette, size, typography } from '../../styles';
-import { CaretDownIcon, PictureIcon, PlusIcon, WarningIcon } from '../../components/Icons';
+import { CaretDownIcon, CheckMarkIcon, PictureIcon, PlusIcon, RecenterIcon, RefreshIcon, WarningIcon } from '../../components/Icons';
 import { IssueCategoryArray } from '../../types/IssueCategoryArray';
 import { extractResolvedLocationMetadata, formatResolvedAddress, ResolvedLocationMetadata } from '../../hooks/useResolvedAddress';
 import { useAuth } from '../../contexts/AuthContext';
@@ -26,10 +26,14 @@ import { userLocation } from '../../types/userLocation';
 import { PhotoMetadataSource } from '../../utils/photoMetadata';
 import { useNearbyIssues } from '../../contexts/NearbyIssuesContext';
 import SelectedImageGallery from '../../components/SelectedImageGallery';
+import LocationAdjustmentPopup from '../../components/LocationAdjustmentPopup';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import cityBounds from '../../../assets/shapes/stl_boundary_inverted.json'
 import { isPointInPolygon } from 'geolib';
 import { useLocation } from '../../contexts/LocationContext';
+import ModalPopUp from '../../components/ModalPopup';
+import MiniMap from '../../components/MiniMap';
+import MapView from 'react-native-maps';
+import { usePoints } from '../../contexts/PointsContext';
 
 export default function IssueCreationScreen() {
     const { images, setImages } = useContext(ImagesContext);
@@ -45,29 +49,34 @@ export default function IssueCreationScreen() {
     const [deviceLocation, setDeviceLocation] = useState<userLocation | null>(null);
     const [locationSource, setLocationSource] = useState<PhotoMetadataSource | null>(null);
     const [submitAllowed, setSubmitAllowed] = useState<boolean>(false)
+    const [isAddressValid, setIsAddressValid] = useState(false)
     const { inBounds, setInBounds } = useLocation()
+    const { stlPoints } = usePoints()
+    const [isPopUpVisible, setIsPopupVisible] = useState(false)
 
     const [isLoadingLocal, setIsLoading] = useState(false)
     const navigation = useNavigation<StackNavigationProp<StackParams>>()
     const { authToken } = useAuth();
     //must stay above the isLoadingLocal early return below — hooks cannot be
     //called conditionally
-    const insets = useSafeAreaInsets();
 
     const imageWidth = size.imageLg;
     const imageHeight = size.imageLg;
 
     //get location
+    const getLocation = async () => {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+            alert('Location permission denied');
+            return;
+        }
+
+        const loc = await Location.getCurrentPositionAsync({});
+        setDeviceLocation({ latitude: loc.coords.latitude, longitude: loc.coords.longitude });
+    }
+
     useEffect(() => {
-        (async () => {
-            const { status } = await Location.requestForegroundPermissionsAsync();
-            if (status !== 'granted') {
-                alert('Location permission denied');
-                return;
-            }
-            const loc = await Location.getCurrentPositionAsync({});
-            setDeviceLocation({ latitude: loc.coords.latitude, longitude: loc.coords.longitude });
-        })();
+        getLocation()
     }, []);
 
     useEffect(() => {
@@ -76,16 +85,12 @@ export default function IssueCreationScreen() {
         const fallbackTakenAt = new Date().toISOString();
         const resolved = resolvePhotoMetadata(photoMetadata, { ...deviceLocation, takenAt: fallbackTakenAt });
 
-        setLocation({ latitude: resolved.latitude, longitude: resolved.longitude });
-        const coords = cityBounds.features[0].geometry.coordinates[0][1].map((point) => {
-            return {
-                latitude: point[1],
-                longitude: point[0]
-            }
-        })
-        setInBounds(isPointInPolygon({ latitude: resolved.latitude, longitude: resolved.longitude }, coords))
+        if (locationSource != 'user') {
+            setLocation({ latitude: resolved.latitude, longitude: resolved.longitude });
+            setInBounds(isPointInPolygon({ latitude: resolved.latitude, longitude: resolved.longitude }, stlPoints))
+            setLocationSource(resolved.locationSource);
+        }
 
-        setLocationSource(resolved.locationSource);
         setLocationMetadata({});
         setAddress(resolved.locationSource === 'exif' ? 'Detecting photo location...' : 'Detecting phone location...');
 
@@ -100,8 +105,11 @@ export default function IssueCreationScreen() {
                 const formattedAddress = formatResolvedAddress(geocode[0]);
                 if (formattedAddress) {
                     setAddress(formattedAddress);
+                    // setMiniMapAddress(formattedAddress)
+                    setIsAddressValid(true)
                 }
                 setLocationMetadata(extractResolvedLocationMetadata(geocode[0]));
+
             }
         })();
     }, [deviceLocation, photoMetadata]);
@@ -114,6 +122,12 @@ export default function IssueCreationScreen() {
             setFormStarted(true)
         }, [setFormStarted])
     )
+
+    useEffect(() => {
+        if (locationSource == 'user') {
+            setInBounds(isPointInPolygon({ latitude: location.latitude, longitude: location.longitude }, stlPoints))
+        }
+    }, [location, locationSource])
 
     const onImageDeletePressed = (image: any) => {
         const imageIndex = images.indexOf(image);
@@ -156,7 +170,7 @@ export default function IssueCreationScreen() {
         )
     }
 
-    const handleCancel = () => {
+    const clearForm = () => {
         setImages([])
         setPhotoMetadata([])
         setLocation(null)
@@ -167,6 +181,10 @@ export default function IssueCreationScreen() {
         setCategory(null)
         setDescription("")
         setFormStarted(false)
+    }
+
+    const handleCancel = () => {
+        clearForm()
 
         navigation.popTo("Camera", {})
     }
@@ -236,7 +254,7 @@ export default function IssueCreationScreen() {
                 district: locationMetadata.district,
                 subregion: locationMetadata.subregion,
                 name: locationMetadata.name,
-                locationSource: resolvedPhotoMetadata.locationSource,
+                locationSource: locationSource == 'user' ? 'user' : resolvedPhotoMetadata.locationSource,
                 photoTakenAt: resolvedPhotoMetadata.photoTakenAt,
                 photoTakenAtSource: resolvedPhotoMetadata.photoTakenAtSource,
                 images: imageUrls
@@ -261,16 +279,7 @@ export default function IssueCreationScreen() {
                 backgroundColor: palette.ckGreen,
                 color: colors.textContrast
             });
-            setImages([])
-            setPhotoMetadata([])
-            setLocation(null)
-            setDeviceLocation(null)
-            setLocationSource(null)
-            setAddress('Detecting location...')
-            setTitle("")
-            setCategory(null)
-            setDescription("")
-            setFormStarted(false)
+            clearForm()
             navigation.replace("Camera", {})
             navigation.navigate('Issue Details', { issue: issue });
 
@@ -292,8 +301,13 @@ export default function IssueCreationScreen() {
 
     };
 
-    const locationSourceLabel = locationSource === 'exif' ? 'From photo EXIF' : 'From phone GPS';
+    const onLocationAdjustorReset = () => {
+        getLocation()
+        setIsPopupVisible(true)
+    }
+
     const { width, height } = Dimensions.get("window")
+
     return (
         <View style={{ height: height }}>
             <KeyboardAwareScrollView enableOnAndroid enableAutomaticScroll extraScrollHeight={100}
@@ -329,11 +343,19 @@ export default function IssueCreationScreen() {
                 </View>
 
                 <View style={styles.addressContainer}>
-                    <Text style={styles.locationLabel}>Location</Text>
                     <Text style={styles.addressText}>{address}</Text>
-                    {locationSource && (
-                        <Text style={styles.locationSourceText}>{locationSourceLabel}</Text>
-                    )}
+
+                    <View style={styles.addressInfoRow}>
+                        {locationSource && (
+                            <Text style={styles.locationSourceText}>{locationSource === 'exif' ? 'From photo EXIF.' :
+                                locationSource === 'device' ? 'From phone GPS.' : 'From user input.'}</Text>
+                        )}
+
+                        {!address.startsWith("Detecting ") && <LocationAdjustmentPopup
+                            locationSource={locationSource} setLocationSource={setLocationSource}
+                            isAddressValid={isAddressValid} setIsAddressValid={setIsAddressValid}
+                            category={category} getLocation={getLocation} isVisible={isPopUpVisible} onReset={onLocationAdjustorReset} />}
+                    </View>
                 </View>
 
                 <ModalDropdown
@@ -469,7 +491,6 @@ const styles = StyleSheet.create({
         height: "auto",
         color: colors.textPrimary,
     },
-
     addressText: {
         color: colors.textPrimary,
         fontSize: typography.sizeLg
@@ -485,8 +506,20 @@ const styles = StyleSheet.create({
         fontSize: typography.sizeSm
     },
     addressContainer: {
-        paddingHorizontal: spacing.xs,
-        gap: spacing.xs
-    }
+        gap: spacing.xs,
+        backgroundColor: colors.backgroundSecondary,
+        paddingVertical: spacing.md,
+        paddingHorizontal: spacing.md,
+        borderRadius: borderRadius.lg
+    },
+    addressInfoRow: {
+        flexDirection: "row",
+        columnGap: spacing.sm
+    },
+    cancelText: {
+        fontSize: typography.sizeXl,
+        fontWeight: 'bold',
+        color: colors.textContrast,
+    },
 });
 

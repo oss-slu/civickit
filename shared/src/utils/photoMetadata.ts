@@ -1,4 +1,4 @@
-export type PhotoMetadataSource = 'exif' | 'device';
+export type PhotoMetadataSource = 'exif' | 'device' | "user";
 
 export interface PhotoMetadata {
     latitude?: number;
