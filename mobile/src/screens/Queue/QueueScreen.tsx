@@ -6,23 +6,21 @@ import LoadingScreen from "../Misc/LoadingScreen";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { StackParams } from "../../types/StackParams";
-import { useActionState, useCallback, useEffect, useState } from "react";
-import IssueCard from "../../components/IssueCard";
+import { useCallback, useEffect, useState } from "react";
 import { borderRadius, colors, globalStyles, palette, size, spacing, typography } from "../../styles";
 import Header from "../../components/Header";
 import ModalPopUp from "../../components/ModalPopup";
-import { CaretDownIcon, CheckMarkIcon, CloseXIcon, DownArrowIcon, FilterIcon, SearchIcon, UpArrowIcon } from "../../components/Icons";
+import { CaretDownIcon, CloseXIcon, DownArrowIcon, FilterIcon, SearchIcon, UpArrowIcon } from "../../components/Icons";
 import CheckList from "../../components/CheckList";
 import ModalDropdown from "../../components/ModalDropdown";
 import WrapperButton from "../../components/WrapperButton";
-import { IssueCategoryArray } from "../../types/IssueCategoryArray";
 import { IssueStatusArray } from "../../types/IssueStatusArray";
 import { useAuth } from "../../contexts/AuthContext";
 import { GetNearbyIssueResponse } from "@civickit/shared";
 import ExtendedIssueCard from "../../components/ExtendedIssueCard";
 import Button from "../../components/Button";
 
-export default function DispatchScreen() {
+export default function QueueScreen() {
     const { data, isLoading, isFetching, error, refetch } = useNearbyIssues()
     const [issues, setIssues] = useState([])
     const [refreshing, setRefreshing] = useState(false)
@@ -126,7 +124,7 @@ export default function DispatchScreen() {
 
             setIssues(visibleIssues)
         }
-    }, [data, sort, isAscending, visibleCategories, visibleClaimers, search])
+    }, [data, sort, isAscending, visibleCategories, visibleStatuses, visibleClaimers, search])
 
 
     useFocusEffect(
@@ -136,6 +134,15 @@ export default function DispatchScreen() {
             }
         }, [])
     )
+
+    const onRefresh = useCallback(async () => {
+        setRefreshing(true)
+        try {
+            await refetch?.()
+        } finally {
+            setRefreshing(false)
+        }
+    }, [refetch])
 
     const compareArrs = (arr1: any, arr2: any) => {
         if (arr1.length != arr2.length) {
@@ -169,7 +176,7 @@ export default function DispatchScreen() {
             <ScrollView
                 refreshControl={<RefreshControl
                     refreshing={refreshing}
-                    onRefresh={refetch} />}
+                    onRefresh={onRefresh} />}
                 style={{ ...styles.list, paddingTop: headerOffset + spacing.sm }}
                 contentContainerStyle={styles.listContainter}
             >

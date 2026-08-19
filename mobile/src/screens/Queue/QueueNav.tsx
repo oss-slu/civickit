@@ -6,10 +6,6 @@ import { StackParams } from '../../types/StackParams';
 import { colors, typography } from '../../styles';
 import PhotoValidationScreen from '../IssueCreation/PhotoValidationScreen';
 import CameraScreen from '../IssueCreation/CameraScreen';
-import { userLocation } from '../../types/userLocation';
-import { useState } from 'react';
-import { ImagesContext, PhotoMetadataContext, UserLocationContext, AddressContext, TitleContext, CategoryContext, DescriptionContext, FormStartedContext } from '../../contexts/FormContexts';
-import type { PhotoMetadata } from '../../utils/photoMetadata';
 import QueueScreen from './QueueScreen';
 
 const Stack = createNativeStackNavigator<StackParams>();

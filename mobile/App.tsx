@@ -27,7 +27,6 @@ import { StatusBar } from "expo-status-bar";
 import Constants from 'expo-constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import QueueNav from './src/screens/Queue/QueueNav';
-import QueueScreen from './src/screens/Queue/QueueScreen';
 import DispatchNav from './src/screens/Dispatch/DispatchNav';
 
 const Tab = createBottomTabNavigator<TabParams>();
@@ -147,7 +146,7 @@ function MainTabNavigator() {
                     <ClipBoardIcon
                       color={color}
                       size={size.lg}
-                      style={{ ...styles.icon, ...styles.navIcons }}
+                      style={{ ...styles.icon }}
                     />
                   </View>
                 ),
