@@ -38,8 +38,6 @@ export default function ModalPopUp({ buttonStyle, buttonBody, style, children, i
                                 text="Close">
                             </Button>
                         }
-
-
                     </View>
                 </View>
             </Modal>

@@ -5,22 +5,29 @@ import { colors, globalStyles, spacing, typography } from "../styles";
 import MiniMap from "./MiniMap";
 import { CheckMarkIcon, RecenterIcon, RefreshIcon, WarningIcon } from "./Icons";
 import WrapperButton from "./WrapperButton";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { userLocation } from "../types/userLocation";
 import { PhotoMetadataSource } from "@civickit/shared";
 import { formatResolvedAddress } from "../hooks/useResolvedAddress";
 import * as Location from 'expo-location';
-import MapView from "react-native-maps";
+import MapView, { MapMarker, Marker, Polygon, PROVIDER_GOOGLE } from "react-native-maps";
 import { AddressContext, UserLocationContext } from "../contexts/FormContexts";
+import { isPointInPolygon } from "geolib";
+import { usePoints } from "../contexts/PointsContext";
+import { add } from "date-fns";
 
-export default function LocationAdjustmentPopup({ locationSource, setLocationSource, setIsAddressValid, isAddressValid, category, getLocation }: any) {
-    const [isPopUpVisible, setIsPopupVisible] = useState(false)
+
+export default function LocationAdjustmentPopup({ locationSource, setLocationSource, setIsAddressValid, isAddressValid, category, getLocation, isVisible = false, onReset }: any) {
+    const [isPopUpVisible, setIsPopupVisible] = useState(isVisible)
     const [miniMapLocation, setMiniMapLocation] = useState<userLocation | null>(null)
     const [miniMapAddress, setMiniMapAddress] = useState<string>("")
     const { location, setLocation } = useContext(UserLocationContext);
     const { address, setAddress } = useContext(AddressContext);
     const [miniMapSource, setMiniMapSource] = useState<PhotoMetadataSource | null>(null)
+    const { stlPoints } = usePoints()
+
     const mapRef = useRef<MapView | null>(null);
+    const markerRef = useRef<MapMarker | null>(null)
 
     useEffect(() => {
         setMiniMapAddress(address)
@@ -31,6 +38,9 @@ export default function LocationAdjustmentPopup({ locationSource, setLocationSou
     useEffect(() => {
         setMiniMapSource(locationSource)
     }, [locationSource])
+    useEffect(() => {
+        setIsPopupVisible(isVisible)
+    }, [isVisible])
 
     const onNewLocationSubmit = async () => {
         setLocationSource(miniMapSource)
@@ -60,7 +70,9 @@ export default function LocationAdjustmentPopup({ locationSource, setLocationSou
             setMiniMapLocation({ latitude: 0, longitude: 0 })
         } else {
             setMiniMapLocation({ latitude: geocode[0].latitude, longitude: geocode[0].longitude })
-            setIsAddressValid(true)
+            if (isPointInPolygon({ latitude: geocode[0].latitude, longitude: geocode[0].longitude }, stlPoints)) {
+                setIsAddressValid(true)
+            }
         }
 
     }
@@ -77,6 +89,7 @@ export default function LocationAdjustmentPopup({ locationSource, setLocationSou
     };
 
     const onMarkerDragEnd = async (coordinate: any) => {
+
         setMiniMapLocation(coordinate)
         setMiniMapSource("user")
         const geocode = await Location.reverseGeocodeAsync({
@@ -88,6 +101,7 @@ export default function LocationAdjustmentPopup({ locationSource, setLocationSou
             const formattedAddress = formatResolvedAddress(geocode[0]);
             formattedAddress && setMiniMapAddress(formattedAddress)
         }
+
     }
 
     return (
@@ -111,11 +125,12 @@ export default function LocationAdjustmentPopup({ locationSource, setLocationSou
                     }}
                         draggable
                         onMarkerDragEnd={onMarkerDragEnd}
-                        ref={mapRef}
+                        mapRef={mapRef}
+                        markerRef={markerRef}
                     />
 
                     <View style={{ flexDirection: "row", position: "absolute", margin: spacing.xs, bottom: 0, right: 0, columnGap: spacing.xs }}>
-                        <WrapperButton style={styles.mapButton} onPress={getLocation}>
+                        <WrapperButton style={styles.mapButton} onPress={onReset}>
                             <RefreshIcon color={colors.textPrimary} size={typography.sizeXl} />
                         </WrapperButton>
                         <WrapperButton style={styles.mapButton} onPress={recenterMiniMap}>

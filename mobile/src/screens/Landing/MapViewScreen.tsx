@@ -16,7 +16,7 @@ import Cluster from '../../components/Cluster';
 import { getDistance, isPointInPolygon } from 'geolib';
 import CalloutListPopup from '../../components/CalloutListPopup';
 import { GetNearbyIssueResponse } from '@civickit/shared';
-import cityBounds from '../../../assets/shapes/stl_boundary_inverted.json'
+import { usePoints } from '../../contexts/PointsContext';
 // import Geojson from 'react-native-geojson';
 
 interface IssueCluster {
@@ -43,6 +43,7 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
     const posAnim = useAnimatedValue(0);
     const [paddingBottom, setPaddingBottom] = useState("110%")
     const { setInBounds } = useLocation()
+    const { stlPoints, worldPoints } = usePoints()
     //initial value matches the initialRegion delta (0.05) with the same
     //zoom factor used in onRegionChange, so the first render clusters the
     //same way as every render after the map settles
@@ -191,21 +192,6 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
         setInBounds(isPointInPolygon(coordinate, stlPoints))
     }
 
-    //cityBounds is a static import, so these never change — build them once.
-    //rebuilding them per render hands Polygon new arrays every time, which
-    //rebuilds the native path and can drop the overlay on iOS
-    const stlPoints = useMemo(
-        () => cityBounds.features[0].geometry.coordinates[0][1].map((point: any) => ({ latitude: point[1], longitude: point[0] })),
-        []
-    )
-
-    const worldPoints = useMemo(
-        () => cityBounds.features[0].geometry.coordinates[0][0].map((point: any) => ({ latitude: point[1], longitude: point[0] })),
-        []
-    )
-
-    //wrap the hole once too — an inline [stlPoints] literal is a new array on
-    //every render, which rebuilds the native path and can drop the overlay
     const boundaryHoles = useMemo(() => [stlPoints], [stlPoints])
 
     return (

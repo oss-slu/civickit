@@ -1,6 +1,6 @@
 // mobile/src/screens/IssueCreation/IssueCreationScreen.tsx
 import * as Location from 'expo-location';
-import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { uploadImagesToCloudinary } from '../../services/cloudinaryService';
 import { useFocusEffect, useLocale, useNavigation, } from '@react-navigation/native';
 import { View, StyleSheet, ScrollView, TextInput, Text, FlatList, useWindowDimensions, TouchableOpacity, Dimensions } from 'react-native';
@@ -28,12 +28,12 @@ import { useNearbyIssues } from '../../contexts/NearbyIssuesContext';
 import SelectedImageGallery from '../../components/SelectedImageGallery';
 import LocationAdjustmentPopup from '../../components/LocationAdjustmentPopup';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import cityBounds from '../../../assets/shapes/stl_boundary_inverted.json'
 import { isPointInPolygon } from 'geolib';
 import { useLocation } from '../../contexts/LocationContext';
 import ModalPopUp from '../../components/ModalPopup';
 import MiniMap from '../../components/MiniMap';
 import MapView from 'react-native-maps';
+import { usePoints } from '../../contexts/PointsContext';
 
 export default function IssueCreationScreen() {
     const { images, setImages } = useContext(ImagesContext);
@@ -51,14 +51,14 @@ export default function IssueCreationScreen() {
     const [submitAllowed, setSubmitAllowed] = useState<boolean>(false)
     const [isAddressValid, setIsAddressValid] = useState(false)
     const { inBounds, setInBounds } = useLocation()
+    const { stlPoints } = usePoints()
+    const [isPopUpVisible, setIsPopupVisible] = useState(false)
 
     const [isLoadingLocal, setIsLoading] = useState(false)
     const navigation = useNavigation<StackNavigationProp<StackParams>>()
     const { authToken } = useAuth();
     //must stay above the isLoadingLocal early return below — hooks cannot be
     //called conditionally
-
-
 
     const imageWidth = size.imageLg;
     const imageHeight = size.imageLg;
@@ -70,14 +70,14 @@ export default function IssueCreationScreen() {
             alert('Location permission denied');
             return;
         }
+
         const loc = await Location.getCurrentPositionAsync({});
         setDeviceLocation({ latitude: loc.coords.latitude, longitude: loc.coords.longitude });
     }
+
     useEffect(() => {
         getLocation()
     }, []);
-
-
 
     useEffect(() => {
         if (!deviceLocation) return;
@@ -85,17 +85,12 @@ export default function IssueCreationScreen() {
         const fallbackTakenAt = new Date().toISOString();
         const resolved = resolvePhotoMetadata(photoMetadata, { ...deviceLocation, takenAt: fallbackTakenAt });
 
-        setLocation({ latitude: resolved.latitude, longitude: resolved.longitude });
-        const coords = cityBounds.features[0].geometry.coordinates[0][1].map((point) => {
-            return {
-                latitude: point[1],
-                longitude: point[0]
-            }
-        })
-        setInBounds(isPointInPolygon({ latitude: resolved.latitude, longitude: resolved.longitude }, coords))
+        if (locationSource != 'user') {
+            setLocation({ latitude: resolved.latitude, longitude: resolved.longitude });
+            setInBounds(isPointInPolygon({ latitude: resolved.latitude, longitude: resolved.longitude }, stlPoints))
+            setLocationSource(resolved.locationSource);
+        }
 
-        setLocationSource(resolved.locationSource);
-        // setMiniMapSource(resolved.locationSource)
         setLocationMetadata({});
         setAddress(resolved.locationSource === 'exif' ? 'Detecting photo location...' : 'Detecting phone location...');
 
@@ -127,6 +122,12 @@ export default function IssueCreationScreen() {
             setFormStarted(true)
         }, [setFormStarted])
     )
+
+    useEffect(() => {
+        if (locationSource == 'user') {
+            setInBounds(isPointInPolygon({ latitude: location.latitude, longitude: location.longitude }, stlPoints))
+        }
+    }, [location, locationSource])
 
     const onImageDeletePressed = (image: any) => {
         const imageIndex = images.indexOf(image);
@@ -300,7 +301,11 @@ export default function IssueCreationScreen() {
 
     };
 
-    const locationSourceLabel = locationSource === 'exif' ? 'From photo EXIF' : 'From phone GPS';
+    const onLocationAdjustorReset = () => {
+        getLocation()
+        setIsPopupVisible(true)
+    }
+
     const { width, height } = Dimensions.get("window")
 
     return (
@@ -349,7 +354,7 @@ export default function IssueCreationScreen() {
                         {!address.startsWith("Detecting ") && <LocationAdjustmentPopup
                             locationSource={locationSource} setLocationSource={setLocationSource}
                             isAddressValid={isAddressValid} setIsAddressValid={setIsAddressValid}
-                            category={category} getLocation={getLocation} />}
+                            category={category} getLocation={getLocation} isVisible={isPopUpVisible} onReset={onLocationAdjustorReset} />}
                     </View>
                 </View>
 
