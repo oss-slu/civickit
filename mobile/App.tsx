@@ -10,7 +10,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { TabParams } from './src/types/TabParams'
 import { borderRadius, colors, globalStyles, palette, size, spacing, typography } from './src/styles';
 import { View, StyleSheet, Dimensions } from 'react-native';
-import { BarGraphIcon, CalendarIcon, LineGraphIcon, MapIcon, MenuIcon, PlusIcon, SearchIcon, UserIcon } from './src/components/Icons';
+import { BarGraphIcon, CalendarIcon, ClipBoardIcon, LineGraphIcon, MapIcon, MenuIcon, PlusIcon, SearchIcon, UserIcon } from './src/components/Icons';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import FlashMessage from 'react-native-flash-message';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -26,6 +26,7 @@ import LoadingScreen from './src/screens/Misc/LoadingScreen';
 import { StatusBar } from "expo-status-bar";
 import Constants from 'expo-constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import QueueNav from './src/screens/Queue/QueueNav';
 import DispatchNav from './src/screens/Dispatch/DispatchNav';
 
 const Tab = createBottomTabNavigator<TabParams>();
@@ -134,6 +135,23 @@ function MainTabNavigator() {
                 ),
                 headerShown: false
               }} />
+
+            {role != "REPORTER" && <Tab.Screen name="Queue Nav" component={QueueNav}
+              options={{
+                tabBarIcon: ({ color, focused }) => (
+                  <View style={{
+                    ...styles.iconBackground,
+                    backgroundColor: focused ? palette.ckGrayBlue : palette.ckVeryLightGray
+                  }}>
+                    <ClipBoardIcon
+                      color={color}
+                      size={size.lg}
+                      style={{ ...styles.icon }}
+                    />
+                  </View>
+                ),
+                headerShown: false
+              }} />}
 
             <Tab.Screen name="Stats Nav" component={StatsNav}
               options={{

@@ -457,6 +457,16 @@ export function TextIcon(props: IconProps) {
     )
 }
 
+
+export function ClipBoardIcon(props: IconProps) {
+    return (
+        <Feather name="clipboard"
+            color={props.color}
+            size={props.size}
+            style={props.style} />
+    )
+}
+
 export function MenuIcon(props: IconProps) {
     return (
         <Feather name="menu"

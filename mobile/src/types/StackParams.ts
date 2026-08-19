@@ -50,5 +50,6 @@ export type StackParams = {
         distanceOption?: boolean
     },
     "DuplicateCheck": {},
+    "Queue": {}
     "Dispatch": {}
 }
