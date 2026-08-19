@@ -52,7 +52,7 @@ export default function QueueScreen() {
 
 
     useEffect(() => {
-        if (data.issues != null) {
+        if (data?.issues != null) {
             const visibleIssues = data.issues.filter((issue: any) => {
                 if (issue.claimedById == null) {
                     return false
