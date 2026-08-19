@@ -20,7 +20,7 @@ describe('TimelineRepository', () => {
       const entry = await repository.createUpdate({
         message: 'Crew dispatched',
         status: 'IN_PROGRESS',
-        images: ['https://example.com/a.jpg'],
+        imageIds: ["id"],
         issueId: issue.id,
         userId: author.id,
       });
@@ -28,7 +28,7 @@ describe('TimelineRepository', () => {
       expect(entry.id).toEqual(expect.any(String));
       expect(entry.message).toBe('Crew dispatched');
       expect(entry.status).toBe('IN_PROGRESS');
-      expect(entry.images).toEqual(['https://example.com/a.jpg']);
+      expect(entry.imageIds).toEqual(["id"]);
       expect(entry.issueId).toBe(issue.id);
       expect(entry.userId).toBe(author.id);
       expect(entry.createdAt).toBeInstanceOf(Date);
@@ -44,7 +44,7 @@ describe('TimelineRepository', () => {
         userId: author.id,
       });
 
-      expect(entry.images).toEqual([]);
+      expect(entry.imageIds).toEqual([]);
     });
 
     it('rejects an entry for an issue that does not exist', async () => {

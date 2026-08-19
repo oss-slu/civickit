@@ -29,14 +29,6 @@ describe('createIssueSchema', () => {
     expect(result.success).toBe(false);
   });
 
-  it('rejects images containing a non-URL string', () => {
-    const result = createIssueSchema.safeParse({
-      ...validBody,
-      images: ['not-a-url'],
-    });
-    expect(result.success).toBe(false);
-  });
-
   it('rejects an out-of-range latitude', () => {
     const result = createIssueSchema.safeParse({ ...validBody, latitude: 200 });
     expect(result.success).toBe(false);

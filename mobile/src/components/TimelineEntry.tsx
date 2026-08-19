@@ -19,7 +19,7 @@ export default function TimelineEntry({ timelineEntry, issueCategory = "OTHER", 
     let pictures: string[] = []
     if (timelineEntry.images) {
         pictures = timelineEntry.images.map((image: any, index: number) =>
-            <Image source={{ uri: image }} key={index} style={styles.picture} />)
+            <Image source={{ uri: image.link }} key={index} style={styles.picture} />)
     }
 
     return (
@@ -40,7 +40,7 @@ export default function TimelineEntry({ timelineEntry, issueCategory = "OTHER", 
                         />
                     </View>
                     :
-                    <Image source={{ uri: timelineEntry.images[0] }}
+                    <Image source={{ uri: timelineEntry.images[0].link }}
                         style={styles.dot} />
                 }
 
@@ -94,7 +94,7 @@ export default function TimelineEntry({ timelineEntry, issueCategory = "OTHER", 
                     buttonBody={pictures}
                     buttonStyle={{ backgroundColor: colors.background, flexDirection: "row", columnGap: spacing.xs, flexWrap: "wrap" }}
                     style={styles.modal}>
-                    <ImageGallery images={timelineEntry.images} width={300} height={400} />
+                    <ImageGallery images={timelineEntry.images.map((image: any) => image.link)} width={300} height={400} />
                 </ModalPopUp>
             </View>
 

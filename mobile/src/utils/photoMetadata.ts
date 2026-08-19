@@ -4,6 +4,9 @@ export interface PhotoMetadata {
     latitude?: number;
     longitude?: number;
     takenAt?: string;
+    width?: number;
+    height?: number;
+    orientation?: number
 }
 
 export interface ResolvedPhotoMetadata {
@@ -12,6 +15,8 @@ export interface ResolvedPhotoMetadata {
     locationSource: PhotoMetadataSource;
     photoTakenAt: string;
     photoTakenAtSource: PhotoMetadataSource;
+    width?: number;
+    height?: number
 }
 
 const toNumber = (value: unknown): number | undefined => {
@@ -47,36 +52,52 @@ const isUsableCoordinate = (latitude?: number, longitude?: number): latitude is 
 export function extractPhotoMetadataFromExif(exif?: Record<string, unknown> | null): PhotoMetadata {
     if (!exif) return {};
 
+    console.log(exif)
+
     const latitude = toNumber(exif.GPSLatitude ?? exif.latitude);
     const longitude = toNumber(exif.GPSLongitude ?? exif.longitude);
     const latitudeRef = typeof exif.GPSLatitudeRef === 'string' ? exif.GPSLatitudeRef : '';
     const longitudeRef = typeof exif.GPSLongitudeRef === 'string' ? exif.GPSLongitudeRef : '';
+    let width = toNumber(exif.ImageWidth)
+    let height = toNumber(exif.ImageLength)
 
     const resolvedLatitude = latitude === undefined ? undefined : latitudeRef.toUpperCase() === 'S' ? -Math.abs(latitude) : latitude;
     const resolvedLongitude = longitude === undefined ? undefined : longitudeRef.toUpperCase() === 'W' ? -Math.abs(longitude) : longitude;
     const hasUsableLocation = isUsableCoordinate(resolvedLatitude, resolvedLongitude);
-
+    console.log(width)
+    if (toNumber(exif.Orientation) == 6) {
+        width = toNumber(exif.ImageLength)
+        height = toNumber(exif.ImageWidth)
+    }
+    console.log(width)
     return {
         latitude: hasUsableLocation ? resolvedLatitude : undefined,
         longitude: hasUsableLocation ? resolvedLongitude : undefined,
         takenAt: parseDate(exif.DateTimeOriginal ?? exif.DateTimeDigitized ?? exif.DateTime ?? exif.timestamp),
+        width: width,
+        height: height,
     };
 }
 
 export function resolvePhotoMetadata(
     photoMetadata: PhotoMetadata[],
     fallback: { latitude: number; longitude: number; takenAt: string }
-): ResolvedPhotoMetadata {
-    const locationMetadata = photoMetadata.find(
-        metadata => isUsableCoordinate(metadata.latitude, metadata.longitude)
-    );
-    const timestampMetadata = photoMetadata.find(metadata => metadata.takenAt !== undefined);
+): ResolvedPhotoMetadata[] {
 
-    return {
-        latitude: locationMetadata?.latitude ?? fallback.latitude,
-        longitude: locationMetadata?.longitude ?? fallback.longitude,
-        locationSource: locationMetadata ? 'exif' : 'device',
-        photoTakenAt: timestampMetadata?.takenAt ?? fallback.takenAt,
-        photoTakenAtSource: timestampMetadata ? 'exif' : 'device',
-    };
+    const resolved = photoMetadata.map((metadata) => {
+        const locationSource: PhotoMetadataSource = metadata ? 'exif' : 'device'
+        const photoTakenAtSource: PhotoMetadataSource = metadata ? 'exif' : 'device'
+        return {
+            latitude: metadata.latitude ?? fallback.latitude,
+            longitude: metadata.longitude ?? fallback.longitude,
+            locationSource: locationSource,
+            photoTakenAt: metadata.takenAt ?? fallback.takenAt,
+            photoTakenAtSource: photoTakenAtSource,
+            width: metadata.width,
+            height: metadata.height,
+        }
+
+    })
+
+    return resolved
 }

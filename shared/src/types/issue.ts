@@ -2,6 +2,7 @@
 import { IssueCategory, IssueStatus } from "../enums/issue";
 import { PhotoMetadataSource } from "../utils/photoMetadata";
 import { Org } from "./org";
+import { Image } from "./image";
 import { User } from "./user";
 
 export interface Issue {
@@ -16,7 +17,7 @@ export interface Issue {
     district?: string;
     subregion?: string;
     name?: string;
-    images: string[];          // Cloudinary URLs
+    images: Image[];
     cityRefNumber?: string;
     upvoteCount: number;
     createdAt: string;         // ISO string (not Date — safe for JSON)

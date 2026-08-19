@@ -1,5 +1,5 @@
 {
-  "id": "6632b2dc-5744-46b8-8148-1d0a90558069",
+  "id": "21ac7a02-8acf-41f5-a77a-316a18f80587",
   "prevId": "5296fc8f-c301-4494-955a-3198c8a6f887",
   "version": "7",
   "dialect": "postgresql",
@@ -386,6 +386,113 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.Image": {
+      "name": "Image",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp (3)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "link": {
+          "name": "link",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "photoTakenAt": {
+          "name": "photoTakenAt",
+          "type": "timestamp (3)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "photoTakenAtSource": {
+          "name": "photoTakenAtSource",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'device'"
+        },
+        "sourceId": {
+          "name": "sourceId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "source": {
+          "name": "source",
+          "type": "PhotoSource",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "userId": {
+          "name": "userId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "width": {
+          "name": "width",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "height": {
+          "name": "height",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "Image_createdAt_idx": {
+          "name": "Image_createdAt_idx",
+          "columns": [
+            {
+              "expression": "createdAt",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "Image_userId_user_id_fk": {
+          "name": "Image_userId_user_id_fk",
+          "tableFrom": "Image",
+          "tableTo": "user",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.Issue": {
       "name": "Issue",
       "schema": "",
@@ -459,8 +566,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "images": {
-          "name": "images",
+        "imageIds": {
+          "name": "imageIds",
           "type": "text[]",
           "primaryKey": false,
           "notNull": true,
@@ -481,19 +588,6 @@
         },
         "locationSource": {
           "name": "locationSource",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'device'"
-        },
-        "photoTakenAt": {
-          "name": "photoTakenAt",
-          "type": "timestamp (3)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "photoTakenAtSource": {
-          "name": "photoTakenAtSource",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -828,8 +922,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "profileImage": {
-          "name": "profileImage",
+        "profileImageId": {
+          "name": "profileImageId",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -1025,8 +1119,8 @@
           "notNull": true,
           "default": "'REPORTED'"
         },
-        "images": {
-          "name": "images",
+        "imageIds": {
+          "name": "imageIds",
           "type": "text[]",
           "primaryKey": false,
           "notNull": true,
@@ -1229,8 +1323,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "profileImage": {
-          "name": "profileImage",
+        "profileImageId": {
+          "name": "profileImageId",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -1262,12 +1356,6 @@
           "primaryKey": false,
           "notNull": true,
           "default": false
-        },
-        "image": {
-          "name": "image",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
         }
       },
       "indexes": {
@@ -1452,6 +1540,16 @@
         "NONPROFIT",
         "CITY_DEPARTMENT",
         "OTHER"
+      ]
+    },
+    "public.PhotoSource": {
+      "name": "PhotoSource",
+      "schema": "public",
+      "values": [
+        "ISSUE",
+        "TIMELINE_ENTRY",
+        "ORGANIZATION",
+        "USER"
       ]
     },
     "public.Role": {

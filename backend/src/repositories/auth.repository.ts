@@ -28,7 +28,7 @@ export class AuthRepository {
           id: users.id,
           email: users.email,
           name: users.name,
-          profileImage: users.profileImage,
+          profileImageId: users.profileImageId,
           createdAt: users.createdAt,
           role: users.role,
         })

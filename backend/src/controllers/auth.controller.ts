@@ -7,11 +7,13 @@ import { LoginService } from "../services/login.service";
 import { LoginRepository } from "../repositories/login.repository";
 import { CreateAuthDTO } from "@civickit/shared";
 import { AppError } from "../utils/errors";
+import { ImageRepository } from "../repositories/image.repository";
 
 const authRepository = new AuthRepository();
-const authService = new AuthService(authRepository);
+const imageRepository = new ImageRepository()
+const authService = new AuthService(authRepository, imageRepository);
 const loginRepository = new LoginRepository();
-const loginService = new LoginService(loginRepository);
+const loginService = new LoginService(loginRepository, imageRepository);
 
 export class AuthController {
   async register(req: Request<{}, {}, CreateAuthDTO>, res: Response, next: NextFunction) {

@@ -7,6 +7,9 @@ import { CreateIssueDTO, PostUpdateDTO } from '@civickit/shared/src/types/api';
 import { IssueService } from '../../issue.service';
 import { IssueRepository } from '../../../repositories/issue.repository';
 import { AuthRepository } from '../../../repositories/auth.repository';
+import { ImageRepository } from '../../../repositories/image.repository';
+import { OrgRepository } from '../../../repositories/org.repository';
+import { MembershipRepository } from '../../../repositories/membership.repository';
 
 // mock repository
 vi.mock('../../../src/repositories/timeline.repository');
@@ -18,6 +21,9 @@ describe('TimelineService', () => {
     let issueService: IssueService;
     let mockIssueRepository: Mocked<IssueRepository>;
     let mockAuthRepository: Mocked<AuthRepository>;
+    let mockImageRepository: Mocked<ImageRepository>
+    let mockOrgRepository: Mocked<OrgRepository>
+    let mockMembershipRepository: Mocked<MembershipRepository>
 
 
     beforeEach(() => {
@@ -40,8 +46,27 @@ describe('TimelineService', () => {
             findNearby: vi.fn(),
         } as unknown as Mocked<AuthRepository>;
 
-        timelineService = new TimelineService(mockTimelineRepository, mockAuthRepository);
-        issueService = new IssueService(mockIssueRepository);
+        mockImageRepository = {
+            create: vi.fn(),
+            findById: vi.fn(),
+            findNearby: vi.fn(),
+        } as unknown as Mocked<ImageRepository>;
+
+        mockOrgRepository = {
+            findOrgsForIssue: vi.fn(),
+            findIssuesForOrg: vi.fn(),
+        } as unknown as Mocked<OrgRepository>;
+
+        mockMembershipRepository = {
+            create: vi.fn(),
+            findById: vi.fn(),
+            findByUser: vi.fn(),
+            findByUserAndOrg: vi.fn(),
+            findByOrganization: vi.fn(),
+        } as unknown as Mocked<MembershipRepository>;
+
+        timelineService = new TimelineService(mockTimelineRepository, mockImageRepository, mockAuthRepository);
+        issueService = new IssueService(mockIssueRepository, mockImageRepository, mockOrgRepository, mockAuthRepository, mockMembershipRepository);
         vi.clearAllMocks();
     });
 
@@ -50,7 +75,7 @@ describe('TimelineService', () => {
     ): PostUpdateDTO => ({
         message: 'test message 1',
         status: 'ACKNOWLEDGED',
-        images: [],
+        imageIds: [],
         ...overrides,
     });
 
@@ -64,7 +89,7 @@ describe('TimelineService', () => {
         latitude: 38.627,
         longitude: -90.1994,
         address: "",
-        images: [],
+        imageIds: [],
         ...overrides,
     });
 
@@ -77,8 +102,19 @@ describe('TimelineService', () => {
                 userId: 'user1',
                 message: 'test message 1',
                 status: 'ACKNOWLEDGED',
-                images: []
+                imageIds: []
             };
+            const mockReturn = {
+                issueId: 'issue1',
+                id: 'update1',
+                createdAt: new Date(),
+                userId: 'user1',
+                message: 'test message 1',
+                status: 'ACKNOWLEDGED',
+                images: [],
+                userName: undefined
+            };
+
             mockTimelineRepository.createUpdate.mockResolvedValueOnce(mockUpdate as any);
 
             const result = await timelineService.postUpdate(
@@ -87,7 +123,7 @@ describe('TimelineService', () => {
                 'user1'
             );
 
-            expect(result).toEqual(mockUpdate);
+            expect(result).toEqual(mockReturn);
 
         });
 
@@ -110,12 +146,22 @@ describe('TimelineService', () => {
                 userId: 'user1',
                 message: 'test message 1',
                 status: 'ACKNOWLEDGED',
-                images: []
+                imageIds: []
+            }];
+            const mockReturn = [{
+                issueId: 'issue1',
+                id: 'update1',
+                createdAt: new Date(),
+                userId: 'user1',
+                message: 'test message 1',
+                status: 'ACKNOWLEDGED',
+                images: [],
+                userName: undefined
             }];
             mockTimelineRepository.findByIssue.mockResolvedValue(mockUpdate as any);
             const result = await timelineService.getIssueUpdates(mockIssue.id)
 
-            expect(result.updates).toEqual(mockUpdate);
+            expect(result.updates).toEqual(mockReturn);
         });
 
         it('should return updates attached to user1', async () => {
@@ -127,11 +173,24 @@ describe('TimelineService', () => {
                 userId: 'user1',
                 message: 'test message 1',
                 status: 'ACKNOWLEDGED',
-                images: []
+                imageIds: [],
+                userName: undefined
+            }];
+
+
+            const mockReturn = [{
+                issueId: 'issue1',
+                id: 'update1',
+                createdAt: new Date(),
+                userId: 'user1',
+                message: 'test message 1',
+                status: 'ACKNOWLEDGED',
+                images: [],
+                userName: undefined
             }];
             mockTimelineRepository.findByUser.mockResolvedValue(mockUpdate as any);
             const result = await timelineService.getUserUpdates(mockUser.id)
-            expect(result.updates).toEqual(mockUpdate);
+            expect(result.updates).toEqual(mockReturn);
         });
 
     });

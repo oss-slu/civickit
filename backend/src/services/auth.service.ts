@@ -6,9 +6,10 @@ import { CreateAuthDTO } from "@civickit/shared";
 import { SafeUser } from '../types/auth.types'
 import { z } from 'zod';
 import { AppError } from "../utils/errors";
+import { ImageRepository } from "../repositories/image.repository";
 
 export class AuthService {
-  constructor(private authRepository: AuthRepository) { }
+  constructor(private authRepository: AuthRepository, private imageRepository: ImageRepository) { }
 
   async registerUser(data: CreateAuthDTO): Promise<SafeUser> {
     const { email, password, name } = data;
@@ -59,6 +60,16 @@ export class AuthService {
     const user = await this.authRepository.findById(id);
     if (!user) {
       throw new AppError('User not found', 404);
+    }
+
+    if (user.profileImageId != null) {
+      const image = await this.imageRepository.findById(user.profileImageId)
+      const fullUser: any = {
+        ...user,
+        profileImage: image
+      }
+      delete fullUser.profileImageId
+      return fullUser
     }
     return user
   }

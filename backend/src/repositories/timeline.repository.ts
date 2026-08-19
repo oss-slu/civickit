@@ -14,7 +14,7 @@ export class TimelineRepository {
         status: data.status,
         // Left undefined rather than null when absent, so the column default
         // supplies the empty array.
-        images: data.images,
+        imageIds: data.imageIds,
         userId: data.userId,
         issueId: data.issueId,
         // Optional on PostUpdateDTO. issue.controller.ts backdates the

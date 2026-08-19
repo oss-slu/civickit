@@ -10,8 +10,6 @@ export const createIssueSchema = z.object({
   district: z.string().max(200).optional(),
   subregion: z.string().max(200).optional(),
   name: z.string().max(200).optional(),
-  images: z.array(z.string().url()).max(10).default([]),
+  imageIds: z.array(z.string()).max(10).default([]),
   locationSource: z.string().max(50).optional(),
-  photoTakenAt: z.coerce.date().optional(),
-  photoTakenAtSource: z.string().max(50).optional(),
 }).strip();

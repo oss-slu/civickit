@@ -9,6 +9,10 @@ import { IssueRepository } from '../../../repositories/issue.repository';
 import { describe, beforeEach, vi, it, expect, Mocked } from 'vitest';
 import { CreateIssueDTO, extractPhotoMetadataFromExif, resolvePhotoMetadata } from '@civickit/shared';
 import { mock } from 'node:test';
+import { ImageRepository } from '../../../repositories/image.repository';
+import { AuthRepository } from '../../../repositories/auth.repository';
+import { OrgRepository } from '../../../repositories/org.repository';
+import { MembershipRepository } from '../../../repositories/membership.repository';
 
 // Mock the repository, not integration test
 vi.mock('../../../src/repositories/issue.repository');
@@ -16,6 +20,10 @@ vi.mock('../../../src/repositories/issue.repository');
 describe('IssueService', () => {
   let issueService: IssueService;
   let mockIssueRepository: Mocked<IssueRepository>;
+  let mockImageRepository: Mocked<ImageRepository>
+  let mockAuthRepository: Mocked<AuthRepository>
+  let mockOrgRepository: Mocked<OrgRepository>
+  let mockMembershipRepository: Mocked<MembershipRepository>
 
   beforeEach(() => {
     // Create mock repository
@@ -28,8 +36,31 @@ describe('IssueService', () => {
       claimIssue: vi.fn(),
       releaseIssue: vi.fn(),
     } as unknown as Mocked<IssueRepository>;
+    mockImageRepository = {
+      create: vi.fn(),
+      findById: vi.fn(),
+    } as unknown as Mocked<ImageRepository>;
+    mockAuthRepository = {
+      create: vi.fn(),
+      findById: vi.fn(),
+      findNearby: vi.fn(),
+    } as unknown as Mocked<AuthRepository>;
 
-    issueService = new IssueService(mockIssueRepository);
+    mockOrgRepository = {
+      findOrgsForIssue: vi.fn(),
+      findIssuesForOrg: vi.fn(),
+      findById: vi.fn()
+    } as unknown as Mocked<OrgRepository>;
+
+    mockMembershipRepository = {
+      create: vi.fn(),
+      findById: vi.fn(),
+      findByUser: vi.fn(),
+      findByUserAndOrg: vi.fn(),
+      findByOrganization: vi.fn(),
+    } as unknown as Mocked<MembershipRepository>;
+
+    issueService = new IssueService(mockIssueRepository, mockImageRepository, mockOrgRepository, mockAuthRepository, mockMembershipRepository);
   });
 
   const makeInput = (
@@ -42,9 +73,22 @@ describe('IssueService', () => {
     latitude: 38.627,
     longitude: -90.1994,
     address: "",
-    images: [],
+    imageIds: [],
     ...overrides,
   });
+
+  const otherInfo = {
+    claimedByOrg: {
+      id: undefined,
+      name: undefined,
+      profileImage: undefined,
+    },
+    claimedByUser: {
+      id: undefined,
+      name: undefined,
+      profileImage: undefined,
+    }
+  }
 
   describe('createIssue', () => {
     it('should create an issue successfully', async () => {
@@ -56,20 +100,19 @@ describe('IssueService', () => {
         status: 'REPORTED',
         latitude: 38.6270,
         longitude: -90.1994,
-        images: [],
         userId: 'user-123',
         createdAt: new Date(),
         updatedAt: new Date(),
       };
 
-      mockIssueRepository.create.mockResolvedValue(mockIssue as any);
+      mockIssueRepository.create.mockResolvedValue({ ...mockIssue, imageIds: [] } as any);
 
       const result = await issueService.createIssue(
         makeInput(),
-        'user-123'
+        'user-123',
       );
 
-      expect(result).toEqual(mockIssue);
+      expect(result).toEqual({ ...mockIssue, images: [], ...otherInfo });
       expect(mockIssueRepository.create).toHaveBeenCalledWith({
         ...makeInput(),
         userId: 'user-123',
@@ -198,22 +241,13 @@ describe('IssueService', () => {
     it('should return issue if found', async () => {
       const mockIssue = {
         id: '123',
-        claimedByOrg: {
-          id: undefined,
-          name: undefined,
-          profileImage: undefined,
-        },
-        claimedByUser: {
-          id: undefined,
-          name: undefined,
-          profileImage: undefined,
-        },
+        imageIds: []
       };
       mockIssueRepository.findById.mockResolvedValue(mockIssue as any);
 
       const result = await issueService.getIssueById('123');
 
-      expect(result).toEqual(mockIssue);
+      expect(result).toEqual({ id: '123', images: [], ...otherInfo });
       expect(mockIssueRepository.findById).toHaveBeenCalledWith('123');
     });
 
@@ -232,33 +266,13 @@ describe('IssueService', () => {
         {
           id: 'issue-1',
           upvoteCount: 3,
-          claimedByOrg: {
-            id: undefined,
-            name: undefined,
-            profileImage: undefined,
-          },
-          claimedByUser: {
-            id: undefined,
-            name: undefined,
-            profileImage: undefined,
-          },
         },
         {
           id: 'issue-2',
           upvoteCount: 0,
-          claimedByOrg: {
-            id: undefined,
-            name: undefined,
-            profileImage: undefined,
-          },
-          claimedByUser: {
-            id: undefined,
-            name: undefined,
-            profileImage: undefined,
-          },
         },
       ];
-      mockIssueRepository.findNearby.mockResolvedValue(mockIssues as any);
+      mockIssueRepository.findNearby.mockResolvedValue(mockIssues.map((mi) => { return { ...mi, imageIds: [] } }) as any);
 
       const result = await issueService.getNearbyIssues(38.627, -90.1994);
 
@@ -268,7 +282,7 @@ describe('IssueService', () => {
         undefined,
         undefined
       );
-      expect(result).toEqual(mockIssues);
+      expect(result).toEqual(mockIssues.map((mi) => { return { ...mi, images: [], ...otherInfo } }));
       result.forEach((issue) => {
         expect(typeof issue.upvoteCount).toBe('number');
       });
@@ -291,14 +305,19 @@ describe('IssueService', () => {
   describe('getIssuesByUser', () => {
     it('should pass the repository rows through with their upvoteCount', async () => {
       const mockIssues = [
-        { id: 'issue-1', upvoteCount: 5 },
-        { id: 'issue-2', upvoteCount: 0 },
+        { id: 'issue-1', upvoteCount: 5, imageIds: [] },
+        { id: 'issue-2', upvoteCount: 0, imageIds: [] },
       ];
       mockIssueRepository.findByUser.mockResolvedValue(mockIssues as any);
 
       const result = await issueService.getIssuesByUser('user-123');
 
-      expect(result).toEqual(mockIssues);
+      expect(result).toEqual(mockIssues.map((mi) => {
+        let newMI: any = mi
+        delete newMI.imageIds
+        return { ...newMI, images: [], ...otherInfo }
+      }));
+
       result.forEach((issue) => {
         expect(typeof issue.upvoteCount).toBe('number');
       });
@@ -308,7 +327,7 @@ describe('IssueService', () => {
   describe('getIssuesByUserUpvotes', () => {
     it('should call findByUpvoter exactly once and never call findById', async () => {
       const mockIssues = [
-        { id: 'issue-1', upvoteCount: 2 },
+        { id: 'issue-1', upvoteCount: 2, imageIds: [] },
       ];
       mockIssueRepository.findByUpvoter.mockResolvedValue(mockIssues as any);
 
@@ -317,7 +336,20 @@ describe('IssueService', () => {
       expect(mockIssueRepository.findByUpvoter).toHaveBeenCalledTimes(1);
       expect(mockIssueRepository.findByUpvoter).toHaveBeenCalledWith('user-123', undefined);
       expect(mockIssueRepository.findById).not.toHaveBeenCalled();
-      expect(result).toEqual(mockIssues);
+      expect(result).toEqual([
+        {
+          id: 'issue-1', upvoteCount: 2, images: [], claimedByOrg: {
+            id: undefined,
+            name: undefined,
+            profileImage: undefined,
+          },
+          claimedByUser: {
+            id: undefined,
+            name: undefined,
+            profileImage: undefined,
+          },
+        },
+      ]);
       result.forEach((issue) => {
         expect(typeof issue.upvoteCount).toBe('number');
       });
@@ -330,7 +362,7 @@ describe('IssueService', () => {
     });
 
     it('should pass a valid status through to the repository', async () => {
-      const updated = { id: 'issue-1', status: 'RESOLVED' };
+      const updated = { id: 'issue-1', status: 'RESOLVED', imageIds: [] };
       (mockIssueRepository.updateStatus as any).mockResolvedValue(updated);
 
       const result = await issueService.updateStatus('issue-1', 'RESOLVED');
@@ -338,7 +370,19 @@ describe('IssueService', () => {
       expect(mockIssueRepository.updateStatus).toHaveBeenCalledWith('issue-1', {
         status: 'RESOLVED',
       });
-      expect(result).toEqual(updated);
+      expect(result).toEqual({
+        id: 'issue-1', status: 'RESOLVED', images: [],
+        claimedByOrg: {
+          id: undefined,
+          name: undefined,
+          profileImage: undefined
+        },
+        claimedByUser: {
+          id: undefined,
+          name: undefined,
+          profileImage: undefined
+        }
+      });
     });
 
     // PATCH /:issueId/status reads req.body.status with no body validation, so
@@ -363,12 +407,12 @@ describe('IssueService', () => {
   // when it did not apply, so the service reads back to say why.
   describe('claimIssue', () => {
     it('claims an issue that nobody holds', async () => {
-      const claimed = { id: 'issue-1', claimedById: 'user-1' };
+      const claimed = { id: 'issue-1', claimedById: 'user-1', imageIds: [] };
       mockIssueRepository.claimIssue.mockResolvedValue(claimed as any);
 
       const result = await issueService.claimIssue('issue-1', 'user-1');
 
-      expect(result).toEqual(claimed);
+      expect(result).toEqual({ id: claimed.id, claimedById: 'user-1', images: [], ...otherInfo });
       expect(mockIssueRepository.claimIssue).toHaveBeenCalledWith('issue-1', {
         claimedById: 'user-1',
       });

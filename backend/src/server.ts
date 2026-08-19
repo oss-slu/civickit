@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
 import issueRoutes from './routes/issue.routes';
+import imageRoutes from './routes/image.routes'
 import authRoutes from "./routes/auth.routes";
 import uploadRoutes from './routes/upload.routes';
 import loginRoutes from './routes/login.routes';
@@ -63,6 +64,7 @@ app.use(limiter)
 // TODO: Add routes
 app.use('/api/issues', issueRoutes);
 app.use('/api/organizations', orgRoutes)
+app.use('/api/images', imageRoutes)
 app.use('/api/auth/login', loginRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/upload', uploadRoutes);

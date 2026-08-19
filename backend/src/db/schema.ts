@@ -17,6 +17,7 @@ import {
   customType,
   doublePrecision,
   index,
+  integer,
   pgEnum,
   pgTable,
   text,
@@ -77,6 +78,13 @@ export const boundarySource = pgEnum('BoundarySource', [
   'FREEHAND',
 ]);
 
+export const photoSource = pgEnum('PhotoSource', [
+  'ISSUE',
+  'TIMELINE_ENTRY',
+  'ORGANIZATION',
+  'USER'
+])
+
 /** Prisma stored DateTime as TIMESTAMP(3); keeping the precision avoids drift. */
 const timestamp3 = (name: string) => timestamp(name, { precision: 3 });
 
@@ -127,12 +135,11 @@ export const users = pgTable(
     email: text('email').notNull().unique('user_email_key'),
     name: text('name').notNull(),
     passwordHash: text('passwordHash'),
-    profileImage: text('profileImage'),
+    profileImageId: text('profileImageId'),
     role: role('role').notNull().default('REPORTER'),
     createdAt: timestamp3('createdAt').notNull().defaultNow(),
     updatedAt: updatedAt(),
     emailVerified: boolean('emailVerified').notNull().default(false),
-    image: text('image'),
   },
   (table) => [index('user_email_idx').on(table.email)],
 );
@@ -153,12 +160,10 @@ export const issues = pgTable(
     name: text('name'),
     // Prisma left this nullable in the database but never wrote null. Declaring
     // it NOT NULL DEFAULT '{}' matches how the application has always behaved.
-    images: text('images').array().notNull().default([]),
+    imageIds: text('imageIds').array().notNull().default([]),
     createdAt: timestamp3('createdAt').notNull().defaultNow(),
     updatedAt: updatedAt(),
     locationSource: text('locationSource').notNull().default('device'),
-    photoTakenAt: timestamp3('photoTakenAt'),
-    photoTakenAtSource: text('photoTakenAtSource').notNull().default('device'),
     userId: text('userId')
       .notNull()
       .references(() => users.id, { onDelete: 'restrict', onUpdate: 'cascade' }),
@@ -186,11 +191,32 @@ export const timelineEntries = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: 'restrict', onUpdate: 'cascade' }),
     status: issueStatus('status').notNull().default('REPORTED'),
-    images: text('images').array().notNull().default([]),
+    imageIds: text('imageIds').array().notNull().default([]),
   },
   (table) => [
     index('TimelineEntry_issueId_idx').on(table.issueId),
     index('TimelineEntry_createdAt_idx').on(table.createdAt),
+  ],
+);
+
+export const images = pgTable(
+  'Image',
+  {
+    id: cuid(),
+    createdAt: timestamp3('createdAt').notNull().defaultNow(),
+    link: text('link').notNull(),
+    photoTakenAt: timestamp3('photoTakenAt').notNull().defaultNow(),
+    photoTakenAtSource: text('photoTakenAtSource').notNull().default('device'),
+    sourceId: text('sourceId'),
+    source: photoSource('source'),
+    userId: text('userId')
+      .notNull()
+      .references(() => users.id, { onDelete: 'restrict', onUpdate: 'cascade' }),
+    width: integer('width').notNull(),
+    height: integer('height').notNull()
+  },
+  (table) => [
+    index('Image_createdAt_idx').on(table.createdAt),
   ],
 );
 
@@ -340,7 +366,7 @@ export const organizations = pgTable(
     geofence: geography('geofence'),
     createdAt: timestamp3('createdAt').notNull().defaultNow(),
     updatedAt: updatedAt(),
-    profileImage: text('profileImage'),
+    profileImageId: text('profileImageId'),
   },
   (table) => [
     index('Organization_status_idx').on(table.status),

@@ -1,12 +1,14 @@
 // backend/src/services/issue.service.ts
 
-import { IssueRepository } from '../repositories/issue.repository';
+import { IssueRepository, NearbyIssue } from '../repositories/issue.repository';
 import { CreateIssueDTO, IssueStatus } from '@civickit/shared';
 import { Issue, issueStatus } from '../db/schema';
 import { AppError } from '../utils/errors';
 import { OrgRepository } from '../repositories/org.repository';
 import { AuthRepository } from '../repositories/auth.repository';
 import { MembershipRepository } from '../repositories/membership.repository';
+import { ImageRepository } from '../repositories/image.repository';
+import { Image } from '@civickit/shared/src/types/image';
 
 /** Checked against the database enum, so the two cannot drift apart. */
 function isIssueStatus(value: unknown): value is IssueStatus {
@@ -17,12 +19,12 @@ function isIssueStatus(value: unknown): value is IssueStatus {
 }
 
 
-const orgRepository = new OrgRepository()
-const authRepository = new AuthRepository()
-const membershipRepository = new MembershipRepository()
-
 export class IssueService {
-  constructor(private issueRepository: IssueRepository) { }
+  constructor(private issueRepository: IssueRepository,
+    private imageRepository: ImageRepository,
+    private orgRepository: OrgRepository,
+    private authRepository: AuthRepository,
+    private membershipRepository: MembershipRepository) { }
 
   async createIssue(data: CreateIssueDTO, userId: string) {
     if (!data.title || data.title.length < 3) {
@@ -35,42 +37,74 @@ export class IssueService {
       throw new AppError('Latitude and longitude are required', 400);
     }
 
-    // Images are already URLs from Cloudinary, provided by the client
-    // Just save the issue with the image URLs
-    return this.issueRepository.create({ ...data, userId, status: 'REPORTED' });
+    const issue = await this.issueRepository.create({ ...data, userId, status: 'REPORTED' });
+    const newIssues = await this.getExtendedIssueInfo([issue])
+    return newIssues[0]
   }
 
-  private async getClaimedByInfo(issues: Issue[]) {
+  private async getClaimedByInfo(issues: any[]) {
     let newIssues: any[] = []
     for (let i = 0; i < issues.length; i++) {
       let user = null
       let org = null
       if (issues[i].claimedById != null) {
-        user = await authRepository.findById(String(issues[i].claimedById))
-        const membershipOrgId = (await membershipRepository.findByUser(String(issues[i].claimedById)))?.organizationId
-        org = await orgRepository.findById(String(membershipOrgId))
+        user = await this.authRepository.findById(String(issues[i].claimedById))
+        const membershipOrgId = (await this.membershipRepository.findByUser(String(issues[i].claimedById)))?.organizationId
+        org = await this.orgRepository.findById(String(membershipOrgId))
       }
+
+      //get profile image objs
       newIssues[i] = {
         ...issues[i],
         claimedByUser: {
           name: user?.name,
           id: user?.id,
-          profileImage: user?.profileImage
+          profileImage: user?.profileImageId && await this.imageRepository.findById(user.profileImageId)
         },
         claimedByOrg: {
           name: org?.name,
           id: org?.id,
-          profileImage: org?.profileImage
+          profileImage: org?.profileImageId && await this.imageRepository.findById(org.profileImageId)
         },
       }
     }
     return newIssues
   }
 
+  private async getIssueImages(imageIds: string[]) {
+    let images: Image[] = []
+    for (let i = 0; i < imageIds.length; i++) {
+      const image = await this.imageRepository.findById(imageIds[i])
+      if (image != null) {
+        images[i] = image
+      }
+    }
+    return images
+  }
+
+
+  async getExtendedIssueInfo(issues: any[]) {
+    const issuesWithClaims = await this.getClaimedByInfo(issues)
+
+
+    let newIssues: any[] = []
+    for (let i = 0; i < issuesWithClaims.length; i++) {
+      const images = await this.getIssueImages(issuesWithClaims[i].imageIds)
+      const newIssue: any = {
+        ...issuesWithClaims[i],
+        images: images
+      }
+      delete newIssue.imageIds
+      newIssues[i] = newIssue
+    }
+
+    return newIssues
+  }
+
+
   async getNearbyIssues(lat: number, lng: number, radius?: number, limit?: number) {
     const issues = await this.issueRepository.findNearby(lat, lng, radius, limit);
-    const newIssues = this.getClaimedByInfo(issues)
-    return newIssues
+    return await this.getExtendedIssueInfo(issues)
   }
 
   async getIssueById(id: string) {
@@ -78,20 +112,19 @@ export class IssueService {
     if (!issue) {
       throw new AppError('Issue not found', 404);
     }
+    const newIssues = await this.getExtendedIssueInfo([issue])
 
-    const newIssue = (await this.getClaimedByInfo([issue]))[0]
-
-    // findById already counts upvotes in the same statement that reads the row.
-    // This used to issue a second countUpvotes query and return both values.
-    return newIssue;
+    return newIssues[0]
   }
 
   async getIssuesByUser(id: string, limit?: number) {
-    return this.issueRepository.findByUser(id, limit);
+    const issues = await this.issueRepository.findByUser(id, limit);
+    return await this.getExtendedIssueInfo(issues)
   }
 
   async getIssuesByUserUpvotes(id: string, limit?: number) {
-    return this.issueRepository.findByUpvoter(id, limit);
+    const issues = await this.issueRepository.findByUpvoter(id, limit);
+    return await this.getExtendedIssueInfo(issues)
   }
 
   // update status tag
@@ -105,7 +138,9 @@ export class IssueService {
       throw new AppError('A valid status is required', 400);
     }
 
-    return this.issueRepository.updateStatus(id, { status });
+    const issue = await this.issueRepository.updateStatus(id, { status });
+    const newIssues = await this.getExtendedIssueInfo([issue])
+    return newIssues[0]
   }
 
   // claim an issue
@@ -117,7 +152,8 @@ export class IssueService {
   async claimIssue(issueId: string, claimedById: string) {
     const claimed = await this.issueRepository.claimIssue(issueId, { claimedById });
     if (claimed) {
-      return claimed;
+      const newIssues = await this.getExtendedIssueInfo([claimed])
+      return newIssues[0]
     }
 
     // The conditional update matched nothing. Read back to say why.
@@ -138,6 +174,8 @@ export class IssueService {
   // release an issue
   // Callers must gate this behind requirePermission('update:release_issue').
   async releaseIssue(issueId: string) {
-    return this.issueRepository.releaseIssue(issueId);
+    const issues = await this.issueRepository.releaseIssue(issueId);
+    const newIssues = await this.getExtendedIssueInfo([issues])
+    return newIssues[0]
   }
 }

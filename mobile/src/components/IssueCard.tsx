@@ -75,13 +75,13 @@ export default function IssueCard({ issue, variant = 'compact', onPress, style, 
         style={styles.pressable}
       >
         {/* Thumbnail */}
-        {issue.images?.length > 0 && (
+        {(issue.images?.length > 0 && issue.images[0] != null) &&
           <Image
-            source={{ uri: issue.images[0] }}
+            source={{ uri: issue.images[0].link }}
             style={isExpanded ? { ...styles.thumbnail } : { ...styles.thumbnail, width: size.xxl, height: size.xxl }}
             resizeMode="cover"
           />
-        )}
+        }
 
         {/* Content */}
         <View style={styles.content}>
@@ -118,7 +118,7 @@ export default function IssueCard({ issue, variant = 'compact', onPress, style, 
               {/* Org that claimed issue */}
               {issue.claimedById &&
                 issue.claimedByOrg?.profileImage &&
-                <Image source={{ uri: issue.claimedByOrg.profileImage }} style={styles.orgProfilePic} />
+                <Image source={{ uri: issue.claimedByOrg.profileImage.link }} style={styles.orgProfilePic} />
 
               }
             </View>

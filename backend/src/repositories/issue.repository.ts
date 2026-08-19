@@ -31,7 +31,7 @@ const upvoteCount = sql<number>`(
 const author = {
   id: users.id,
   name: users.name,
-  profileImage: users.profileImage,
+  profileImageId: users.profileImageId,
 };
 
 export class IssueRepository {
@@ -57,12 +57,8 @@ export class IssueRepository {
         district: data.district,
         subregion: data.subregion,
         name: data.name,
-        images: data.images,
+        imageIds: data.imageIds,
         locationSource: data.locationSource,
-        // CreateIssueDTO types this as an ISO string; the column is a timestamp.
-        // Prisma accepted either, the driver does not.
-        photoTakenAt: data.photoTakenAt ? new Date(data.photoTakenAt) : undefined,
-        photoTakenAtSource: data.photoTakenAtSource,
         userId: data.userId,
       })
       .returning({ id: issues.id });
