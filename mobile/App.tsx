@@ -53,7 +53,7 @@ const queryClient = new QueryClient({
 
 const Stack = createNativeStackNavigator<StackParams>();
 
-function MainTabNavigator() {
+/*function MainTabNavigator() {
   const { width, height } = Dimensions.get("window")
   const { role } = useAuth()
   console.log(role)
@@ -210,7 +210,7 @@ function AppNavigator() {
       {isLoggedIn && <FlashMessage position="top" />}
     </NavigationContainer>
   )
-}
+}*/
 
 //Notification set up
 const projectId = Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId;
@@ -329,26 +329,26 @@ export default function App() {
     </View>
   );
 
-  if (queryClient != null) {
-    return (
-      <GestureHandlerRootView style={{ flex: 1 }}>
-        {/* SafeAreaProvider must fill the screen or useSafeAreaInsets reads 0 */}
-        <SafeAreaProvider>
-          <QueryClientProvider client={queryClient}>
-            <AuthProvider>
-              <AppNavigator />
-            </AuthProvider>
-          </QueryClientProvider>
-        </SafeAreaProvider>
-      </GestureHandlerRootView>
-    );
-  } else {
-    return (
-      <MessageView enableRefresh={false}>
-        Error: query client not found
-      </MessageView>
-    )
-  }
+  // if (queryClient != null) {
+  //   return (
+  //     <GestureHandlerRootView style={{ flex: 1 }}>
+  //       {/* SafeAreaProvider must fill the screen or useSafeAreaInsets reads 0 */}
+  //       <SafeAreaProvider>
+  //         <QueryClientProvider client={queryClient}>
+  //           <AuthProvider>
+  //             <AppNavigator />
+  //           </AuthProvider>
+  //         </QueryClientProvider>
+  //       </SafeAreaProvider>
+  //     </GestureHandlerRootView>
+  //   );
+  // } else {
+  //   return (
+  //     <MessageView enableRefresh={false}>
+  //       Error: query client not found
+  //     </MessageView>
+  //   )
+  // }
 
 }
 
