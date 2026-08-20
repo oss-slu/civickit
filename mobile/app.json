@@ -34,7 +34,13 @@
         "react-native-map-link"
       ],
       "expo-secure-store",
-      "expo-font"
-    ]
+      "expo-font",
+      "expo-notifications"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "04adaf2a-cfdc-4d44-b87b-c6eceac919a5"
+      }
+    }
   }
 }
