@@ -1,6 +1,6 @@
 //mobile/src/types/StackParams.ts
 import { GetNearbyIssueResponse, Issue, User } from "@civickit/shared"
-import type { PhotoMetadata } from "../utils/photoMetadata"
+import type { PhotoMetadata } from "@civickit/shared"
 
 export type StackParams = {
     "Nearby Issues": {},

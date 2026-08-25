@@ -9,7 +9,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { StackParams } from '../../types/StackParams';
 import { FormStartedContext, ImagesContext } from '../../contexts/FormContexts';
 import { PhotoMetadataContext } from '../../contexts/FormContexts';
-import type { PhotoMetadata } from '../../utils/photoMetadata';
+import type { PhotoMetadata } from '@civickit/shared';
 
 import React from 'react';
 import { useNearbyIssues } from '../../contexts/NearbyIssuesContext';
