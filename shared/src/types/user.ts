@@ -1,13 +1,12 @@
 // shared/src/types/user.ts
-import { Image } from "./image";
+import { Photo } from "./photo";
 
 import { UserRole } from "../enums/user";
 
 export interface User {
     id: string,
     name: string,
-    profileImage?: Image | null,
-    profileImageId?: string
+    profilePhoto?: Photo | null,
     createdAt: string,
     email: string,
     role: UserRole;

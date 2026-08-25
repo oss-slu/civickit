@@ -3,12 +3,12 @@
 import { IssueCategory } from "../enums/issue";
 import { OrgStatus, OrgType } from "../enums/organization";
 import { UserRole } from "../enums/user";
-import { Image } from "./image";
+import { Photo } from "./photo";
 
 export interface Org {
     id: string,
     name: string,
-    profileImage: Image,
+    profilePhoto?: Photo | null,
     createdAt: string,
     type: OrgType,
     status: OrgStatus;

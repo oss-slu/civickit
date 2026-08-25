@@ -9,11 +9,6 @@ export {
 } from './enums/issue'
 
 export {
-    PhotoSource
-} from './enums/image'
-
-
-export {
     OrgType,
     OrgStatus,
     OrgRole,
@@ -24,6 +19,7 @@ export {
 export {
     ApiResponse,
     CreateIssueDTO,
+    CreatePhotoDTO,
     PostUpdateDTO,
     LoginDTO,
     LoginResponse,
@@ -32,8 +28,8 @@ export {
 } from './types/api'
 
 export {
-    Image
-} from './types/image'
+    Photo
+} from './types/photo'
 
 export {
     Event,
@@ -52,7 +48,7 @@ export {
 export {
     PhotoMetadata,
     PhotoMetadataSource,
-    ResolvedPhotoMetadata,
     extractPhotoMetadataFromExif,
-    resolvePhotoMetadata
+    resolveIssueLocation,
+    resolvePhotoTakenAt
 } from './utils/photoMetadata'

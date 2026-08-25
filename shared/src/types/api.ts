@@ -1,11 +1,10 @@
 // shared/src/types/api.ts
-import { PhotoSource } from "../enums/image";
 import { IssueCategory, IssueStatus } from "../enums/issue";
 import { BoundarySource, OrgRole, OrgStatus, OrgTier, OrgType } from "../enums/organization";
 import { PhotoMetadataSource } from "../utils/photoMetadata";
 import { Org } from "./org";
 import { User } from "./user";
-import { Image } from "./image";
+import { Photo } from "./photo";
 
 export interface ApiResponse<T> {
     success: boolean;
@@ -24,21 +23,17 @@ export interface CreateIssueDTO {
     district?: string;
     subregion?: string;
     name?: string;
-    imageIds?: string[];
+    photos?: CreatePhotoDTO[];
     locationSource?: PhotoMetadataSource;
-    photoTakenAt?: string;
-    photoTakenAtSource?: PhotoMetadataSource;
 }
 
-export interface CreateImageDTO {
-    link: string,
-    createdAt?: Date,
-    photoTakenAt: string,
-    photoTakenAtSource: PhotoMetadataSource,
-    sourceId?: string,
-    source?: PhotoSource,
-    width: number,
-    height: number
+export interface CreatePhotoDTO {
+    url: string;
+    publicId?: string;
+    width?: number;
+    height?: number;
+    photoTakenAt?: string;
+    photoTakenAtSource?: PhotoMetadataSource;
 }
 
 
@@ -63,7 +58,7 @@ export interface OrgMembershipDTO {
 export interface PostUpdateDTO {
     message: string;
     status: IssueStatus;
-    imageIds?: string[];
+    photos?: CreatePhotoDTO[];
     createdAt?: Date;
 }
 
@@ -77,7 +72,7 @@ export interface GetNearbyIssueResponse {
     district?: string;
     subregion?: string;
     name?: string;
-    images: Image[];
+    photos: Photo[];
     id: string;
     createdAt: string;
     locationSource?: PhotoMetadataSource;
@@ -86,10 +81,10 @@ export interface GetNearbyIssueResponse {
     status: IssueStatus;
     distance: string
     upvoteCount: number
-    author: Pick<User, 'id' | 'name' | 'profileImage'>;
+    author: Pick<User, 'id' | 'name'>;
     claimedById: string;
-    claimedByUser?: Pick<User, 'id' | 'name' | 'profileImage'>;
-    claimedByOrg?: Pick<Org, 'id' | 'name' | 'profileImage'>;
+    claimedByUser?: Pick<User, 'id' | 'name'>;
+    claimedByOrg?: Pick<Org, 'id' | 'name' | 'profilePhoto'>;
 }
 
 export interface LoginDTO {
