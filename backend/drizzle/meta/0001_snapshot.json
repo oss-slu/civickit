@@ -1,6 +1,6 @@
 {
-  "id": "a2c989f9-1820-4015-8c38-bf7fb06330b4",
-  "prevId": "5e4195e2-d9b4-495f-853d-b1d78eaf19fc",
+  "id": "5e4195e2-d9b4-495f-853d-b1d78eaf19fc",
+  "prevId": "5296fc8f-c301-4494-955a-3198c8a6f887",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -490,12 +490,6 @@
           "type": "text",
           "primaryKey": false,
           "notNull": false
-        },
-        "claimedById": {
-          "name": "claimedById",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
         }
       },
       "indexes": {
@@ -807,12 +801,6 @@
           "type": "timestamp (3)",
           "primaryKey": false,
           "notNull": true
-        },
-        "profilePhotoId": {
-          "name": "profilePhotoId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
         }
       },
       "indexes": {
@@ -858,186 +846,6 @@
           ]
         }
       },
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.Photo": {
-      "name": "Photo",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "userId": {
-          "name": "userId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "issueId": {
-          "name": "issueId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "timelineEntryId": {
-          "name": "timelineEntryId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "url": {
-          "name": "url",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "publicId": {
-          "name": "publicId",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "width": {
-          "name": "width",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "height": {
-          "name": "height",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "photoTakenAt": {
-          "name": "photoTakenAt",
-          "type": "timestamp (3)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "photoTakenAtSource": {
-          "name": "photoTakenAtSource",
-          "type": "PhotoTimestampSource",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "position": {
-          "name": "position",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "createdAt": {
-          "name": "createdAt",
-          "type": "timestamp (3)",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "deletedAt": {
-          "name": "deletedAt",
-          "type": "timestamp (3)",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "Photo_issueId_idx": {
-          "name": "Photo_issueId_idx",
-          "columns": [
-            {
-              "expression": "issueId",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "Photo_timelineEntryId_idx": {
-          "name": "Photo_timelineEntryId_idx",
-          "columns": [
-            {
-              "expression": "timelineEntryId",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "Photo_userId_idx": {
-          "name": "Photo_userId_idx",
-          "columns": [
-            {
-              "expression": "userId",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "Photo_userId_user_id_fk": {
-          "name": "Photo_userId_user_id_fk",
-          "tableFrom": "Photo",
-          "tableTo": "user",
-          "columnsFrom": [
-            "userId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "restrict",
-          "onUpdate": "cascade"
-        },
-        "Photo_issueId_Issue_id_fk": {
-          "name": "Photo_issueId_Issue_id_fk",
-          "tableFrom": "Photo",
-          "tableTo": "Issue",
-          "columnsFrom": [
-            "issueId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        },
-        "Photo_timelineEntryId_TimelineEntry_id_fk": {
-          "name": "Photo_timelineEntryId_TimelineEntry_id_fk",
-          "tableFrom": "Photo",
-          "tableTo": "TimelineEntry",
-          "columnsFrom": [
-            "timelineEntryId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "cascade"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -1184,14 +992,6 @@
           "primaryKey": false,
           "notNull": true,
           "default": "'REPORTED'"
-        },
-        "entryType": {
-          "name": "entryType",
-          "type": "TimelineEntryType",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'COMMENT'"
         }
       },
       "indexes": {
@@ -1386,12 +1186,6 @@
         },
         "passwordHash": {
           "name": "passwordHash",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "profilePhotoId": {
-          "name": "profilePhotoId",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -1609,28 +1403,12 @@
         "OTHER"
       ]
     },
-    "public.PhotoTimestampSource": {
-      "name": "PhotoTimestampSource",
-      "schema": "public",
-      "values": [
-        "exif",
-        "device"
-      ]
-    },
     "public.Role": {
       "name": "Role",
       "schema": "public",
       "values": [
         "REPORTER",
         "ADMIN"
-      ]
-    },
-    "public.TimelineEntryType": {
-      "name": "TimelineEntryType",
-      "schema": "public",
-      "values": [
-        "COMMENT",
-        "SYSTEM_REPORT_SUBMITTED"
       ]
     }
   },
