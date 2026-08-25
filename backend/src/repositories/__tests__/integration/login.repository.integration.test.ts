@@ -18,7 +18,7 @@ describe('LoginRepository', () => {
         email: 'ada@example.com',
         name: 'Ada Lovelace',
         passwordHash: 'not-a-real-hash',
-        profileImageId: null,
+        profilePhotoId: null,
         createdAt: expect.any(Date),
         role: "REPORTER"
       });
@@ -35,7 +35,7 @@ describe('LoginRepository', () => {
         'id',
         'name',
         'passwordHash',
-        'profileImageId',
+        'profilePhotoId',
         'role'
       ]);
     });

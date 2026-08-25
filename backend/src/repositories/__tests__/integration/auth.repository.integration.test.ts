@@ -71,7 +71,7 @@ describe('AuthRepository', () => {
         id: created.id,
         email: 'ada@example.com',
         name: 'Ada Lovelace',
-        profileImageId: null,
+        profilePhotoId: null,
         createdAt: expect.any(Date),
         role: 'REPORTER',
       });

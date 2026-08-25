@@ -5,7 +5,7 @@ import { AuthRepository } from '../../../repositories/auth.repository';
 import { describe, beforeEach, vi, it, expect, Mocked } from 'vitest';
 import bcrypt from 'bcryptjs';
 import { AppError } from '../../../utils/errors';
-import { ImageRepository } from '../../../repositories/image.repository';
+import { PhotoRepository } from '../../../repositories/photo.repository';
 
 // mock repository
 vi.mock('../../../src/repositories/auth.repository');
@@ -21,7 +21,7 @@ vi.mock('bcryptjs', () => ({
 describe('AuthService', () => {
     let authService: AuthService;
     let mockAuthRepository: Mocked<AuthRepository>;
-    let mockImageRepository: Mocked<ImageRepository>
+    let mockPhotoRepository: Mocked<PhotoRepository>
 
     beforeEach(() => {
         mockAuthRepository = {
@@ -29,12 +29,12 @@ describe('AuthService', () => {
             createUser: vi.fn(),
             findById: vi.fn(),
         } as unknown as Mocked<AuthRepository>;
-        mockImageRepository = {
+        mockPhotoRepository = {
             create: vi.fn(),
             findById: vi.fn(),
-        } as unknown as Mocked<ImageRepository>;
+        } as unknown as Mocked<PhotoRepository>;
 
-        authService = new AuthService(mockAuthRepository, mockImageRepository);
+        authService = new AuthService(mockAuthRepository, mockPhotoRepository);
     });
 
     it('should register a user successfully', async () => {
@@ -47,7 +47,7 @@ describe('AuthService', () => {
             email: 'test@example.com',
             name: 'Test User',
             passwordHash: 'hashedPassword',
-            profileImageId: null,
+            profilePhotoId: null,
             role: 'REPORTER',
             createdAt: new Date(),
             updatedAt: new Date(),
@@ -125,7 +125,7 @@ describe('AuthService', () => {
             email: 'test@example.com',
             name: 'Jane Doe',
             passwordHash: 'hashedPassword',
-            profileImageId: null,
+            profilePhotoId: null,
             role: 'REPORTER',
             createdAt: new Date(),
             updatedAt: new Date(),
@@ -149,7 +149,7 @@ describe('AuthService', () => {
             email: 'test@example.com',
             name: 'Existing User',
             passwordHash: 'hashed',
-            profileImageId: null,
+            profilePhotoId: null,
             role: 'REPORTER',
             createdAt: new Date(),
             updatedAt: new Date(),
