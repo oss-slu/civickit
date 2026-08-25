@@ -16,10 +16,10 @@ export default function TimelineEntry({ timelineEntry, issueCategory = "OTHER", 
     const HOURS24 = 86400000
     const isNew = new Date().valueOf() - new Date(timelineEntry.createdAt).valueOf() < HOURS24
 
-    let pictures: string[] = []
-    if (timelineEntry.images) {
-        pictures = timelineEntry.images.map((image: any, index: number) =>
-            <Image source={{ uri: image.link }} key={index} style={styles.picture} />)
+    let pictures: React.ReactElement[] = []
+    if (timelineEntry.photos) {
+        pictures = timelineEntry.photos.map((photo: any, index: number) =>
+            <Image source={{ uri: photo.url }} key={index} style={styles.picture} />)
     }
 
     return (
@@ -40,7 +40,7 @@ export default function TimelineEntry({ timelineEntry, issueCategory = "OTHER", 
                         />
                     </View>
                     :
-                    <Image source={{ uri: timelineEntry.images[0].link }}
+                    <Image source={{ uri: timelineEntry.photos[0].url }}
                         style={styles.dot} />
                 }
 
@@ -94,7 +94,7 @@ export default function TimelineEntry({ timelineEntry, issueCategory = "OTHER", 
                     buttonBody={pictures}
                     buttonStyle={{ backgroundColor: colors.background, flexDirection: "row", columnGap: spacing.xs, flexWrap: "wrap" }}
                     style={styles.modal}>
-                    <ImageGallery images={timelineEntry.images.map((image: any) => image.link)} width={300} height={400} />
+                    <ImageGallery images={timelineEntry.photos.map((photo: any) => photo.url)} width={300} height={400} />
                 </ModalPopUp>
             </View>
 
