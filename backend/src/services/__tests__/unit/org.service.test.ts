@@ -7,13 +7,13 @@
 import { describe, beforeEach, vi, it, expect, Mocked } from 'vitest';
 import { OrgService } from '../../org.service';
 import { OrgRepository } from '../../../repositories/org.repository';
-import { ImageRepository } from '../../../repositories/image.repository';
+import { PhotoRepository } from '../../../repositories/photo.repository';
 import { IssueRepository } from '../../../repositories/issue.repository';
 
 describe('OrgService', () => {
   let orgService: OrgService;
   let mockOrgRepository: Mocked<OrgRepository>;
-  let mockImageRepository: Mocked<ImageRepository>
+  let mockPhotoRepository: Mocked<PhotoRepository>
   let mockIssueRepository: Mocked<IssueRepository>
 
   beforeEach(() => {
@@ -22,20 +22,23 @@ describe('OrgService', () => {
       findIssuesForOrg: vi.fn(),
     } as unknown as Mocked<OrgRepository>;
 
-    mockImageRepository = {
-      create: vi.fn(),
+    mockPhotoRepository = {
+      createMany: vi.fn(),
       findById: vi.fn(),
-    } as unknown as Mocked<ImageRepository>;
+      findOriginalsByIssueIds: vi.fn().mockResolvedValue(new Map()),
+      findByTimelineEntryIds: vi.fn().mockResolvedValue(new Map()),
+      softDelete: vi.fn(),
+    } as unknown as Mocked<PhotoRepository>;
 
     mockIssueRepository = {
-      create: vi.fn(),
+      createWithPhotos: vi.fn(),
       findById: vi.fn(),
       findNearby: vi.fn(),
     } as unknown as Mocked<IssueRepository>;
 
 
 
-    orgService = new OrgService(mockOrgRepository, mockImageRepository, mockIssueRepository);
+    orgService = new OrgService(mockOrgRepository, mockPhotoRepository, mockIssueRepository);
   });
 
   describe('findOrgsForIssue', () => {
@@ -66,22 +69,14 @@ describe('OrgService', () => {
 
   describe('findIssuesForOrg', () => {
     it('should pass the organization id through to the repository', async () => {
-      const issues = [{ id: 'issue-1', imageIds: [] }];
+      const issues = [{ id: 'issue-1' }];
       mockOrgRepository.findIssuesForOrg.mockResolvedValue(issues as any);
 
       const mockReturn = [{
-        claimedByOrg: {
-          id: undefined,
-          name: undefined,
-          profileImage: undefined,
-        },
-        claimedByUser: {
-          id: undefined,
-          name: undefined,
-          profileImage: undefined,
-        },
+        claimedByOrg: null,
+        claimedByUser: null,
         id: "issue-1",
-        images: [],
+        photos: [],
       }]
 
       const result = await orgService.findIssuesForOrg('org-1');

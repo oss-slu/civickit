@@ -11,12 +11,25 @@ import { describe, it, expect, vi } from 'vitest';
 import { errorHandler } from '../../middleware/error.middleware';
 import { JWT_SECRET } from '../../config/env';
 
-// Stub the service so an authenticated request does not touch the database; the
+// Stub the services so an authenticated request does not touch the database; the
 // auth middleware (the subject under test) runs for real before the controller.
-const { createIssue } = vi.hoisted(() => ({ createIssue: vi.fn() }));
+//
+// TimelineService is stubbed too because createIssue now awaits the seeded
+// timeline entry before responding. It used to be posted after res.json(), so a
+// failure there could not affect the status code -- which is exactly the
+// behaviour that made a rejected promise invisible.
+const { createIssue, postSystemEntry } = vi.hoisted(() => ({
+  createIssue: vi.fn(),
+  postSystemEntry: vi.fn(),
+}));
 vi.mock('../../services/issue.service', () => ({
   IssueService: class {
     createIssue = createIssue;
+  },
+}));
+vi.mock('../../services/timeline.service', () => ({
+  TimelineService: class {
+    postSystemEntry = postSystemEntry;
   },
 }));
 
@@ -33,7 +46,7 @@ const validBody = {
   category: 'BROKEN_SIDEWALK',
   latitude: 38.6352,
   longitude: -90.2318,
-  images: [],
+  photos: [],
 };
 
 describe('POST /api/issues authentication (#152)', () => {
@@ -90,7 +103,10 @@ describe('POST /api/issues authentication (#152)', () => {
 
   it('passes authentication with a validly signed token and creates the issue', async () => {
     // A correctly signed token must clear the auth gate and reach the controller.
-    createIssue.mockResolvedValueOnce({ id: 'issue-1', ...validBody });
+    createIssue.mockResolvedValueOnce({
+      id: 'issue-1', ...validBody, status: 'REPORTED', createdAt: new Date().toISOString(),
+    });
+    postSystemEntry.mockResolvedValueOnce({ id: 'entry-1' });
     const token = jwt.sign({ userId: 'user-1' }, JWT_SECRET);
 
     const res = await request(app)

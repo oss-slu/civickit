@@ -6,7 +6,7 @@ import { AppError } from '../utils/errors';
 import { CreateOrgDTO } from '@civickit/shared/src/types/api';
 import { MembershipRepository } from '../repositories/membership.repository';
 import { Org } from '@civickit/shared/src/types/org';
-import { ImageRepository } from '../repositories/image.repository';
+import { PhotoRepository } from '../repositories/photo.repository';
 import { IssueService } from './issue.service';
 import { IssueRepository } from '../repositories/issue.repository';
 import { AuthRepository } from '../repositories/auth.repository';
@@ -15,25 +15,33 @@ const membershipRepository = new MembershipRepository()
 const authRepository = new AuthRepository()
 
 export class OrgService {
+  /**
+   * Built once here rather than per call. The previous version constructed a
+   * new IssueService inside findIssuesForOrg using module-level singletons,
+   * while the rest of the class used injected repositories.
+   */
+  private readonly issueService: IssueService;
+
   constructor(private orgRepository: OrgRepository,
-    private imageRepository: ImageRepository,
-    private issueRepository: IssueRepository) { }
+    private photoRepository: PhotoRepository,
+    private issueRepository: IssueRepository) {
+    this.issueService = new IssueService(
+      issueRepository, photoRepository, orgRepository, authRepository, membershipRepository,
+    );
+  }
 
   async createOrg(data: CreateOrgDTO, adminId: string) {
     return this.orgRepository.create({ ...data, adminId: adminId });
   }
 
-  private async getOrgWithImage(org: any) {
-    if (org.profileImageId != null) {
-      const image = await this.imageRepository.findById(org.profileImageId)
-      const fullOrg: any = {
-        ...org,
-        profileImage: image
-      }
-      delete fullOrg.profileImageId
-      return fullOrg
-    }
-    return org
+  /** One shape either way -- profilePhoto is always present, null when unset. */
+  private async getOrgWithPhoto<T extends { profilePhotoId?: string | null }>(org: T) {
+    const { profilePhotoId, ...rest } = org;
+    const profilePhoto = profilePhotoId
+      ? (await this.photoRepository.findById(profilePhotoId)) ?? null
+      : null;
+
+    return { ...rest, profilePhoto };
   }
 
   async getOrgById(id: string) {
@@ -42,7 +50,7 @@ export class OrgService {
       throw new AppError('Organization not found', 404);
     }
 
-    return await this.getOrgWithImage(org);
+    return await this.getOrgWithPhoto(org);
   }
 
   async getOrgByUserId(userId: string) {
@@ -56,7 +64,7 @@ export class OrgService {
       throw new AppError('Organization not found', 404);
     }
 
-    return await this.getOrgWithImage(org);
+    return await this.getOrgWithPhoto(org);
   }
 
 
@@ -64,21 +72,17 @@ export class OrgService {
     if (lat === undefined || lng === undefined) {
       throw new AppError('Latitude and longitude are required', 400);
     }
-    const orgs = await this.orgRepository.findOrgsForIssue(lat, lng, category);
-    let extOrgs: any[] = []
-    for (let i = 0; i < orgs.length; i++) {
-      extOrgs[i] = await this.getOrgWithImage(orgs[i])
-    }
-    return extOrgs
+    // OrgMatch selects id, name, type and categoryScope only -- it carries no
+    // profile photo id, so the per-org lookup that used to run here was a
+    // no-op on every row.
+    return this.orgRepository.findOrgsForIssue(lat, lng, category);
   }
 
   async findIssuesForOrg(organizationId: string) {
     if (!organizationId) {
       throw new AppError('organizationId is required', 400);
     }
-    const issueService = new IssueService(this.issueRepository, this.imageRepository, this.orgRepository, authRepository, membershipRepository)
     const issues = await this.orgRepository.findIssuesForOrg(organizationId);
-    const extIssues = await issueService.getExtendedIssueInfo(issues)
-    return extIssues
+    return this.issueService.getExtendedIssueInfo(issues)
   }
 }

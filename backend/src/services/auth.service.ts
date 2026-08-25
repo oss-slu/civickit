@@ -6,10 +6,10 @@ import { CreateAuthDTO } from "@civickit/shared";
 import { SafeUser } from '../types/auth.types'
 import { z } from 'zod';
 import { AppError } from "../utils/errors";
-import { ImageRepository } from "../repositories/image.repository";
+import { PhotoRepository } from "../repositories/photo.repository";
 
 export class AuthService {
-  constructor(private authRepository: AuthRepository, private imageRepository: ImageRepository) { }
+  constructor(private authRepository: AuthRepository, private photoRepository: PhotoRepository) { }
 
   async registerUser(data: CreateAuthDTO): Promise<SafeUser> {
     const { email, password, name } = data;
@@ -62,15 +62,14 @@ export class AuthService {
       throw new AppError('User not found', 404);
     }
 
-    if (user.profileImageId != null) {
-      const image = await this.imageRepository.findById(user.profileImageId)
-      const fullUser: any = {
-        ...user,
-        profileImage: image
-      }
-      delete fullUser.profileImageId
-      return fullUser
-    }
-    return user
+    // One shape either way. The version this replaced returned the raw
+    // profilePhotoId when it was null and a reshaped object when it was set,
+    // so clients had to handle two shapes for one endpoint.
+    const { profilePhotoId, ...rest } = user;
+    const profilePhoto = profilePhotoId
+      ? (await this.photoRepository.findById(profilePhotoId)) ?? null
+      : null;
+
+    return { ...rest, profilePhoto };
   }
 }

@@ -5,7 +5,6 @@ import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
 import issueRoutes from './routes/issue.routes';
-import imageRoutes from './routes/image.routes'
 import authRoutes from "./routes/auth.routes";
 import uploadRoutes from './routes/upload.routes';
 import loginRoutes from './routes/login.routes';
@@ -19,6 +18,13 @@ import { isAPIError, } from "better-auth/api";
 import { ALLOWED_ORIGINS } from './config/env';
 
 dotenv.config();
+
+// Node terminates the process on an unhandled rejection by default. Every write
+// path is awaited, so reaching this is a bug -- but logging and staying up
+// beats taking the API down with it.
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled promise rejection:', reason);
+});
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
@@ -64,7 +70,6 @@ app.use(limiter)
 // TODO: Add routes
 app.use('/api/issues', issueRoutes);
 app.use('/api/organizations', orgRoutes)
-app.use('/api/images', imageRoutes)
 app.use('/api/auth/login', loginRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/upload', uploadRoutes);
