@@ -7,8 +7,8 @@ import { AppError } from '../utils/errors';
 import { OrgRepository } from '../repositories/org.repository';
 import { AuthRepository } from '../repositories/auth.repository';
 import { MembershipRepository } from '../repositories/membership.repository';
-import { ImageRepository } from '../repositories/image.repository';
-import { Image } from '@civickit/shared/src/types/image';
+import { PhotoRepository } from '../repositories/photo.repository';
+import { Photo } from '../db/schema';
 
 /** Checked against the database enum, so the two cannot drift apart. */
 function isIssueStatus(value: unknown): value is IssueStatus {
@@ -19,9 +19,11 @@ function isIssueStatus(value: unknown): value is IssueStatus {
 }
 
 
+export type IssueWithPhotos<T = unknown> = T & { photos: Photo[] };
+
 export class IssueService {
   constructor(private issueRepository: IssueRepository,
-    private imageRepository: ImageRepository,
+    private photoRepository: PhotoRepository,
     private orgRepository: OrgRepository,
     private authRepository: AuthRepository,
     private membershipRepository: MembershipRepository) { }
@@ -37,68 +39,67 @@ export class IssueService {
       throw new AppError('Latitude and longitude are required', 400);
     }
 
-    const issue = await this.issueRepository.create({ ...data, userId, status: 'REPORTED' });
-    const newIssues = await this.getExtendedIssueInfo([issue])
-    return newIssues[0]
+    const { issue, photos } = await this.issueRepository.createWithPhotos({
+      ...data,
+      userId,
+      status: 'REPORTED',
+    });
+
+    return { ...issue, photos };
   }
 
-  private async getClaimedByInfo(issues: any[]) {
-    let newIssues: any[] = []
-    for (let i = 0; i < issues.length; i++) {
+  /**
+   * Still one lookup per claimed issue. Unlike the photo N+1 this only runs for
+   * issues someone has claimed, so it is left for a follow-up -- see
+   * docs/design-decisions/photo-storage.md.
+   */
+  private async getClaimedByInfo<T extends { id: string; claimedById?: string | null }>(
+    issues: T[],
+  ) {
+    const newIssues = []
+    for (const issue of issues) {
       let user = null
       let org = null
-      if (issues[i].claimedById != null) {
-        user = await this.authRepository.findById(String(issues[i].claimedById))
-        const membershipOrgId = (await this.membershipRepository.findByUser(String(issues[i].claimedById)))?.organizationId
+      if (issue.claimedById != null) {
+        user = await this.authRepository.findById(String(issue.claimedById))
+        const membershipOrgId = (
+          await this.membershipRepository.findByUser(String(issue.claimedById))
+        )?.organizationId
         org = await this.orgRepository.findById(String(membershipOrgId))
       }
 
-      //get profile image objs
-      newIssues[i] = {
-        ...issues[i],
-        claimedByUser: {
-          name: user?.name,
-          id: user?.id,
-          profileImage: user?.profileImageId && await this.imageRepository.findById(user.profileImageId)
-        },
-        claimedByOrg: {
-          name: org?.name,
-          id: org?.id,
-          profileImage: org?.profileImageId && await this.imageRepository.findById(org.profileImageId)
-        },
-      }
+      newIssues.push({
+        ...issue,
+        claimedByUser: user ? { name: user.name, id: user.id } : null,
+        claimedByOrg: org
+          ? {
+            name: org.name,
+            id: org.id,
+            profilePhoto: org.profilePhotoId
+              ? (await this.photoRepository.findById(org.profilePhotoId)) ?? null
+              : null,
+          }
+          : null,
+      })
     }
     return newIssues
   }
 
-  private async getIssueImages(imageIds: string[]) {
-    let images: Image[] = []
-    for (let i = 0; i < imageIds.length; i++) {
-      const image = await this.imageRepository.findById(imageIds[i])
-      if (image != null) {
-        images[i] = image
-      }
-    }
-    return images
+  /**
+   * One query for every issue's photos, then a map lookup. The version this
+   * replaced ran one query per photo inside a loop over issues -- a 100-issue
+   * feed at three photos each was 300 sequential round trips.
+   */
+  async attachPhotos<T extends { id: string }>(issues: T[]): Promise<IssueWithPhotos<T>[]> {
+    const byIssue = await this.photoRepository.findOriginalsByIssueIds(issues.map((i) => i.id))
+    return issues.map((issue) => ({ ...issue, photos: byIssue.get(issue.id) ?? [] }))
   }
 
-
-  async getExtendedIssueInfo(issues: any[]) {
-    const issuesWithClaims = await this.getClaimedByInfo(issues)
-
-
-    let newIssues: any[] = []
-    for (let i = 0; i < issuesWithClaims.length; i++) {
-      const images = await this.getIssueImages(issuesWithClaims[i].imageIds)
-      const newIssue: any = {
-        ...issuesWithClaims[i],
-        images: images
-      }
-      delete newIssue.imageIds
-      newIssues[i] = newIssue
-    }
-
-    return newIssues
+  /** Claim attribution plus photos, in that order. */
+  async getExtendedIssueInfo<T extends { id: string; claimedById?: string | null }>(
+    issues: T[],
+  ) {
+    return this.attachPhotos(await this.getClaimedByInfo(issues))
   }
 
 

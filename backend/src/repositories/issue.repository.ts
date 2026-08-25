@@ -2,9 +2,10 @@
 
 import { CreateIssueDTO, IssueStatus } from '@civickit/shared';
 import { and, desc, eq, exists, getTableColumns, isNull, sql } from 'drizzle-orm';
-import db, { first } from '../db';
+import db, { Executor, first } from '../db';
 import { RecordNotFoundError } from '../db/errors';
 import { Issue, issues, upvotes, users } from '../db/schema';
+import { PhotoRepository } from './photo.repository';
 
 /**
  * A row from findNearby. The columns are the Issue table's, selected raw
@@ -27,44 +28,68 @@ const upvoteCount = sql<number>`(
   SELECT count(*)::int FROM ${upvotes} WHERE ${upvotes.issueId} = ${issues.id}
 )`;
 
-/** The author fields the API exposes. Never the whole user row. */
+/**
+ * The author fields the API exposes. Never the whole user row.
+ *
+ * No profile photo: nothing renders the issue author's avatar, and resolving
+ * one here would cost a query per issue on the feed's hottest path.
+ */
 const author = {
   id: users.id,
   name: users.name,
-  profileImageId: users.profileImageId,
 };
 
 export class IssueRepository {
   /** One shape for every non-geospatial read, so they cannot drift apart. */
-  private selectIssues() {
-    return db
+  private selectIssues(executor: Executor = db) {
+    return executor
       .select({ ...getTableColumns(issues), upvoteCount, user: author })
       .from(issues)
       .innerJoin(users, eq(issues.userId, users.id));
   }
 
-  async create(data: CreateIssueDTO & { userId: string }) {
-    const [inserted] = await db
-      .insert(issues)
-      .values({
-        title: data.title,
-        description: data.description,
-        category: data.category,
-        status: data.status,
-        latitude: data.latitude,
-        longitude: data.longitude,
-        address: data.address,
-        district: data.district,
-        subregion: data.subregion,
-        name: data.name,
-        imageIds: data.imageIds,
-        locationSource: data.locationSource,
-        userId: data.userId,
-      })
-      .returning({ id: issues.id });
+  /**
+   * Issue and photos in one transaction, so a failure part-way through leaves
+   * neither. The photos carry `issueId` and no `timelineEntryId`, which is what
+   * marks them as filed with the original report.
+   */
+  async createWithPhotos(
+    data: CreateIssueDTO & { userId: string; status: IssueStatus },
+  ) {
+    const photoRepository = new PhotoRepository();
 
-    // Re-read so create returns the same shape as findById.
-    return (await this.findById(inserted.id))!;
+    return db.transaction(async (tx) => {
+      const [inserted] = await tx
+        .insert(issues)
+        .values({
+          title: data.title,
+          description: data.description,
+          category: data.category,
+          status: data.status,
+          latitude: data.latitude,
+          longitude: data.longitude,
+          address: data.address,
+          district: data.district,
+          subregion: data.subregion,
+          name: data.name,
+          locationSource: data.locationSource,
+          userId: data.userId,
+        })
+        .returning({ id: issues.id });
+
+      const photos = await photoRepository.createMany(
+        data.photos ?? [],
+        { userId: data.userId, issueId: inserted.id },
+        tx,
+      );
+
+      // Re-read so create returns the same shape as findById. Reads through
+      // `tx`, not `db` -- a pooled read would be on another connection and
+      // would not see this transaction's uncommitted row.
+      const issue = (await this.findById(inserted.id, tx))!;
+
+      return { issue, photos };
+    });
   }
 
   async findNearby(
@@ -98,8 +123,8 @@ export class IssueRepository {
     return result.rows as unknown as NearbyIssue[];
   }
 
-  async findById(id: string) {
-    return first(await this.selectIssues().where(eq(issues.id, id)).limit(1));
+  async findById(id: string, executor: Executor = db) {
+    return first(await this.selectIssues(executor).where(eq(issues.id, id)).limit(1));
   }
 
   async findByUser(id: string, limit: number = 100) {

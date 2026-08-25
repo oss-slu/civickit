@@ -2,25 +2,26 @@
 import { Request, Response, NextFunction } from 'express';
 import { IssueService } from '../services/issue.service';
 import { IssueRepository } from '../repositories/issue.repository';
-import { Image, PostUpdateDTO } from '@civickit/shared';
+
 import { TimelineService } from '../services/timeline.service';
 import { TimelineRepository } from '../repositories/timeline.repository';
 import { AuthRepository } from '../repositories/auth.repository';
-import { ImageService } from '../services/image.service';
-import { ImageRepository } from '../repositories/image.repository';
+import { PhotoRepository } from '../repositories/photo.repository';
 import { OrgRepository } from '../repositories/org.repository';
 import { MembershipRepository } from '../repositories/membership.repository';
 
-const imageRepository = new ImageRepository()
+const photoRepository = new PhotoRepository()
 const issueRepository = new IssueRepository()
 const orgRepository = new OrgRepository()
 const authRepository = new AuthRepository()
 const membershipRepository = new MembershipRepository()
 
-
-const issueService = new IssueService(issueRepository, imageRepository, orgRepository, authRepository, membershipRepository);
-const timelineService = new TimelineService(new TimelineRepository(), imageRepository, new AuthRepository);
-const imageService = new ImageService(imageRepository)
+const issueService = new IssueService(
+  issueRepository, photoRepository, orgRepository, authRepository, membershipRepository,
+);
+const timelineService = new TimelineService(
+  new TimelineRepository(), photoRepository, authRepository,
+);
 
 // Parses an optional `limit` query param, clamped to [1, 200], defaulting to 100.
 function parseLimit(raw: unknown): number {
@@ -52,44 +53,27 @@ export class IssueController {
       }
 
       const issue = await issueService.createIssue(
+        { ...req.body, latitude, longitude },
+        userId,
+      );
+
+      // Seeds the issue's timeline. The entry displays the issue's original
+      // photos rather than owning copies of them -- see "Timeline" in
+      // docs/design-decisions/photo-storage.md.
+      await timelineService.postSystemEntry(
         {
-          ...req.body,
-          latitude: parseFloat(req.body.latitude),
-          longitude: parseFloat(req.body.longitude),
-        }, userId);
-      res.status(201).json(issue);
-
-      //update images with source
-      issue.images.forEach((image: Image) => {
-        imageService.updateImageSource(image.id, "ISSUE", issue.id)
-      })
-
-      // Seed the issue's timeline. Posted after the response, as on main --
-      // see "Known gaps" in plans/013 before changing that ordering.
-      const reported: PostUpdateDTO = {
-        message: "Report Submitted",
-        createdAt: new Date(issue.createdAt),
-        status: issue.status,
-        imageIds: issue.imageIds
-      }
-      await timelineService.postUpdate(reported, String(issue.id), userId);
-
-      issue.images.forEach(async (image: Image) => {
-        const photoTaken: PostUpdateDTO = {
-          message: "Photo Taken",
-          createdAt: image.photoTakenAt != null ? image.photoTakenAt : image.createdAt,
+          message: 'Report Submitted',
+          createdAt: new Date(issue.createdAt),
           status: issue.status,
-          imageIds: [image.id]
-        }
-        await timelineService.postUpdate(photoTaken, String(issue.id), userId);
-      })
+        },
+        String(issue.id),
+        userId,
+      );
 
+      res.status(201).json(issue);
     } catch (error) {
       next(error);
     }
-
-
-
   }
 
   async getNearbyIssues(req: Request, res: Response, next: NextFunction) {
