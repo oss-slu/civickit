@@ -1,7 +1,7 @@
 // mobile/src/screens/IssueCreation/IssueCreationScreen.tsx
 import * as Location from 'expo-location';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { uploadImagesToCloudinary } from '../../services/cloudinaryService';
+import { uploadPhotos } from '../../services/cloudinaryService';
 import { View, StyleSheet, ScrollView, TextInput, Text, FlatList, useWindowDimensions, Dimensions } from 'react-native';
 import { useFocusEffect, useLocale, useNavigation, } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack'
@@ -13,17 +13,18 @@ import { CaretDownIcon, PictureIcon, PlusIcon, WarningIcon } from '../../compone
 import { IssueCategoryArray } from '../../types/IssueCategoryArray';
 import { extractResolvedLocationMetadata, formatResolvedAddress, ResolvedLocationMetadata } from '../../hooks/useResolvedAddress';
 import { useAuth } from '../../contexts/AuthContext';
-import { resolvePhotoMetadata } from '../../utils/photoMetadata';
+import { resolveIssueLocation, resolvePhotoTakenAt } from '@civickit/shared';
 
 import LoadingScreen from '../Misc/LoadingScreen';
 import Button from '../../components/Button';
 import WrapperButton from '../../components/WrapperButton';
 import SelectedImage from '../../components/SelectedImage';
 import ModalDropdown from '../../components/ModalDropdown';
-import { NetworkError, imagesApi, issuesApi } from '../../api';
+import { NetworkError, issuesApi } from '../../api';
 import { ImagesContext, PhotoMetadataContext, UserLocationContext, AddressContext, TitleContext, CategoryContext, DescriptionContext, FormStartedContext } from '../../contexts/FormContexts';
 import { userLocation } from '../../types/userLocation';
-import { PhotoMetadataSource } from '../../utils/photoMetadata';
+import { CreatePhotoDTO, PhotoMetadataSource } from '@civickit/shared';
+import { MAX_PHOTOS } from '../../constants/photos';
 import { useNearbyIssues } from '../../contexts/NearbyIssuesContext';
 import SelectedImageGallery from '../../components/SelectedImageGallery';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -73,42 +74,37 @@ export default function IssueCreationScreen() {
     useEffect(() => {
         if (!deviceLocation) return;
 
-        const fallbackTakenAt = new Date().toISOString();
-        const resolved = resolvePhotoMetadata(photoMetadata, { ...deviceLocation, takenAt: fallbackTakenAt });
+        // Named `resolved` rather than `location`, which is state in this component.
+        const resolved = resolveIssueLocation(photoMetadata, deviceLocation);
 
+        setLocation({ latitude: resolved.latitude, longitude: resolved.longitude });
+        setLocationSource(resolved.locationSource);
+        setLocationMetadata({});
+        setAddress(resolved.locationSource === 'exif' ? 'Detecting photo location...' : 'Detecting phone location...');
 
-        if (resolved.length > 0) {
-            setLocation({ latitude: resolved[0].latitude, longitude: resolved[0].longitude });
-            setLocationSource(resolved[0].locationSource);
-            setLocationMetadata({});
-            setAddress(resolved[0].locationSource === 'exif' ? 'Detecting photo location...' : 'Detecting phone location...');
+        const coords = cityBounds.features[0].geometry.coordinates[0][1].map((point) => {
+            return {
+                latitude: point[1],
+                longitude: point[0]
+            };
+        })
+        setInBounds(isPointInPolygon({ latitude: resolved.latitude, longitude: resolved.longitude }, coords));
 
-            const coords = cityBounds.features[0].geometry.coordinates[0][1].map((point) => {
-                return {
-                    latitude: point[1],
-                    longitude: point[0]
-                };
-            })
-            let ib = isPointInPolygon({ latitude: resolved[0].latitude, longitude: resolved[0].longitude }, coords);
-            setInBounds(ib);
+        (async () => {
+            const geocode = await Location.reverseGeocodeAsync({
+                latitude: resolved.latitude,
+                longitude: resolved.longitude,
+            });
 
-            (async () => {
-                const geocode = await Location.reverseGeocodeAsync({
-                    latitude: resolved[0].latitude,
-                    longitude: resolved[0].longitude,
-                });
-
-                //reverseGeocodeAsync does not work on web, will return []
-                if (geocode.length > 0) {
-                    const formattedAddress = formatResolvedAddress(geocode[0]);
-                    if (formattedAddress) {
-                        setAddress(formattedAddress);
-                    }
-                    setLocationMetadata(extractResolvedLocationMetadata(geocode[0]));
-
+            //reverseGeocodeAsync does not work on web, will return []
+            if (geocode.length > 0) {
+                const formattedAddress = formatResolvedAddress(geocode[0]);
+                if (formattedAddress) {
+                    setAddress(formattedAddress);
                 }
-            })();
-        }
+                setLocationMetadata(extractResolvedLocationMetadata(geocode[0]));
+            }
+        })();
     }, [deviceLocation, photoMetadata]);
 
     useFocusEffect(
@@ -179,11 +175,8 @@ export default function IssueCreationScreen() {
     const handleSubmit = async () => {
         try {
             const fallbackLocation = deviceLocation ?? location!;
-            const resolvedPhotoMetadata = resolvePhotoMetadata(photoMetadata, {
-                latitude: fallbackLocation.latitude,
-                longitude: fallbackLocation.longitude,
-                takenAt: new Date().toISOString(),
-            });
+            const fallbackTakenAt = new Date().toISOString();
+            const resolvedLocation = resolveIssueLocation(photoMetadata, fallbackLocation);
             if (!authToken) {
                 setIsLoading(false)
                 navigation.push('Error', { errorMessage: 'Not authenticated' });
@@ -199,9 +192,10 @@ export default function IssueCreationScreen() {
 
             setIsLoading(true);
 
-            // Step 1: Upload images to Cloudinary
-            let imageUrls: string[] = [];
-            let imageIds: string[] = []
+            // Step 1: Upload photos to Cloudinary. Nothing is written to the
+            // database here -- the photos travel with the issue in step 2, so a
+            // failed submit cannot leave orphaned rows behind.
+            let photos: CreatePhotoDTO[] = [];
             if (images.length > 0) {
                 try {
                     const imageUploadStartTime = Date.now();
@@ -210,30 +204,15 @@ export default function IssueCreationScreen() {
                         backgroundColor: palette.ckGreen,
                         color: colors.textContrast
                     });
-                    imageUrls = await uploadImagesToCloudinary(images);
+
+                    photos = await uploadPhotos(
+                        images.map((uri, index) => ({
+                            uri,
+                            ...resolvePhotoTakenAt(photoMetadata[index] ?? {}, fallbackTakenAt),
+                        })),
+                    );
+
                     performanceLog.times.imageUploadMs = Date.now() - imageUploadStartTime;
-                    // console.log("!!!", resolvedPhotoMetadata)
-
-                    //add images to database
-                    for (let i = 0; i < imageUrls.length; i++) {
-                        try {
-
-                            const newImage = await imagesApi.createImage({
-                                link: imageUrls[i],
-                                photoTakenAt: resolvedPhotoMetadata[i].photoTakenAt,
-                                photoTakenAtSource: resolvedPhotoMetadata[i].photoTakenAtSource,
-                                width: resolvedPhotoMetadata[i].width ?? -1,
-                                height: resolvedPhotoMetadata[i].height ?? -1,
-                            })
-
-                            imageIds[i] = newImage.id
-                        } catch (e) {
-                            throw (e)
-                        }
-
-                    }
-
-
                 } catch (uploadError) {
                     setIsLoading(false);
                     navigation.push('Error', { errorMessage: 'Image upload to Cloudinary failed' });
@@ -242,19 +221,19 @@ export default function IssueCreationScreen() {
             }
 
 
-            // Step 2: Send issue data with image URLs to backend
+            // Step 2: Send the issue and its photos to the backend as one request
             const requestBody = {
                 title,
                 description,
                 category: category!,
-                latitude: resolvedPhotoMetadata[0].latitude,
-                longitude: resolvedPhotoMetadata[0].longitude,
+                latitude: resolvedLocation.latitude,
+                longitude: resolvedLocation.longitude,
                 address,
                 district: locationMetadata.district,
                 subregion: locationMetadata.subregion,
                 name: locationMetadata.name,
-                locationSource: resolvedPhotoMetadata[0].locationSource,
-                imageIds: imageIds
+                locationSource: resolvedLocation.locationSource,
+                photos,
             };
 
 
@@ -337,8 +316,8 @@ export default function IssueCreationScreen() {
 
 
                     <WrapperButton onPress={() => { navigation.navigate("Camera", { uri: images }) }}
-                        style={images.length < 3 ? styles.photoButton : styles.disabledPhotoButton}
-                        isDisabled={images.length >= 3}>
+                        style={images.length < MAX_PHOTOS ? styles.photoButton : styles.disabledPhotoButton}
+                        isDisabled={images.length >= MAX_PHOTOS}>
                         <PlusIcon color={colors.textContrast}
                             size={size.xl} />
                     </WrapperButton>

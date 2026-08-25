@@ -14,7 +14,8 @@ import WrapperButton from '../../components/WrapperButton';
 import { FormStartedContext, ImagesContext, PhotoMetadataContext } from '../../contexts/FormContexts';
 import { useNearbyIssues } from '../../contexts/NearbyIssuesContext';
 import LoadingScreen from '../Misc/LoadingScreen';
-import { extractPhotoMetadataFromExif } from '../../utils/photoMetadata';
+import { extractPhotoMetadataFromExif } from '@civickit/shared';
+import { MAX_PHOTOS } from '../../constants/photos';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocation } from '../../contexts/LocationContext';
 
@@ -88,7 +89,11 @@ export default function CameraScreen() {
         if (photo?.uri) {
             navigation.replace("Photo Validation", {
                 uri: photo.uri,
-                metadata: extractPhotoMetadataFromExif(photo.exif)
+                metadata: {
+                    ...extractPhotoMetadataFromExif(photo.exif),
+                    width: photo.width,
+                    height: photo.height,
+                },
             })
         }
 
@@ -98,19 +103,23 @@ export default function CameraScreen() {
 
     const pickImage = async () => {
 
-        if (images.length < 3) {
+        if (images.length < MAX_PHOTOS) {
             const results = await ImagePicker.launchImageLibraryAsync({
                 mediaTypes: ['images'],
                 quality: 0.8,
                 exif: true,
                 allowsMultipleSelection: true,
-                selectionLimit: 3 - images.length,
+                selectionLimit: MAX_PHOTOS - images.length,
             })
-            // console.log(results)
             if (!results.canceled) {
                 const resultList = results.assets.map(r => r.uri)
-                const metadataList = results.assets.map(r => extractPhotoMetadataFromExif({ ...r.exif, ImageLength: r.height, ImageWidth: r.width }))
-                // console.log(results.assets[0].exif)
+                // Dimensions come from the asset, which already has orientation
+                // applied. EXIF only supplies GPS and capture time.
+                const metadataList = results.assets.map(asset => ({
+                    ...extractPhotoMetadataFromExif(asset.exif),
+                    width: asset.width,
+                    height: asset.height,
+                }))
                 setPhotoMetadata([...photoMetadata, ...metadataList]);
                 setImages([...images, ...resultList]);
                 if (!formStarted && data.issues.filter((i: any) => i.distance <= 15.24).length > 0) {
