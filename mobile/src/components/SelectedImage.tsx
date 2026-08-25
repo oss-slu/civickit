@@ -6,18 +6,24 @@ import { CloseXIcon } from './Icons';
 
 export default function SelectedImage({ source, metadata, onDeletePressed, width, height, style }: any) {
 
-    let imageWidth
-    let imageHeight
-    if (metadata.height >= metadata.width) {//portrait
-        imageHeight = height
-        imageWidth = width * metadata.width / metadata.height
-    } else { //landscape
-        imageWidth = width
-        imageHeight = height * metadata.height / metadata.width
+    // Dimensions come from the picker or camera asset. They are absent for a
+    // photo whose asset reported none, in which case the image fills the frame
+    // and the button sits in the frame's own corner.
+    const intrinsicWidth = metadata?.width
+    const intrinsicHeight = metadata?.height
+
+    let imageWidth = width
+    let imageHeight = height
+
+    if (intrinsicWidth && intrinsicHeight) {
+        if (intrinsicHeight >= intrinsicWidth) { //portrait
+            imageHeight = height
+            imageWidth = width * intrinsicWidth / intrinsicHeight
+        } else { //landscape
+            imageWidth = width
+            imageHeight = height * intrinsicHeight / intrinsicWidth
+        }
     }
-
-    // console.log(metadata)
-
 
     const styles = StyleSheet.create({
         container: {
@@ -28,17 +34,15 @@ export default function SelectedImage({ source, metadata, onDeletePressed, width
         },
         image: {
             width: width,
-            height: width,
-            // borderRadius: borderRadius.md,
+            height: height,
             resizeMode: "contain",
         },
+        // Positioned over the rendered photo rather than the container, so the
+        // X sits on the image's own corner when it is letterboxed.
         buttonContainer: {
             position: 'absolute',
-            // justifyContent: "center",
-            // alignItems: "center",
             top: (height - imageHeight) / 2 + spacing.sm,
             left: (width - imageWidth) / 2 + spacing.sm
-
         },
         button: {
             backgroundColor: palette.ckRed,

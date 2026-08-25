@@ -19,9 +19,16 @@ export default function SelectedImageGallery({ images, metadata, width, height, 
                     const nextIndex = Math.round(event.nativeEvent.contentOffset.x / width);
                     setActiveImageIndex(nextIndex);
                 }}
-                renderItem={({ item, index }) => {
-                    return <SelectedImage source={item} metadata={metadata[index]} style={[styles.image]} width={width} height={height} onDeletePressed={onDeletePressed} />
-                }}
+                renderItem={({ item, index }) => (
+                    <SelectedImage
+                        source={item}
+                        metadata={metadata?.[index] ?? {}}
+                        style={[styles.image]}
+                        width={width}
+                        height={height}
+                        onDeletePressed={onDeletePressed}
+                    />
+                )}
             />
             {images.length > 1 && (
                 <View style={styles.imageDots}>
