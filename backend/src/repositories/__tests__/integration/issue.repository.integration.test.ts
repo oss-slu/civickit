@@ -3,6 +3,10 @@
 import { describe, it, expect } from 'vitest';
 import { IssueRepository } from '../../issue.repository';
 import { UpvoteRepository } from '../../upvote.repository';
+import { eq } from 'drizzle-orm';
+import db from '../../../db';
+import { issues, photos } from '../../../db/schema';
+import { PhotoRepository } from '../../photo.repository';
 import { ORIGIN, issueInput, makeIssue, makeUser } from '../../../__tests__/integration/factories';
 
 const repository = new IssueRepository();
@@ -20,71 +24,86 @@ const offsetNorth = (metres: number) => ({
 });
 
 describe('IssueRepository', () => {
-  describe('create', () => {
+  describe('createWithPhotos', () => {
+    const CLOUDINARY_URL = 'https://res.cloudinary.com/demo/image/upload/a.jpg';
+
+    const create = (userId: string, overrides = {}) =>
+      repository.createWithPhotos({ ...issueInput(overrides), userId, status: 'REPORTED' });
+
     it('persists the issue and returns the author projection and upvote count', async () => {
       const author = await makeUser({ name: 'Ada Lovelace' });
 
-      const issue = await repository.create({ ...issueInput(), userId: author.id });
+      const { issue } = await create(author.id);
 
       expect(issue.id).toEqual(expect.any(String));
       expect(issue.title).toBe('Pothole on Main');
-      expect(issue.user).toEqual({
-        id: author.id,
-        name: 'Ada Lovelace',
-        profileImageId: null,
-      });
+      expect(issue.user).toEqual({ id: author.id, name: 'Ada Lovelace' });
       expect(issue.upvoteCount).toBe(0);
     });
 
-    it('applies the column defaults for status and the two source fields', async () => {
+    it('applies the column defaults for status and locationSource', async () => {
       const author = await makeUser();
 
-      const issue = await repository.create({
-        ...issueInput({ status: undefined as never }),
+      const { issue } = await repository.createWithPhotos({
+        ...issueInput(),
         userId: author.id,
+        status: undefined as never,
       });
 
       expect(issue.status).toBe('REPORTED');
       expect(issue.locationSource).toBe('device');
     });
 
-    it('accepts photoTakenAt as an ISO string and reads it back as a Date', async () => {
-      const author = await makeUser();
-      const takenAt = '2026-07-01T12:30:00.000Z';
-
-      const issue = await repository.create({
-        ...issueInput({ photoTakenAt: takenAt, photoTakenAtSource: 'exif' }),
-        userId: author.id,
-      });
-
-    });
-
-    it('round-trips the optional location fields and the image array', async () => {
+    it('round-trips the optional location fields', async () => {
       const author = await makeUser();
 
-      const issue = await repository.create({
-        ...issueInput({
-          district: 'Downtown',
-          subregion: 'Central West End',
-          name: 'Near the fountain',
-          imageIds: ['1', '2'],
-        }),
-        userId: author.id,
+      const { issue } = await create(author.id, {
+        district: 'Downtown',
+        subregion: 'Central West End',
+        name: 'Near the fountain',
       });
 
       expect(issue.district).toBe('Downtown');
       expect(issue.subregion).toBe('Central West End');
       expect(issue.name).toBe('Near the fountain');
-      expect(issue.imageIds).toEqual([
-        '1',
-        '2',
-      ]);
     });
 
-    it('rejects an issue whose author does not exist', async () => {
+    it('writes the issue and its photos together', async () => {
+      const author = await makeUser();
+
+      const { issue, photos } = await create(author.id, {
+        photos: [{ url: CLOUDINARY_URL }],
+      });
+
+      expect(photos).toHaveLength(1);
+      expect(photos[0].issueId).toBe(issue.id);
+      expect(photos[0].timelineEntryId).toBeNull();
+      expect(photos[0].position).toBe(0);
+    });
+
+    it('writes neither the issue nor its photos when the author does not exist', async () => {
+      const before = await db.select().from(issues);
+
       await expect(
-        repository.create({ ...issueInput(), userId: 'no-such-user' }),
+        repository.createWithPhotos({
+          ...issueInput({ photos: [{ url: CLOUDINARY_URL }] }),
+          userId: 'no-such-user',
+          status: 'REPORTED',
+        }),
       ).rejects.toThrow();
+
+      expect(await db.select().from(issues)).toHaveLength(before.length);
+      expect(await db.select().from(photos)).toHaveLength(0);
+    });
+
+    it('cascades photo deletion when the issue is deleted', async () => {
+      const author = await makeUser();
+      const { issue } = await create(author.id, { photos: [{ url: CLOUDINARY_URL }] });
+
+      await db.delete(issues).where(eq(issues.id, issue.id));
+
+      const photoRepository = new PhotoRepository();
+      expect(await photoRepository.findOriginalsByIssueIds([issue.id])).toEqual(new Map());
     });
   });
 
@@ -97,11 +116,7 @@ describe('IssueRepository', () => {
       const found = await repository.findById(issue.id);
 
       expect(found!.id).toBe(issue.id);
-      expect(found!.user).toEqual({
-        id: author.id,
-        name: 'Ada Lovelace',
-        profileImageId: null,
-      });
+      expect(found!.user).toEqual({ id: author.id, name: 'Ada Lovelace' });
       expect(found!.upvoteCount).toBe(1);
     });
 
