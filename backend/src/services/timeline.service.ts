@@ -1,59 +1,61 @@
 // backend/src/services/timeline.service.ts
-import { PostUpdateDTO } from '@civickit/shared/src/types/api';
-import { TimelineRepository } from '../repositories/timeline.repository';
-import { ImageRepository } from '../repositories/image.repository';
-import { Image } from '@civickit/shared/src/types/image';
+
+import { IssueStatus, PostUpdateDTO } from '@civickit/shared';
 import { AuthRepository } from '../repositories/auth.repository';
-import { AuthService } from './auth.service';
+import { PhotoRepository } from '../repositories/photo.repository';
+import { TimelineRepository } from '../repositories/timeline.repository';
 
 export class TimelineService {
-  constructor(private readonly timelineRepository: TimelineRepository, private imageRepository: ImageRepository, private readonly authRepository: AuthRepository) { }
+  constructor(
+    private readonly timelineRepository: TimelineRepository,
+    private readonly photoRepository: PhotoRepository,
+    private readonly authRepository: AuthRepository,
+  ) { }
 
   async postUpdate(data: PostUpdateDTO, issueId: string, userId: string) {
-    try {
-      const update = await this.timelineRepository.createUpdate({ ...data, issueId, userId });
-      const extendedUpdates = await this.getExtendedInfo([update])
-      return extendedUpdates[0]
-    } catch (error) {
-      throw error;
-    }
+    const { entry, photos } = await this.timelineRepository.createWithPhotos({
+      message: data.message,
+      status: data.status,
+      photos: data.photos,
+      createdAt: data.createdAt,
+      issueId,
+      userId,
+    });
+
+    return { ...entry, photos };
   }
 
-  private async getUpdateImages(imageIds: string[]) {
-    let images: Image[] = []
-    for (let i = 0; i < imageIds.length; i++) {
-      const image = await this.imageRepository.findById(imageIds[i])
-      if (image != null) {
-        images[i] = image
-      }
-    }
-    return images
+  /**
+   * Server-authored entries. `entryType` is what the client reads to decide an
+   * entry is unattributed -- it replaces matching on the message string, which
+   * marked the whole timeline anonymous whenever no match was found.
+   */
+  async postSystemEntry(
+    data: { message: string; status: IssueStatus; createdAt?: Date },
+    issueId: string,
+    userId: string,
+  ) {
+    const { entry, photos } = await this.timelineRepository.createWithPhotos({
+      ...data,
+      entryType: 'SYSTEM_REPORT_SUBMITTED',
+      issueId,
+      userId,
+    });
+
+    return { ...entry, photos };
   }
 
-  private async getExtendedInfo(entries: any[]) {
-    let newUp: any[] = []
-    for (let i = 0; i < entries.length; i++) {
-      newUp[i] = {
-        ...entries[i],
-        images: (await this.getUpdateImages(entries[i].imageIds)),
-        userName: (await this.authRepository.findById(entries[i].userId))?.name
-      }
-      delete newUp[i].imageIds
-    }
-    return newUp
+  /** One photo query for the whole page of entries, then a map lookup. */
+  private async attachPhotos<T extends { id: string }>(entries: T[]) {
+    const byEntry = await this.photoRepository.findByTimelineEntryIds(entries.map((e) => e.id));
+    return entries.map((entry) => ({ ...entry, photos: byEntry.get(entry.id) ?? [] }));
   }
-
 
   async getIssueUpdates(issueId: string) {
-    const updates = await this.timelineRepository.findByIssue(issueId)
-    return { updates: await this.getExtendedInfo(updates) }
-
+    return { updates: await this.attachPhotos(await this.timelineRepository.findByIssue(issueId)) };
   }
 
   async getUserUpdates(userId: string) {
-    const updates = await this.timelineRepository.findByUser(userId)
-    return { updates: await this.getExtendedInfo(updates) }
+    return { updates: await this.attachPhotos(await this.timelineRepository.findByUser(userId)) };
   }
-
-
 }

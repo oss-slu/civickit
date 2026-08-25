@@ -2,6 +2,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { TimelineRepository } from '../../timeline.repository';
+import { PhotoRepository } from '../../photo.repository';
 import { makeIssue, makeUser } from '../../../__tests__/integration/factories';
 
 const repository = new TimelineRepository();
@@ -13,14 +14,13 @@ async function anIssueAndUser() {
 }
 
 describe('TimelineRepository', () => {
-  describe('createUpdate', () => {
+  describe('createWithPhotos', () => {
     it('persists an entry against the issue and author', async () => {
       const { author, issue } = await anIssueAndUser();
 
-      const entry = await repository.createUpdate({
+      const { entry } = await repository.createWithPhotos({
         message: 'Crew dispatched',
         status: 'IN_PROGRESS',
-        imageIds: ["id"],
         issueId: issue.id,
         userId: author.id,
       });
@@ -28,30 +28,61 @@ describe('TimelineRepository', () => {
       expect(entry.id).toEqual(expect.any(String));
       expect(entry.message).toBe('Crew dispatched');
       expect(entry.status).toBe('IN_PROGRESS');
-      expect(entry.imageIds).toEqual(["id"]);
+      expect(entry.entryType).toBe('COMMENT');
       expect(entry.issueId).toBe(issue.id);
       expect(entry.userId).toBe(author.id);
       expect(entry.createdAt).toBeInstanceOf(Date);
     });
 
-    it('stores an empty image array when images are omitted', async () => {
+    it('attaches photos to both the entry and its issue', async () => {
       const { author, issue } = await anIssueAndUser();
 
-      const entry = await repository.createUpdate({
+      const { entry, photos } = await repository.createWithPhotos({
+        message: 'Crew dispatched',
+        status: 'IN_PROGRESS',
+        issueId: issue.id,
+        userId: author.id,
+        photos: [{ url: 'https://res.cloudinary.com/demo/image/upload/a.jpg' }],
+      });
+
+      expect(photos).toHaveLength(1);
+      expect(photos[0].timelineEntryId).toBe(entry.id);
+      expect(photos[0].issueId).toBe(issue.id);
+    });
+
+    it('keeps update photos out of the original report photos', async () => {
+      const { author, issue } = await anIssueAndUser();
+
+      await repository.createWithPhotos({
+        message: 'Crew dispatched',
+        status: 'IN_PROGRESS',
+        issueId: issue.id,
+        userId: author.id,
+        photos: [{ url: 'https://res.cloudinary.com/demo/image/upload/a.jpg' }],
+      });
+
+      const photoRepository = new PhotoRepository();
+      expect(await photoRepository.findOriginalsByIssueIds([issue.id])).toEqual(new Map());
+    });
+
+    it('stores no photos when none are given', async () => {
+      const { author, issue } = await anIssueAndUser();
+
+      const { photos } = await repository.createWithPhotos({
         message: 'Acknowledged',
         status: 'ACKNOWLEDGED',
         issueId: issue.id,
         userId: author.id,
       });
 
-      expect(entry.imageIds).toEqual([]);
+      expect(photos).toEqual([]);
     });
 
     it('rejects an entry for an issue that does not exist', async () => {
       const author = await makeUser();
 
       await expect(
-        repository.createUpdate({
+        repository.createWithPhotos({
           message: 'Orphan',
           status: 'REPORTED',
           issueId: 'no-such-issue',
@@ -66,13 +97,13 @@ describe('TimelineRepository', () => {
       const { author, issue } = await anIssueAndUser();
       const otherIssue = await makeIssue(author.id, { title: 'Another issue' });
 
-      await repository.createUpdate({
+      await repository.createWithPhotos({
         message: 'On this issue',
         status: 'IN_PROGRESS',
         issueId: issue.id,
         userId: author.id,
       });
-      await repository.createUpdate({
+      await repository.createWithPhotos({
         message: 'On the other issue',
         status: 'IN_PROGRESS',
         issueId: otherIssue.id,
@@ -97,13 +128,13 @@ describe('TimelineRepository', () => {
       const { author, issue } = await anIssueAndUser();
       const other = await makeUser();
 
-      await repository.createUpdate({
+      await repository.createWithPhotos({
         message: 'By the author',
         status: 'IN_PROGRESS',
         issueId: issue.id,
         userId: author.id,
       });
-      await repository.createUpdate({
+      await repository.createWithPhotos({
         message: 'By someone else',
         status: 'IN_PROGRESS',
         issueId: issue.id,

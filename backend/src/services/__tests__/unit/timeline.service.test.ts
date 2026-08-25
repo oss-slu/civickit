@@ -7,7 +7,7 @@ import { CreateIssueDTO, PostUpdateDTO } from '@civickit/shared/src/types/api';
 import { IssueService } from '../../issue.service';
 import { IssueRepository } from '../../../repositories/issue.repository';
 import { AuthRepository } from '../../../repositories/auth.repository';
-import { ImageRepository } from '../../../repositories/image.repository';
+import { PhotoRepository } from '../../../repositories/photo.repository';
 import { OrgRepository } from '../../../repositories/org.repository';
 import { MembershipRepository } from '../../../repositories/membership.repository';
 
@@ -21,7 +21,7 @@ describe('TimelineService', () => {
     let issueService: IssueService;
     let mockIssueRepository: Mocked<IssueRepository>;
     let mockAuthRepository: Mocked<AuthRepository>;
-    let mockImageRepository: Mocked<ImageRepository>
+    let mockPhotoRepository: Mocked<PhotoRepository>
     let mockOrgRepository: Mocked<OrgRepository>
     let mockMembershipRepository: Mocked<MembershipRepository>
 
@@ -29,13 +29,13 @@ describe('TimelineService', () => {
     beforeEach(() => {
         // Manual mock setup
         mockTimelineRepository = {
-            createUpdate: vi.fn(),
+            createWithPhotos: vi.fn(),
             findByIssue: vi.fn(),
             findByUser: vi.fn(),
         } as unknown as Mocked<TimelineRepository>;
 
         mockIssueRepository = {
-            create: vi.fn(),
+            createWithPhotos: vi.fn(),
             findById: vi.fn(),
             findNearby: vi.fn(),
         } as unknown as Mocked<IssueRepository>;
@@ -46,11 +46,13 @@ describe('TimelineService', () => {
             findNearby: vi.fn(),
         } as unknown as Mocked<AuthRepository>;
 
-        mockImageRepository = {
-            create: vi.fn(),
+        mockPhotoRepository = {
+            createMany: vi.fn(),
             findById: vi.fn(),
-            findNearby: vi.fn(),
-        } as unknown as Mocked<ImageRepository>;
+            findOriginalsByIssueIds: vi.fn(),
+            findByTimelineEntryIds: vi.fn(),
+            softDelete: vi.fn(),
+        } as unknown as Mocked<PhotoRepository>;
 
         mockOrgRepository = {
             findOrgsForIssue: vi.fn(),
@@ -65,9 +67,13 @@ describe('TimelineService', () => {
             findByOrganization: vi.fn(),
         } as unknown as Mocked<MembershipRepository>;
 
-        timelineService = new TimelineService(mockTimelineRepository, mockImageRepository, mockAuthRepository);
-        issueService = new IssueService(mockIssueRepository, mockImageRepository, mockOrgRepository, mockAuthRepository, mockMembershipRepository);
+        timelineService = new TimelineService(mockTimelineRepository, mockPhotoRepository, mockAuthRepository);
+        issueService = new IssueService(mockIssueRepository, mockPhotoRepository, mockOrgRepository, mockAuthRepository, mockMembershipRepository);
         vi.clearAllMocks();
+
+        // After clearAllMocks, or the defaults it wipes leave `.get` on undefined.
+        mockPhotoRepository.findOriginalsByIssueIds.mockResolvedValue(new Map());
+        mockPhotoRepository.findByTimelineEntryIds.mockResolvedValue(new Map());
     });
 
     const makeUpdateInput = (
@@ -75,7 +81,7 @@ describe('TimelineService', () => {
     ): PostUpdateDTO => ({
         message: 'test message 1',
         status: 'ACKNOWLEDGED',
-        imageIds: [],
+        photos: [],
         ...overrides,
     });
 
@@ -89,7 +95,7 @@ describe('TimelineService', () => {
         latitude: 38.627,
         longitude: -90.1994,
         address: "",
-        imageIds: [],
+        photos: [],
         ...overrides,
     });
 
@@ -102,7 +108,7 @@ describe('TimelineService', () => {
                 userId: 'user1',
                 message: 'test message 1',
                 status: 'ACKNOWLEDGED',
-                imageIds: []
+                entryType: 'COMMENT',
             };
             const mockReturn = {
                 issueId: 'issue1',
@@ -111,11 +117,14 @@ describe('TimelineService', () => {
                 userId: 'user1',
                 message: 'test message 1',
                 status: 'ACKNOWLEDGED',
-                images: [],
-                userName: undefined
+                entryType: 'COMMENT',
+                photos: [],
             };
 
-            mockTimelineRepository.createUpdate.mockResolvedValueOnce(mockUpdate as any);
+            mockTimelineRepository.createWithPhotos.mockResolvedValueOnce({
+                entry: mockUpdate,
+                photos: [],
+            } as any);
 
             const result = await timelineService.postUpdate(
                 makeUpdateInput(),
@@ -130,7 +139,7 @@ describe('TimelineService', () => {
 
         it('should rethrow other errors', async () => {
             const error = new Error('Random error');
-            mockTimelineRepository.createUpdate.mockRejectedValueOnce(error);
+            mockTimelineRepository.createWithPhotos.mockRejectedValueOnce(error);
 
             await expect(timelineService.postUpdate(makeUpdateInput(), 'issue1', 'user1')).rejects.toThrow('Random error');
         });
@@ -146,7 +155,8 @@ describe('TimelineService', () => {
                 userId: 'user1',
                 message: 'test message 1',
                 status: 'ACKNOWLEDGED',
-                imageIds: []
+                entryType: 'COMMENT',
+                userName: 'Ada',
             }];
             const mockReturn = [{
                 issueId: 'issue1',
@@ -155,8 +165,9 @@ describe('TimelineService', () => {
                 userId: 'user1',
                 message: 'test message 1',
                 status: 'ACKNOWLEDGED',
-                images: [],
-                userName: undefined
+                entryType: 'COMMENT',
+                userName: 'Ada',
+                photos: [],
             }];
             mockTimelineRepository.findByIssue.mockResolvedValue(mockUpdate as any);
             const result = await timelineService.getIssueUpdates(mockIssue.id)
@@ -173,8 +184,8 @@ describe('TimelineService', () => {
                 userId: 'user1',
                 message: 'test message 1',
                 status: 'ACKNOWLEDGED',
-                imageIds: [],
-                userName: undefined
+                entryType: 'COMMENT',
+                userName: 'Ada',
             }];
 
 
@@ -185,8 +196,9 @@ describe('TimelineService', () => {
                 userId: 'user1',
                 message: 'test message 1',
                 status: 'ACKNOWLEDGED',
-                images: [],
-                userName: undefined
+                entryType: 'COMMENT',
+                userName: 'Ada',
+                photos: [],
             }];
             mockTimelineRepository.findByUser.mockResolvedValue(mockUpdate as any);
             const result = await timelineService.getUserUpdates(mockUser.id)

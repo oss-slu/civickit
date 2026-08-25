@@ -5,13 +5,12 @@ import { TimelineRepository } from '../repositories/timeline.repository';
 import { IssueController } from './issue.controller';
 import { IssueService } from '../services/issue.service';
 import { IssueRepository } from '../repositories/issue.repository';
-import { ImageRepository } from '../repositories/image.repository';
+import { PhotoRepository } from '../repositories/photo.repository';
 import { AuthRepository } from '../repositories/auth.repository';
-import { Image } from '@civickit/shared';
 import { OrgRepository } from '../repositories/org.repository';
 import { MembershipRepository } from '../repositories/membership.repository';
 
-const imageRepository = new ImageRepository()
+const photoRepository = new PhotoRepository()
 const issueRepository = new IssueRepository()
 const timelineRepository = new TimelineRepository()
 const orgRepository = new OrgRepository()
@@ -19,8 +18,10 @@ const authRepository = new AuthRepository()
 const membershipRepository = new MembershipRepository()
 
 
-const issueService = new IssueService(issueRepository, imageRepository, orgRepository, authRepository, membershipRepository);
-const timelineService = new TimelineService(timelineRepository, imageRepository, authRepository);
+const issueService = new IssueService(
+  issueRepository, photoRepository, orgRepository, authRepository, membershipRepository,
+);
+const timelineService = new TimelineService(timelineRepository, photoRepository, authRepository);
 
 
 export class TimelineController {
@@ -33,10 +34,10 @@ export class TimelineController {
       //update status of issue
       await issueService.updateStatus(String(req.params.issueId), req.body.status);
       //add an entry to the timeline
+      // Photos carry their entry id from the insert, so there is nothing to
+      // patch up afterwards.
       const result = await timelineService.postUpdate(req.body, String(issueId), userId);
-      result.images.forEach((image: Image) => {
-        imageRepository.updateSource(image.id, { source: "TIMELINE_ENTRY", sourceId: result.id })
-      })
+
       res.status(201).json(result);
 
     } catch (error: any) {
