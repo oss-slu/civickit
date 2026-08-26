@@ -216,7 +216,7 @@ export default function IssueCreationScreen() {
             }
 
 
-            // Step 2: Send issue data with image URLs to backend
+            // Step 2: Send the issue and its photos to the backend as one request
             const requestBody = {
                 title,
                 description,
