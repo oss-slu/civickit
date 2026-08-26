@@ -10,17 +10,10 @@
       "breakpoints": true
     },
     {
-      "idx": 1,
+      "idx": 3,
       "version": "7",
-      "when": 1787631841819,
-      "tag": "0001_drop_legacy_image_columns",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1787631864343,
-      "tag": "0002_photo_storage",
+      "when": 1787759303533,
+      "tag": "0003_breezy_domino",
       "breakpoints": true
     }
   ]

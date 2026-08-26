@@ -9,6 +9,11 @@ export {
 } from './enums/issue'
 
 export {
+    PhotoSource
+} from './enums/image'
+
+
+export {
     OrgType,
     OrgStatus,
     OrgRole,

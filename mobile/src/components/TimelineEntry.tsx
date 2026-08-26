@@ -21,6 +21,7 @@ export default function TimelineEntry({ timelineEntry, issueCategory = "OTHER", 
         pictures = timelineEntry.photos.map((photo: any, index: number) =>
             <Image source={{ uri: photo.url }} key={index} style={styles.picture} />)
     }
+
     return (
         <View style={styles.container}>
 
@@ -143,7 +144,7 @@ const styles = StyleSheet.create({
     },
     leftContainter: {
         flexDirection: "column",
-        alignItems: "center"
+        alignItems: "center",
     },
     dot: {
         height: size.xxl,
@@ -184,6 +185,6 @@ const styles = StyleSheet.create({
     picture: {
         width: size.x4l,
         height: size.x4l,
-        borderRadius: borderRadius.lg
+        borderRadius: borderRadius.lg,
     }
 })

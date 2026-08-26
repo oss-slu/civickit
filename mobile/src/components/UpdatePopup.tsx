@@ -60,8 +60,6 @@ export default function UpdatePopup({ issue, setIssue }: any) {
         }
     }
 
-    console.log(status)
-
     const handleSubmitUpdate = async () => {
         let submitMessage = message
         //handle cases with no message
@@ -167,7 +165,6 @@ export default function UpdatePopup({ issue, setIssue }: any) {
         setStatus(dbFormatted(status))
     }
     const clearUpdateForm = () => {
-        console.log("!")
         setStatus(null)
         setImages([])
         setMessage("")

@@ -20,7 +20,7 @@ import Button from '../../components/Button';
 import WrapperButton from '../../components/WrapperButton';
 import SelectedImage from '../../components/SelectedImage';
 import ModalDropdown from '../../components/ModalDropdown';
-import { NetworkError, imagesApi, issuesApi } from '../../api';
+import { NetworkError, issuesApi } from '../../api';
 import { ImagesContext, PhotoMetadataContext, UserLocationContext, AddressContext, TitleContext, CategoryContext, DescriptionContext, FormStartedContext } from '../../contexts/CreationFormContexts';
 import { userLocation } from '../../types/userLocation';
 import { CreatePhotoDTO, PhotoMetadataSource } from '@civickit/shared';
@@ -206,6 +206,8 @@ export default function IssueCreationScreen() {
                     );
 
                     performanceLog.times.imageUploadMs = Date.now() - imageUploadStartTime;
+
+
                 } catch (uploadError) {
                     setIsLoading(false);
                     navigation.push('Error', { errorMessage: 'Image upload to Cloudinary failed' });
@@ -213,8 +215,7 @@ export default function IssueCreationScreen() {
                 }
             }
 
-
-            // Step 2: Send the issue and its photos to the backend as one request
+            // Step 2: Send issue data with image URLs to backend
             const requestBody = {
                 title,
                 description,

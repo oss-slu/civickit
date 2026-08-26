@@ -37,7 +37,6 @@ export class TimelineController {
       // Photos carry their entry id from the insert, so there is nothing to
       // patch up afterwards.
       const result = await timelineService.postUpdate(req.body, String(issueId), userId);
-
       res.status(201).json(result);
 
     } catch (error: any) {

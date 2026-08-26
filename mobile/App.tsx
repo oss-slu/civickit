@@ -54,7 +54,7 @@ const Stack = createNativeStackNavigator<StackParams>();
 function MainTabNavigator() {
   const { width, height } = Dimensions.get("window")
   const { role } = useAuth()
-  console.log(role)
+  console.log("Role:", role)
   //issue updating form contexts
   const [images, setImages] = useState<string[]>([]);
   const [photoMetadata, setPhotoMetadata] = useState<PhotoMetadata[]>([]);

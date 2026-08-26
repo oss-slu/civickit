@@ -326,8 +326,8 @@ describe('IssueService', () => {
   describe('getIssuesByUser', () => {
     it('should pass the repository rows through with their upvoteCount', async () => {
       const mockIssues = [
-        { id: 'issue-1', upvoteCount: 5 },
-        { id: 'issue-2', upvoteCount: 0 },
+        { id: 'issue-1', upvoteCount: 5, imageIds: [] },
+        { id: 'issue-2', upvoteCount: 0, imageIds: [] },
       ];
       mockIssueRepository.findByUser.mockResolvedValue(mockIssues as any);
 
@@ -344,7 +344,7 @@ describe('IssueService', () => {
   describe('getIssuesByUserUpvotes', () => {
     it('should call findByUpvoter exactly once and never call findById', async () => {
       const mockIssues = [
-        { id: 'issue-1', upvoteCount: 2 },
+        { id: 'issue-1', upvoteCount: 2, imageIds: [] },
       ];
       mockIssueRepository.findByUpvoter.mockResolvedValue(mockIssues as any);
 
@@ -370,7 +370,7 @@ describe('IssueService', () => {
     });
 
     it('should pass a valid status through to the repository', async () => {
-      const updated = { id: 'issue-1', status: 'RESOLVED' };
+      const updated = { id: 'issue-1', status: 'RESOLVED', imageIds: [] };
       (mockIssueRepository.updateStatus as any).mockResolvedValue(updated);
 
       const result = await issueService.updateStatus('issue-1', 'RESOLVED');
@@ -405,7 +405,7 @@ describe('IssueService', () => {
   // when it did not apply, so the service reads back to say why.
   describe('claimIssue', () => {
     it('claims an issue that nobody holds', async () => {
-      const claimed = { id: 'issue-1', claimedById: 'user-1' };
+      const claimed = { id: 'issue-1', claimedById: 'user-1', imageIds: [] };
       mockIssueRepository.claimIssue.mockResolvedValue(claimed as any);
 
       const result = await issueService.claimIssue('issue-1', 'user-1');

@@ -14,6 +14,8 @@ export default function Timeline({ entries, issueCategory = 'OTHER' }: any) {
         [entries]
     );
 
+    //finds earliest "Report Submitted" and makes everything submitted before that anonymous
+    const reportSubmitted = sorted.findLastIndex(entry => entry.message == 'Report Submitted')
     return (
         <View style={styles.timeline}>
             {sorted.map((entry: any, i: number) => (

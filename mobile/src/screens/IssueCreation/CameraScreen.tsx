@@ -127,6 +127,7 @@ export default function CameraScreen({ route }: Props) {
                 allowsMultipleSelection: true,
                 selectionLimit: MAX_PHOTOS - images.length,
             })
+            // console.log(results)
             if (!results.canceled) {
                 const resultList = results.assets.map(r => r.uri)
                 // Dimensions come from the asset, which already has orientation

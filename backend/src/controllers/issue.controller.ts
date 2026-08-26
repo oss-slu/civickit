@@ -74,6 +74,9 @@ export class IssueController {
     } catch (error) {
       next(error);
     }
+
+
+
   }
 
   async getNearbyIssues(req: Request, res: Response, next: NextFunction) {

@@ -116,6 +116,7 @@ export function removeUpvote(issueId: string): Promise<UpvoteState> {
 }
 
 export function addTimelineEntry(issueId: string, timelineEntry: PostUpdateDTO): Promise<TimelineEntry> {
+
     return apiFetch(`/issues/${encodeURIComponent(issueId)}/update`, {
         method: 'POST',
         body: timelineEntry,

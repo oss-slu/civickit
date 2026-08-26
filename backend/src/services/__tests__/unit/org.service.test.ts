@@ -69,7 +69,7 @@ describe('OrgService', () => {
 
   describe('findIssuesForOrg', () => {
     it('should pass the organization id through to the repository', async () => {
-      const issues = [{ id: 'issue-1' }];
+      const issues = [{ id: 'issue-1', imageIds: [] }];
       mockOrgRepository.findIssuesForOrg.mockResolvedValue(issues as any);
 
       const mockReturn = [{
@@ -81,6 +81,7 @@ describe('OrgService', () => {
 
       const result = await orgService.findIssuesForOrg('org-1');
 
+      expect(result).toEqual(mockReturn);
       expect(result).toEqual(mockReturn);
       expect(mockOrgRepository.findIssuesForOrg).toHaveBeenCalledWith('org-1');
     });

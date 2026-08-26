@@ -133,6 +133,7 @@ describe('TimelineService', () => {
             );
 
             expect(result).toEqual(mockReturn);
+            expect(result).toEqual(mockReturn);
 
         });
 
@@ -173,6 +174,7 @@ describe('TimelineService', () => {
             const result = await timelineService.getIssueUpdates(mockIssue.id)
 
             expect(result.updates).toEqual(mockReturn);
+            expect(result.updates).toEqual(mockReturn);
         });
 
         it('should return updates attached to user1', async () => {
@@ -202,6 +204,7 @@ describe('TimelineService', () => {
             }];
             mockTimelineRepository.findByUser.mockResolvedValue(mockUpdate as any);
             const result = await timelineService.getUserUpdates(mockUser.id)
+            expect(result.updates).toEqual(mockReturn);
             expect(result.updates).toEqual(mockReturn);
         });
 
