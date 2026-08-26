@@ -31,6 +31,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import cityBounds from '../../../assets/shapes/stl_boundary_inverted.json'
 import { isPointInPolygon } from 'geolib';
 import { useLocation } from '../../contexts/LocationContext';
+import { getDevLocationOverride } from '../../config/devLocation';
 
 export default function IssueCreationScreen() {
     const { images, setImages } = useContext(ImagesContext);
@@ -61,6 +62,16 @@ export default function IssueCreationScreen() {
     //get location
     useEffect(() => {
         (async () => {
+            //this screen reads the GPS directly rather than through
+            //LocationContext, so it needs the dev override too -- otherwise
+            //bounds checking here would still use the real device location and
+            //keep submission disabled outside the service area.
+            const override = getDevLocationOverride();
+            if (override) {
+                setDeviceLocation(override);
+                return;
+            }
+
             const { status } = await Location.requestForegroundPermissionsAsync();
             if (status !== 'granted') {
                 alert('Location permission denied');

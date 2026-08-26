@@ -3,6 +3,7 @@ import { Children, createContext, useContext, useEffect, useState } from "react"
 import { userLocation } from "../types/userLocation";
 import { Alert } from "react-native";
 import * as Location from 'expo-location'
+import { getDevLocationOverride } from "../config/devLocation";
 import LoadingScreen from "../screens/Misc/LoadingScreen";
 import { MessageView } from "../components/MessageView";
 
@@ -76,14 +77,22 @@ export const LocationProvider = ({ children }: any) => {
             checkForErrors(null, false)
         }
 
+        //a dev override stands in for the device entirely, so a developer
+        //outside the service area still gets a populated feed. Null in release
+        //builds and whenever the env vars are unset.
+        const override = getDevLocationOverride()
+        if (override) {
+            setLocation(override)
+            checkForErrors(override, true)
+            return
+        }
+
         //get lat and long
         const { coords } = await Location.getCurrentPositionAsync()
-        // console.log(coords)
 
         if (coords) {
             const { latitude, longitude } = coords;
             setLocation({ latitude: latitude, longitude: longitude })
-            // setLocation({ latitude: 34.7465, longitude: -92.2896 })
             checkForErrors({ latitude: latitude, longitude: longitude }, true)
         }
     }
