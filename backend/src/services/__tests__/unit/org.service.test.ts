@@ -69,7 +69,7 @@ describe('OrgService', () => {
 
   describe('findIssuesForOrg', () => {
     it('should pass the organization id through to the repository', async () => {
-      const issues = [{ id: 'issue-1', imageIds: [] }];
+      const issues = [{ id: 'issue-1' }];
       mockOrgRepository.findIssuesForOrg.mockResolvedValue(issues as any);
 
       const mockReturn = [{

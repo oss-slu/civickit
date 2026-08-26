@@ -131,8 +131,6 @@ describe('TimelineService', () => {
                 'issue1',
                 'user1'
             );
-
-            expect(result).toEqual(mockReturn);
             expect(result).toEqual(mockReturn);
 
         });
@@ -173,7 +171,6 @@ describe('TimelineService', () => {
             mockTimelineRepository.findByIssue.mockResolvedValue(mockUpdate as any);
             const result = await timelineService.getIssueUpdates(mockIssue.id)
 
-            expect(result.updates).toEqual(mockReturn);
             expect(result.updates).toEqual(mockReturn);
         });
 
