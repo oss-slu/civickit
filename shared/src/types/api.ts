@@ -1,5 +1,4 @@
 // shared/src/types/api.ts
-import { PhotoSource } from "../enums/image";
 import { IssueCategory, IssueStatus } from "../enums/issue";
 import { BoundarySource, OrgRole, OrgStatus, OrgTier, OrgType } from "../enums/organization";
 import { PhotoMetadataSource } from "../utils/photoMetadata";
