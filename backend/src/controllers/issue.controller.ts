@@ -2,14 +2,26 @@
 import { Request, Response, NextFunction } from 'express';
 import { IssueService } from '../services/issue.service';
 import { IssueRepository } from '../repositories/issue.repository';
-import { PostUpdateDTO } from '@civickit/shared';
+
 import { TimelineService } from '../services/timeline.service';
 import { TimelineRepository } from '../repositories/timeline.repository';
 import { AuthRepository } from '../repositories/auth.repository';
+import { PhotoRepository } from '../repositories/photo.repository';
+import { OrgRepository } from '../repositories/org.repository';
+import { MembershipRepository } from '../repositories/membership.repository';
 
-const issueRepository = new IssueRepository();
-const issueService = new IssueService(issueRepository);
-const timelineService = new TimelineService(new TimelineRepository(), new AuthRepository);
+const photoRepository = new PhotoRepository()
+const issueRepository = new IssueRepository()
+const orgRepository = new OrgRepository()
+const authRepository = new AuthRepository()
+const membershipRepository = new MembershipRepository()
+
+const issueService = new IssueService(
+  issueRepository, photoRepository, orgRepository, authRepository, membershipRepository,
+);
+const timelineService = new TimelineService(
+  new TimelineRepository(), photoRepository, authRepository,
+);
 
 // Parses an optional `limit` query param, clamped to [1, 200], defaulting to 100.
 function parseLimit(raw: unknown): number {
@@ -39,31 +51,26 @@ export class IssueController {
       if (isNaN(latitude) || isNaN(longitude)) {
         return res.status(400).json({ error: 'Invalid coordinates' });
       }
+
       const issue = await issueService.createIssue(
+        { ...req.body, latitude, longitude },
+        userId,
+      );
+
+      // Seeds the issue's timeline. The entry displays the issue's original
+      // photos rather than owning copies of them -- see "Timeline" in
+      // docs/design-decisions/photo-storage.md.
+      await timelineService.postSystemEntry(
         {
-          ...req.body,
-          latitude: parseFloat(req.body.latitude),
-          longitude: parseFloat(req.body.longitude),
-        }, userId);
+          message: 'Report Submitted',
+          createdAt: new Date(issue.createdAt),
+          status: issue.status,
+        },
+        String(issue.id),
+        userId,
+      );
+
       res.status(201).json(issue);
-
-      // Seed the issue's timeline. Posted after the response, as on main --
-      // see "Known gaps" in plans/013 before changing that ordering.
-      const reported: PostUpdateDTO = {
-        message: "Report Submitted",
-        createdAt: new Date(issue.createdAt),
-        status: issue.status,
-        images: issue.images
-      }
-      await timelineService.postUpdate(reported, String(issue.id), userId);
-
-      const photoTaken: PostUpdateDTO = {
-        message: "Photo Taken",
-        createdAt: issue.photoTakenAt != null ? issue.photoTakenAt : issue.createdAt,
-        status: issue.status,
-        images: issue.images
-      }
-      await timelineService.postUpdate(photoTaken, String(issue.id), userId);
     } catch (error) {
       next(error);
     }

@@ -38,14 +38,19 @@ export function issueInput(overrides: Partial<CreateIssueDTO> = {}): CreateIssue
     category: 'POTHOLE',
     status: 'REPORTED',
     address: '100 Main St',
-    images: [],
+    photos: [],
     ...ORIGIN,
     ...overrides,
   };
 }
 
 export async function makeIssue(userId: string, overrides: Partial<CreateIssueDTO> = {}) {
-  return issueRepository.create({ ...issueInput(overrides), userId });
+  const { issue } = await issueRepository.createWithPhotos({
+    ...issueInput(overrides),
+    userId,
+    status: 'REPORTED',
+  });
+  return issue;
 }
 
 // Fences are written as WKT and stored through ST_Multi, so a plain POLYGON

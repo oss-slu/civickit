@@ -7,6 +7,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { AppError } from '../../../utils/errors';
 import { UserRole } from '@civickit/shared/src/enums/user';
+import { PhotoRepository } from '../../../repositories/photo.repository';
 
 // mock repository
 vi.mock('../../../src/repositories/login.repository');
@@ -29,13 +30,18 @@ vi.mock('jsonwebtoken', () => ({
 describe('LoginService', () => {
     let loginService: LoginService;
     let mockLoginRepository: Mocked<LoginRepository>;
+    let mockPhotoRepository: Mocked<PhotoRepository>
 
     beforeEach(() => {
         mockLoginRepository = {
             findByEmail: vi.fn()
         } as unknown as Mocked<LoginRepository>;
+        mockPhotoRepository = {
+            create: vi.fn(),
+            findById: vi.fn(),
+        } as unknown as Mocked<PhotoRepository>;
 
-        loginService = new LoginService(mockLoginRepository);
+        loginService = new LoginService(mockLoginRepository, mockPhotoRepository);
     });
 
     const date = new Date();
@@ -45,7 +51,7 @@ describe('LoginService', () => {
         email: 'test@example.com',
         name: 'Test User',
         passwordHash: 'hashedPassword',
-        profileImage: '',
+        profilePhotoId: null,
         createdAt: date,
         updatedAt: date,
         role: role
@@ -83,7 +89,7 @@ describe('LoginService', () => {
                 name: 'Test User',
                 email: 'test@example.com',
                 createdAt: date.toString(),
-                profileImage: '',
+                profilePhoto: null,
                 role: "REPORTER"
             },
         });

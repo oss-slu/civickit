@@ -19,12 +19,17 @@ export {
 export {
     ApiResponse,
     CreateIssueDTO,
+    CreatePhotoDTO,
     PostUpdateDTO,
     LoginDTO,
     LoginResponse,
     CreateAuthDTO,
     GetNearbyIssueResponse
 } from './types/api'
+
+export {
+    Photo
+} from './types/photo'
 
 export {
     Event,
@@ -43,7 +48,7 @@ export {
 export {
     PhotoMetadata,
     PhotoMetadataSource,
-    ResolvedPhotoMetadata,
     extractPhotoMetadataFromExif,
-    resolvePhotoMetadata
+    resolveIssueLocation,
+    resolvePhotoTakenAt
 } from './utils/photoMetadata'

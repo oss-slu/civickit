@@ -7,10 +7,14 @@
 import { describe, beforeEach, vi, it, expect, Mocked } from 'vitest';
 import { OrgService } from '../../org.service';
 import { OrgRepository } from '../../../repositories/org.repository';
+import { PhotoRepository } from '../../../repositories/photo.repository';
+import { IssueRepository } from '../../../repositories/issue.repository';
 
 describe('OrgService', () => {
   let orgService: OrgService;
   let mockOrgRepository: Mocked<OrgRepository>;
+  let mockPhotoRepository: Mocked<PhotoRepository>
+  let mockIssueRepository: Mocked<IssueRepository>
 
   beforeEach(() => {
     mockOrgRepository = {
@@ -18,7 +22,23 @@ describe('OrgService', () => {
       findIssuesForOrg: vi.fn(),
     } as unknown as Mocked<OrgRepository>;
 
-    orgService = new OrgService(mockOrgRepository);
+    mockPhotoRepository = {
+      createMany: vi.fn(),
+      findById: vi.fn(),
+      findOriginalsByIssueIds: vi.fn().mockResolvedValue(new Map()),
+      findByTimelineEntryIds: vi.fn().mockResolvedValue(new Map()),
+      softDelete: vi.fn(),
+    } as unknown as Mocked<PhotoRepository>;
+
+    mockIssueRepository = {
+      createWithPhotos: vi.fn(),
+      findById: vi.fn(),
+      findNearby: vi.fn(),
+    } as unknown as Mocked<IssueRepository>;
+
+
+
+    orgService = new OrgService(mockOrgRepository, mockPhotoRepository, mockIssueRepository);
   });
 
   describe('findOrgsForIssue', () => {
@@ -52,9 +72,16 @@ describe('OrgService', () => {
       const issues = [{ id: 'issue-1' }];
       mockOrgRepository.findIssuesForOrg.mockResolvedValue(issues as any);
 
+      const mockReturn = [{
+        claimedByOrg: null,
+        claimedByUser: null,
+        id: "issue-1",
+        photos: [],
+      }]
+
       const result = await orgService.findIssuesForOrg('org-1');
 
-      expect(result).toEqual(issues);
+      expect(result).toEqual(mockReturn);
       expect(mockOrgRepository.findIssuesForOrg).toHaveBeenCalledWith('org-1');
     });
 

@@ -1,7 +1,7 @@
 // mobile/src/screens/IssueCreation/IssueCreationScreen.tsx
 import * as Location from 'expo-location';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { uploadImagesToCloudinary } from '../../services/cloudinaryService';
+import { uploadPhotos } from '../../services/cloudinaryService';
 import { View, StyleSheet, ScrollView, TextInput, Text, FlatList, useWindowDimensions, Dimensions } from 'react-native';
 import { useFocusEffect, useLocale, useNavigation, } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack'
@@ -13,23 +13,26 @@ import { CaretDownIcon, PictureIcon, PlusIcon, WarningIcon } from '../../compone
 import { IssueCategoryArray } from '../../types/IssueCategoryArray';
 import { extractResolvedLocationMetadata, formatResolvedAddress, ResolvedLocationMetadata } from '../../hooks/useResolvedAddress';
 import { useAuth } from '../../contexts/AuthContext';
-import { resolvePhotoMetadata } from '../../utils/photoMetadata';
+import { resolveIssueLocation, resolvePhotoTakenAt } from '@civickit/shared';
 
 import LoadingScreen from '../Misc/LoadingScreen';
 import Button from '../../components/Button';
 import WrapperButton from '../../components/WrapperButton';
 import SelectedImage from '../../components/SelectedImage';
 import ModalDropdown from '../../components/ModalDropdown';
-import { NetworkError, issuesApi } from '../../api';
-import { ImagesContext, PhotoMetadataContext, UserLocationContext, AddressContext, TitleContext, CategoryContext, DescriptionContext, FormStartedContext } from '../../contexts/FormContexts';
+import { NetworkError, imagesApi, issuesApi } from '../../api';
+import { ImagesContext, PhotoMetadataContext, UserLocationContext, AddressContext, TitleContext, CategoryContext, DescriptionContext, FormStartedContext } from '../../contexts/CreationFormContexts';
 import { userLocation } from '../../types/userLocation';
-import { PhotoMetadataSource } from '../../utils/photoMetadata';
+import { CreatePhotoDTO, PhotoMetadataSource } from '@civickit/shared';
+import { MAX_PHOTOS } from '../../constants/photos';
 import { useNearbyIssues } from '../../contexts/NearbyIssuesContext';
 import SelectedImageGallery from '../../components/SelectedImageGallery';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import cityBounds from '../../../assets/shapes/stl_boundary_inverted.json'
 import { isPointInPolygon } from 'geolib';
 import { useLocation } from '../../contexts/LocationContext';
+import ImageSelection from '../../components/ImageSelection';
+import { dbFormatted } from '../../utils/dbValues';
 
 export default function IssueCreationScreen() {
     const { images, setImages } = useContext(ImagesContext);
@@ -73,21 +76,21 @@ export default function IssueCreationScreen() {
     useEffect(() => {
         if (!deviceLocation) return;
 
-        const fallbackTakenAt = new Date().toISOString();
-        const resolved = resolvePhotoMetadata(photoMetadata, { ...deviceLocation, takenAt: fallbackTakenAt });
+        // Named `resolved` rather than `location`, which is state in this component.
+        const resolved = resolveIssueLocation(photoMetadata, deviceLocation);
 
         setLocation({ latitude: resolved.latitude, longitude: resolved.longitude });
+        setLocationSource(resolved.locationSource);
+        setLocationMetadata({});
+        setAddress(resolved.locationSource === 'exif' ? 'Detecting photo location...' : 'Detecting phone location...');
+
         const coords = cityBounds.features[0].geometry.coordinates[0][1].map((point) => {
             return {
                 latitude: point[1],
                 longitude: point[0]
-            }
+            };
         })
-        setInBounds(isPointInPolygon({ latitude: resolved.latitude, longitude: resolved.longitude }, coords))
-
-        setLocationSource(resolved.locationSource);
-        setLocationMetadata({});
-        setAddress(resolved.locationSource === 'exif' ? 'Detecting photo location...' : 'Detecting phone location...');
+        setInBounds(isPointInPolygon({ latitude: resolved.latitude, longitude: resolved.longitude }, coords));
 
         (async () => {
             const geocode = await Location.reverseGeocodeAsync({
@@ -115,18 +118,9 @@ export default function IssueCreationScreen() {
         }, [setFormStarted])
     )
 
-    const onImageDeletePressed = (image: any) => {
-        const imageIndex = images.indexOf(image);
-        setImages(
-            images.filter(i => i != image)
-        )
-        if (imageIndex >= 0) {
-            setPhotoMetadata(photoMetadata.filter((_, index) => index !== imageIndex))
-        }
-    }
 
     const handleSetCategory = (issueCategory: any) => {
-        setCategory(issueCategory.replace(/ /g, "_").toUpperCase())
+        setCategory(dbFormatted(issueCategory))
     }
 
     //determine if ready to submit
@@ -168,29 +162,14 @@ export default function IssueCreationScreen() {
         setDescription("")
         setFormStarted(false)
 
-        navigation.popTo("Camera", {})
+        navigation.popTo("Camera", { source: 'ISSUE_CREATION' })
     }
 
     const handleSubmit = async () => {
         try {
-            const formData = new FormData();
-            formData.append('title', title);
-            formData.append('description', description);
-            formData.append('category', category!);
             const fallbackLocation = deviceLocation ?? location!;
-            const resolvedPhotoMetadata = resolvePhotoMetadata(photoMetadata, {
-                latitude: fallbackLocation.latitude,
-                longitude: fallbackLocation.longitude,
-                takenAt: new Date().toISOString(),
-            });
-
-            formData.append('latitude', resolvedPhotoMetadata.latitude.toString());
-            formData.append('longitude', resolvedPhotoMetadata.longitude.toString());
-            formData.append('address', address);
-            images.forEach(uri => {
-                formData.append('images', { uri: uri, type: 'image/jpeg', name: 'photo.jpg' } as unknown as File);
-            });
-
+            const fallbackTakenAt = new Date().toISOString();
+            const resolvedLocation = resolveIssueLocation(photoMetadata, fallbackLocation);
             if (!authToken) {
                 setIsLoading(false)
                 navigation.push('Error', { errorMessage: 'Not authenticated' });
@@ -206,8 +185,10 @@ export default function IssueCreationScreen() {
 
             setIsLoading(true);
 
-            // Step 1: Upload images to Cloudinary
-            let imageUrls: string[] = [];
+            // Step 1: Upload photos to Cloudinary. Nothing is written to the
+            // database here -- the photos travel with the issue in step 2, so a
+            // failed submit cannot leave orphaned rows behind.
+            let photos: CreatePhotoDTO[] = [];
             if (images.length > 0) {
                 try {
                     const imageUploadStartTime = Date.now();
@@ -216,7 +197,14 @@ export default function IssueCreationScreen() {
                         backgroundColor: palette.ckGreen,
                         color: colors.textContrast
                     });
-                    imageUrls = await uploadImagesToCloudinary(images);
+
+                    photos = await uploadPhotos(
+                        images.map((uri, index) => ({
+                            uri,
+                            ...resolvePhotoTakenAt(photoMetadata[index] ?? {}, fallbackTakenAt),
+                        })),
+                    );
+
                     performanceLog.times.imageUploadMs = Date.now() - imageUploadStartTime;
                 } catch (uploadError) {
                     setIsLoading(false);
@@ -225,22 +213,22 @@ export default function IssueCreationScreen() {
                 }
             }
 
-            // Step 2: Send issue data with image URLs to backend
+
+            // Step 2: Send the issue and its photos to the backend as one request
             const requestBody = {
                 title,
                 description,
                 category: category!,
-                latitude: resolvedPhotoMetadata.latitude,
-                longitude: resolvedPhotoMetadata.longitude,
+                latitude: resolvedLocation.latitude,
+                longitude: resolvedLocation.longitude,
                 address,
                 district: locationMetadata.district,
                 subregion: locationMetadata.subregion,
                 name: locationMetadata.name,
-                locationSource: resolvedPhotoMetadata.locationSource,
-                photoTakenAt: resolvedPhotoMetadata.photoTakenAt,
-                photoTakenAtSource: resolvedPhotoMetadata.photoTakenAtSource,
-                images: imageUrls
+                locationSource: resolvedLocation.locationSource,
+                photos,
             };
+
 
             const backendStartTime = Date.now();
             let issue;
@@ -271,7 +259,7 @@ export default function IssueCreationScreen() {
             setCategory(null)
             setDescription("")
             setFormStarted(false)
-            navigation.replace("Camera", {})
+            navigation.replace("Camera", { source: 'ISSUE_CREATION' })
             navigation.navigate('Issue Details', { issue: issue });
 
         } catch (error: any) {
@@ -306,27 +294,14 @@ export default function IssueCreationScreen() {
                     style={styles.titleTextBox}
                     maxLength={100} />
 
-                <View style={{ ...styles.imageContainer, height: imageHeight + spacing.sm * 2 }}>
-
-                    <View style={{ alignItems: "center" }}>
-                        <PictureIcon color={colors.textMuted}
-                            size={size.imageLg} style={[styles.defaultImage,
-                            images.length > 0 ? { display: "none" } : { display: "flex" }]} />
-
-
-                        <SelectedImageGallery images={images} onDeletePressed={onImageDeletePressed}
-                            width={imageWidth} height={imageHeight} />
-                    </View>
-
-
-
-                    <WrapperButton onPress={() => { navigation.navigate("Camera", { uri: images }) }}
-                        style={images.length < 5 ? styles.photoButton : styles.disabledPhotoButton}
-                        isDisabled={images.length >= 3}>
-                        <PlusIcon color={colors.textContrast}
-                            size={size.xl} />
-                    </WrapperButton>
-                </View>
+                <ImageSelection
+                    images={images}
+                    photoMetadata={photoMetadata}
+                    imageWidth={imageWidth}
+                    imageHeight={imageHeight}
+                    setImages={setImages}
+                    setPhotoMetadata={setPhotoMetadata}
+                />
 
                 <View style={styles.addressContainer}>
                     <Text style={styles.locationLabel}>Location</Text>
@@ -346,7 +321,7 @@ export default function IssueCreationScreen() {
                 <TextInput onChangeText={setDescription}
                     value={description}
                     placeholder='Issue Description...'
-                    style={styles.descTextBox}
+                    style={globalStyles.textBoxBig}
                     multiline
                     numberOfLines={5}
                     maxLength={500}
@@ -389,39 +364,6 @@ const styles = StyleSheet.create({
         padding: spacing.md,
         paddingTop: spacing.xl
     },
-    imageContainer: {
-        backgroundColor: colors.backgroundSecondary,
-        borderRadius: borderRadius.lg,
-        justifyContent: "space-between",
-        alignContent: "center",
-        paddingVertical: spacing.sm,
-        gap: spacing.sm,
-
-    },
-    defaultImage: {
-        alignSelf: "center",
-    },
-    buttonRow: {
-        paddingHorizontal: spacing.md,
-        gap: spacing.md,
-        flex: 1,
-        flexDirection: "row",
-        justifyContent: "center",
-        width: "100%",
-        position: "absolute",
-        bottom: spacing.lg + size.navBarHeight
-    },
-    //WrapperButton contributes borderRadius.full but no dimensions, so without
-    //an explicit size these collapse to the icon's own 32pt box with the glyph
-    //touching every edge. Sized to match the delete button on SelectedImage.
-    photoButton: {
-        backgroundColor: palette.ckBlue,
-        position: "absolute",
-        bottom: spacing.sm,
-        right: spacing.sm,
-        padding: spacing.sm,
-        ...globalStyles.shadow
-    },
     warningContainer: {
         borderRadius: borderRadius.full,
         backgroundColor: palette.ckDark,
@@ -440,14 +382,20 @@ const styles = StyleSheet.create({
         fontWeight: typography.weightMedium,
         fontSize: typography.sizeLg,
     },
-    disabledPhotoButton: {
-        backgroundColor: palette.ckMediumGray,
+    buttonRow: {
+        paddingHorizontal: spacing.md,
+        gap: spacing.md,
+        flex: 1,
+        flexDirection: "row",
+        justifyContent: "center",
+        width: "100%",
         position: "absolute",
-        bottom: spacing.sm,
-        right: spacing.sm,
-        padding: spacing.sm,
-        ...globalStyles.shadow
+        bottom: spacing.lg + size.navBarHeight
     },
+    //WrapperButton contributes borderRadius.full but no dimensions, so without
+    //an explicit size these collapse to the icon's own 32pt box with the glyph
+    //touching every edge. Sized to match the delete button on SelectedImage.
+
     submitButton: {
         fontSize: typography.sizeXxl,
         fontWeight: typography.weightBold,
@@ -461,15 +409,6 @@ const styles = StyleSheet.create({
         fontSize: typography.sizeXxl,
         textAlign: "center"
     },
-    descTextBox: {
-        ...globalStyles.textBox,
-        ...globalStyles.bodyText,
-        minHeight: size.x4l,
-        justifyContent: "flex-start",
-        height: "auto",
-        color: colors.textPrimary,
-    },
-
     addressText: {
         color: colors.textPrimary,
         fontSize: typography.sizeLg

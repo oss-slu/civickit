@@ -1,5 +1,5 @@
 {
-  "id": "6632b2dc-5744-46b8-8148-1d0a90558069",
+  "id": "5e4195e2-d9b4-495f-853d-b1d78eaf19fc",
   "prevId": "5296fc8f-c301-4494-955a-3198c8a6f887",
   "version": "7",
   "dialect": "postgresql",
@@ -459,13 +459,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "images": {
-          "name": "images",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'{}'"
-        },
         "createdAt": {
           "name": "createdAt",
           "type": "timestamp (3)",
@@ -486,19 +479,6 @@
           "notNull": true,
           "default": "'device'"
         },
-        "photoTakenAt": {
-          "name": "photoTakenAt",
-          "type": "timestamp (3)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "photoTakenAtSource": {
-          "name": "photoTakenAtSource",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'device'"
-        },
         "userId": {
           "name": "userId",
           "type": "text",
@@ -507,12 +487,6 @@
         },
         "cityRefNumber": {
           "name": "cityRefNumber",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "claimedById": {
-          "name": "claimedById",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -827,12 +801,6 @@
           "type": "timestamp (3)",
           "primaryKey": false,
           "notNull": true
-        },
-        "profileImage": {
-          "name": "profileImage",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
         }
       },
       "indexes": {
@@ -1024,13 +992,6 @@
           "primaryKey": false,
           "notNull": true,
           "default": "'REPORTED'"
-        },
-        "images": {
-          "name": "images",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'{}'"
         }
       },
       "indexes": {
@@ -1229,12 +1190,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "profileImage": {
-          "name": "profileImage",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "role": {
           "name": "role",
           "type": "Role",
@@ -1262,12 +1217,6 @@
           "primaryKey": false,
           "notNull": true,
           "default": false
-        },
-        "image": {
-          "name": "image",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
         }
       },
       "indexes": {

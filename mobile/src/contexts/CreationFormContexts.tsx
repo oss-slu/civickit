@@ -1,7 +1,7 @@
-//mobile/src/types/FormContexts.tsx
+//mobile/src/types/CreationFormContexts.tsx
 
 import { createContext } from "react"
-import type { PhotoMetadata } from "../utils/photoMetadata"
+import type { PhotoMetadata } from "@civickit/shared"
 import { userLocation } from "../types/userLocation"
 
 export const ImagesContext = createContext<{ images: string[]; setImages: (images: string[]) => void }>({ images: [], setImages: () => { } })

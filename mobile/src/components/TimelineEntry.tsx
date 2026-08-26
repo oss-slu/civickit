@@ -16,12 +16,11 @@ export default function TimelineEntry({ timelineEntry, issueCategory = "OTHER", 
     const HOURS24 = 86400000
     const isNew = new Date().valueOf() - new Date(timelineEntry.createdAt).valueOf() < HOURS24
 
-    let pictures: string[] = []
-    if (timelineEntry.images) {
-        pictures = timelineEntry.images.map((image: any, index: number) =>
-            <Image source={{ uri: image }} key={index} style={styles.picture} />)
+    let pictures: React.ReactElement[] = []
+    if (timelineEntry.photos) {
+        pictures = timelineEntry.photos.map((photo: any, index: number) =>
+            <Image source={{ uri: photo.url }} key={index} style={styles.picture} />)
     }
-
     return (
         <View style={styles.container}>
 
@@ -29,22 +28,22 @@ export default function TimelineEntry({ timelineEntry, issueCategory = "OTHER", 
                 {pictures.length == 0 ?
                     <View style={{
                         ...styles.dot, flexDirection: "row", alignItems: "center", justifyContent: "center",
-                        backgroundColor: statusColors[timelineEntry.status.toLowerCase()].background,
-                        borderColor: statusColors[timelineEntry.status.toLowerCase()].background
+                        backgroundColor: statusColors[timelineEntry.status].background,
+                        borderColor: statusColors[timelineEntry.status].background
                     }}>
                         <CategoryIcon
                             category={issueCategory}
-                            color={statusColors[timelineEntry.status.toLowerCase()].text}
+                            color={statusColors[timelineEntry.status].text}
                             size={typography.sizeXxl}
                             style={{ borderWidth: 0, height: "100%", alignSelf: "center", paddingLeft: 4, paddingTop: 7 }}
                         />
                     </View>
                     :
-                    <Image source={{ uri: timelineEntry.images[0] }}
-                        style={styles.dot} />
+                    <Image source={{ uri: timelineEntry.photos[0].url }}
+                        style={{ ...styles.dot, borderColor: statusColors[timelineEntry.status].background }} />
                 }
 
-                {!last && <View style={{ ...styles.line, height: height, backgroundColor: statusColors[timelineEntry.status.toLowerCase()].background }} />}
+                {!last && <View style={{ ...styles.line, height: height, backgroundColor: statusColors[timelineEntry.status].background }} />}
             </View>
 
 
@@ -94,7 +93,7 @@ export default function TimelineEntry({ timelineEntry, issueCategory = "OTHER", 
                     buttonBody={pictures}
                     buttonStyle={{ backgroundColor: colors.background, flexDirection: "row", columnGap: spacing.xs, flexWrap: "wrap" }}
                     style={styles.modal}>
-                    <ImageGallery images={timelineEntry.images} width={300} height={400} />
+                    <ImageGallery images={timelineEntry.photos.map((photo: any) => photo.url)} width={300} height={400} />
                 </ModalPopUp>
             </View>
 
@@ -153,7 +152,6 @@ const styles = StyleSheet.create({
         marginTop: spacing.xs,
         borderRadius: borderRadius.full,
         borderWidth: 3,
-        borderColor: palette.ckRed,
     },
     timestamp: {
         fontSize: typography.sizeMd,

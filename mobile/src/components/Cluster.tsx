@@ -6,6 +6,7 @@ import Svg, { Path, Circle } from "react-native-svg";
 import { palette, statusColors } from "../styles/theme";
 import { IssueStatusArray } from "../types/IssueStatusArray";
 import { PieChart } from "react-native-gifted-charts";
+import { dbFormatted } from "../utils/dbValues";
 
 
 type record = Record<string, number>;
@@ -28,7 +29,7 @@ export default function Cluster({ issues }: any) {
     useEffect(() => {
         const newStatusNumbers: record = {}
         IssueStatusArray.map((status) =>
-            newStatusNumbers[status.toUpperCase().replace(" ", "_")] = 0
+            newStatusNumbers[dbFormatted(status)] = 0
         )
         issues.map((issue: any) => {
             newStatusNumbers[issue.status] += 1
@@ -36,9 +37,9 @@ export default function Cluster({ issues }: any) {
 
 
         setPieData(IssueStatusArray.map(status => ({
-            value: newStatusNumbers[status.toUpperCase().replace(" ", "_")],
-            color: statusColors[status.toLowerCase().replace(" ", "_")].background,
-            text: newStatusNumbers[status.toUpperCase().replace(" ", "_")],
+            value: newStatusNumbers[dbFormatted(status)],
+            color: statusColors[dbFormatted(status)].background,
+            text: newStatusNumbers[dbFormatted(status)],
             category: status
         })))
 

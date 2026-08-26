@@ -111,7 +111,7 @@ async function createUsers(userTemplates: SeedUserTemplate[]) {
                 email: userTemplate.email,
                 name: userTemplate.name,
                 passwordHash,
-                profileImage: userTemplate.profileImage || null,
+                profilePhotoId: userTemplate.profilePhotoId || null,
             })
             .returning();
 
@@ -133,8 +133,11 @@ async function createIssues(
         // Pick a random user as the creator
         const randomUser = users[crypto.randomInt(users.length)];
 
-        // Upload all images for this issue
-        const imageUrls: string[] = [];
+        // Photos are inserted after the issue so they can carry issueId, so the
+        // uploaded links are collected first. A placeholder is a link like any
+        // other -- the row is what an id points at, which is why the previous
+        // version pushing a placeholder URL into an id array could not work.
+        const photoLinks: { url: string; publicId: string | null }[] = [];
 
         for (const imageFile of template.imageFiles) {
             const imagePath = path.join(IMAGES_DIR, imageFile);
@@ -144,16 +147,22 @@ async function createIssues(
                     log('info', ` Uploading ${imageFile}...`);
                     const imageBuffer = fs.readFileSync(imagePath);
                     const imageUrl = await uploadImageToCloudinary(imageBuffer);
-                    imageUrls.push(imageUrl);
+                    photoLinks.push({ url: imageUrl, publicId: null });
                     log('info', `   Uploaded: ${imageFile}`);
                 } catch (error) {
                     log('warn', `  Failed to upload ${imageFile}: ${error}`);
                     // Use a placeholder URL if upload fails
-                    imageUrls.push(`https://placehold.co/600x400?text=${encodeURIComponent(template.category)}`);
+                    photoLinks.push({
+                        url: `https://placehold.co/600x400?text=${encodeURIComponent(template.category)}`,
+                        publicId: null,
+                    });
                 }
             } else {
                 log('warn', `  Image not found: ${imageFile}, using placeholder`);
-                imageUrls.push(`https://placehold.co/600x400?text=${encodeURIComponent(template.category)}`);
+                photoLinks.push({
+                    url: `https://placehold.co/600x400?text=${encodeURIComponent(template.category)}`,
+                    publicId: null,
+                });
             }
         }
 
@@ -171,14 +180,27 @@ async function createIssues(
                 district: template.district || null,
                 subregion: template.subregion || null,
                 name: template.name || null,
-                images: imageUrls,
                 userId: randomUser.id,
             })
             .returning();
 
+        if (photoLinks.length > 0) {
+            await db.insert(schema.photos).values(
+                photoLinks.map((photo, index) => ({
+                    url: photo.url,
+                    publicId: photo.publicId,
+                    userId: randomUser.id,
+                    issueId: issue.id,
+                    position: index,
+                    photoTakenAt: new Date(),
+                    photoTakenAtSource: 'device' as const,
+                })),
+            );
+        }
+
         await createRandomEndorsements(issue.id, randomUser.id, users);
 
-        log('info', `  Created issue: ${issue.title} (${imageUrls.length} images)`);
+        log('info', `  Created issue: ${issue.title} (${photoLinks.length} photos)`);
     }
 }
 

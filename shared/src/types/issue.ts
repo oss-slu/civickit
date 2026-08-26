@@ -2,6 +2,7 @@
 import { IssueCategory, IssueStatus } from "../enums/issue";
 import { PhotoMetadataSource } from "../utils/photoMetadata";
 import { Org } from "./org";
+import { Photo } from "./photo";
 import { User } from "./user";
 
 export interface Issue {
@@ -16,22 +17,22 @@ export interface Issue {
     district?: string;
     subregion?: string;
     name?: string;
-    images: string[];          // Cloudinary URLs
+    photos: Photo[];
     cityRefNumber?: string;
     upvoteCount: number;
     createdAt: string;         // ISO string (not Date — safe for JSON)
     locationSource?: PhotoMetadataSource;
     photoTakenAt?: string;
     photoTakenAtSource?: PhotoMetadataSource;
-    author: Pick<User, 'id' | 'name' | 'profileImage'>;
+    author: Pick<User, 'id' | 'name'>;
     claimedById: string;
-    claimedByUser?: Pick<User, 'id' | 'name' | 'profileImage'>;
-    claimedByOrg?: Pick<Org, 'id' | 'name' | 'profileImage'>;
+    claimedByUser?: Pick<User, 'id' | 'name'>;
+    claimedByOrg?: Pick<Org, 'id' | 'name' | 'profilePhoto'>;
 }
 
 export interface Upvote {
     id: string
-    user: Pick<User, 'id' | 'name' | 'profileImage'>
+    user: Pick<User, 'id' | 'name'>
     issue: Pick<Issue, 'id' | 'title'>
     createdAt: string
 }

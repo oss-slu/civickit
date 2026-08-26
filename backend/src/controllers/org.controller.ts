@@ -9,9 +9,12 @@ import { OrgRepository } from '../repositories/org.repository';
 import { MembershipRepository } from '../repositories/membership.repository';
 import { OrgService } from '../services/org.service';
 import { MembershipService } from '../services/membership.service';
+import { PhotoRepository } from '../repositories/photo.repository';
 
 const orgRepository = new OrgRepository();
-const orgService = new OrgService(orgRepository);
+const issueRepository = new IssueRepository()
+const photoRepository = new PhotoRepository()
+const orgService = new OrgService(orgRepository, photoRepository, issueRepository);
 
 const membershipRepository = new MembershipRepository()
 const membershipService = new MembershipService(membershipRepository)

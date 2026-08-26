@@ -10,8 +10,8 @@ import CameraScreen from './CameraScreen';
 import { userLocation } from '../../types/userLocation';
 import { useState } from 'react';
 import DuplicateCheckScreen from './DuplicateCheckScreen';
-import { ImagesContext, PhotoMetadataContext, UserLocationContext, AddressContext, TitleContext, CategoryContext, DescriptionContext, FormStartedContext } from '../../contexts/FormContexts';
-import type { PhotoMetadata } from '../../utils/photoMetadata';
+import { ImagesContext, PhotoMetadataContext, UserLocationContext, AddressContext, TitleContext, CategoryContext, DescriptionContext, FormStartedContext } from '../../contexts/CreationFormContexts';
+import type { PhotoMetadata } from '@civickit/shared';
 
 const Stack = createNativeStackNavigator<StackParams>();
 
@@ -52,7 +52,8 @@ export default function IssueCreationNav() {
                 <Stack.Screen name="Camera" component={CameraScreen}
                     options={{
                         headerShown: false,
-                    }} />
+                    }}
+                    initialParams={{ source: 'ISSUE_CREATION' }} />
                 <Stack.Screen name="Issue Details" component={IssueDetailScreen}
                     options={{
                         headerTitle: "",
@@ -84,10 +85,12 @@ export default function IssueCreationNav() {
                         headerBackVisible: false,
                     }} />
             </Stack.Navigator>
+
         </ContextWrapper>
     );
 
 }
+
 
 function ContextWrapper({
     images, setImages,

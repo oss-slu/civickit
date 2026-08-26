@@ -4,14 +4,15 @@ export interface PhotoMetadata {
     latitude?: number;
     longitude?: number;
     takenAt?: string;
-}
-
-export interface ResolvedPhotoMetadata {
-    latitude: number;
-    longitude: number;
-    locationSource: PhotoMetadataSource;
-    photoTakenAt: string;
-    photoTakenAtSource: PhotoMetadataSource;
+    /**
+     * Display dimensions, supplied by the picker or camera asset -- never read
+     * from EXIF. EXIF's ImageWidth/ImageLength are pre-rotation, so correcting
+     * them means interpreting the Orientation tag, and the asset's own numbers
+     * already have that applied.
+     */
+    width?: number;
+    height?: number;
+    orientation?: number;
 }
 
 const toNumber = (value: unknown): number | undefined => {
@@ -56,27 +57,54 @@ export function extractPhotoMetadataFromExif(exif?: Record<string, unknown> | nu
     const resolvedLongitude = longitude === undefined ? undefined : longitudeRef.toUpperCase() === 'W' ? -Math.abs(longitude) : longitude;
     const hasUsableLocation = isUsableCoordinate(resolvedLatitude, resolvedLongitude);
 
+    const Orientation = toNumber(exif.Orientation)
+
     return {
         latitude: hasUsableLocation ? resolvedLatitude : undefined,
         longitude: hasUsableLocation ? resolvedLongitude : undefined,
         takenAt: parseDate(exif.DateTimeOriginal ?? exif.DateTimeDigitized ?? exif.DateTime ?? exif.timestamp),
+        orientation: Orientation
     };
 }
 
-export function resolvePhotoMetadata(
+/**
+ * An issue has one location, taken from the first photo that actually carries
+ * usable coordinates -- not merely the first photo.
+ *
+ * Expect 'device' most of the time. expo-camera does not embed GPS into the
+ * photos it takes, and Android strips GPS from library photos without
+ * ACCESS_MEDIA_LOCATION. See "EXIF GPS availability" in
+ * docs/design-decisions/photo-storage.md.
+ */
+export function resolveIssueLocation(
     photoMetadata: PhotoMetadata[],
-    fallback: { latitude: number; longitude: number; takenAt: string }
-): ResolvedPhotoMetadata {
-    const locationMetadata = photoMetadata.find(
+    fallback: { latitude: number; longitude: number }
+): { latitude: number; longitude: number; locationSource: PhotoMetadataSource } {
+    const located = photoMetadata.find(
         metadata => isUsableCoordinate(metadata.latitude, metadata.longitude)
     );
-    const timestampMetadata = photoMetadata.find(metadata => metadata.takenAt !== undefined);
+
+    if (!located) {
+        return {
+            latitude: fallback.latitude,
+            longitude: fallback.longitude,
+            locationSource: 'device',
+        };
+    }
 
     return {
-        latitude: locationMetadata?.latitude ?? fallback.latitude,
-        longitude: locationMetadata?.longitude ?? fallback.longitude,
-        locationSource: locationMetadata ? 'exif' : 'device',
-        photoTakenAt: timestampMetadata?.takenAt ?? fallback.takenAt,
-        photoTakenAtSource: timestampMetadata ? 'exif' : 'device',
+        latitude: located.latitude!,
+        longitude: located.longitude!,
+        locationSource: 'exif',
     };
+}
+
+/** Each photo has its own capture time. */
+export function resolvePhotoTakenAt(
+    metadata: PhotoMetadata,
+    fallback: string
+): { photoTakenAt: string; photoTakenAtSource: PhotoMetadataSource } {
+    return metadata.takenAt
+        ? { photoTakenAt: metadata.takenAt, photoTakenAtSource: 'exif' }
+        : { photoTakenAt: fallback, photoTakenAtSource: 'device' };
 }

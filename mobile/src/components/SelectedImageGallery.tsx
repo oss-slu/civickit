@@ -4,7 +4,7 @@ import { FlatList, View, Image, StyleSheet } from "react-native";
 import { borderRadius, colors, palette, spacing } from "../styles";
 import SelectedImage from "./SelectedImage";
 
-export default function ImageGallery({ images, width, height, onDeletePressed }: any) {
+export default function SelectedImageGallery({ images, metadata, width, height, onDeletePressed }: any) {
     const [activeImageIndex, setActiveImageIndex] = useState(0);
 
     return (
@@ -19,8 +19,15 @@ export default function ImageGallery({ images, width, height, onDeletePressed }:
                     const nextIndex = Math.round(event.nativeEvent.contentOffset.x / width);
                     setActiveImageIndex(nextIndex);
                 }}
-                renderItem={({ item }) => (
-                    <SelectedImage source={item} style={[styles.image]} width={width} height={height} onDeletePressed={onDeletePressed} />
+                renderItem={({ item, index }) => (
+                    <SelectedImage
+                        source={item}
+                        metadata={metadata?.[index] ?? {}}
+                        style={[styles.image]}
+                        width={width}
+                        height={height}
+                        onDeletePressed={onDeletePressed}
+                    />
                 )}
             />
             {images.length > 1 && (
