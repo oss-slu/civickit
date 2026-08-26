@@ -11,7 +11,6 @@ import { borderRadius, statusColors } from "../styles/theme";
 import { IssueStatusArray } from "../types/IssueStatusArray";
 import { CaretDownIcon, CheckMarkIcon } from "./Icons";
 import WrapperButton from "./WrapperButton";
-import { resolvePhotoMetadata } from "../utils/photoMetadata";
 import { useLocation } from "../contexts/LocationContext";
 import { useAuth } from "../contexts/AuthContext";
 import { StackNavigationProp } from "@react-navigation/stack";
@@ -83,11 +82,7 @@ export default function UpdatePopup({ issue, setIssue }: any) {
 
         try {
             const fallbackLocation = location;
-            const resolvedPhotoMetadata = resolvePhotoMetadata(photoMetadata, {
-                latitude: fallbackLocation.latitude,
-                longitude: fallbackLocation.longitude,
-                takenAt: new Date().toISOString(),
-            });
+
             if (!authToken) {
                 setIsLoading(false)
                 navigation.push('Error', { errorMessage: 'Not authenticated' });
