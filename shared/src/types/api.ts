@@ -4,6 +4,7 @@ import { BoundarySource, OrgRole, OrgStatus, OrgTier, OrgType } from "../enums/o
 import { PhotoMetadataSource } from "../utils/photoMetadata";
 import { Org } from "./org";
 import { User } from "./user";
+import { Photo } from "./photo";
 
 export interface ApiResponse<T> {
     success: boolean;
@@ -22,11 +23,19 @@ export interface CreateIssueDTO {
     district?: string;
     subregion?: string;
     name?: string;
-    images?: string[];
+    photos?: CreatePhotoDTO[];
     locationSource?: PhotoMetadataSource;
+}
+
+export interface CreatePhotoDTO {
+    url: string;
+    publicId?: string;
+    width?: number;
+    height?: number;
     photoTakenAt?: string;
     photoTakenAtSource?: PhotoMetadataSource;
 }
+
 
 export interface CreateOrgDTO {
     name: string;
@@ -49,7 +58,7 @@ export interface OrgMembershipDTO {
 export interface PostUpdateDTO {
     message: string;
     status: IssueStatus;
-    images?: string[];
+    photos?: CreatePhotoDTO[];
     createdAt?: Date;
 }
 
@@ -63,7 +72,7 @@ export interface GetNearbyIssueResponse {
     district?: string;
     subregion?: string;
     name?: string;
-    images: string[];
+    photos: Photo[];
     id: string;
     createdAt: string;
     locationSource?: PhotoMetadataSource;
@@ -72,10 +81,10 @@ export interface GetNearbyIssueResponse {
     status: IssueStatus;
     distance: string
     upvoteCount: number
-    author: Pick<User, 'id' | 'name' | 'profileImage'>;
+    author: Pick<User, 'id' | 'name'>;
     claimedById: string;
-    claimedByUser?: Pick<User, 'id' | 'name' | 'profileImage'>;
-    claimedByOrg?: Pick<Org, 'id' | 'name' | 'profileImage'>;
+    claimedByUser?: Pick<User, 'id' | 'name'>;
+    claimedByOrg?: Pick<Org, 'id' | 'name' | 'profilePhoto'>;
 }
 
 export interface LoginDTO {

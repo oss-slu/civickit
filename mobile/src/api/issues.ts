@@ -1,5 +1,5 @@
 // mobile/src/api/issues.ts
-import type { CreateIssueDTO, GetNearbyIssueResponse, Issue, PostUpdateDTO, User } from '@civickit/shared';
+import type { CreateIssueDTO, GetNearbyIssueResponse, Issue, PostUpdateDTO, User, Photo } from '@civickit/shared';
 import { apiFetch } from './client';
 
 export const METERS_PER_MILE = 1609.34;
@@ -14,7 +14,7 @@ export const METERS_PER_MILE = 1609.34;
  * `_count: { upvotes }` alongside it, which nothing ever read.
  */
 export interface IssueListItem extends Omit<Issue, 'author'> {
-    user: Pick<User, 'id' | 'name' | 'profileImage'>;
+    user: Pick<User, 'id' | 'name'>;
 }
 
 export interface IssueListResponse<T> {
@@ -37,8 +37,9 @@ export interface TimelineEntry {
     userId: string;
     message: string;
     status: string;
-    images: string[];
+    entryType: 'COMMENT' | 'SYSTEM_REPORT_SUBMITTED';
     userName: string;
+    photos: Photo[];
 }
 
 export interface NearbyIssuesParams {

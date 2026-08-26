@@ -22,9 +22,10 @@ export default function Timeline({ entries }: any) {
                     key={entry.id}
                     first={i === 0}
                     last={i === sorted.length - 1}
-                    // the two oldest entries are the auto-generated "Report
-                    // Submitted" / "Photo Taken" pair, which stay unattributed
-                    anonymous={i >= sorted.length - 2}
+                    // Server-authored entries stay unattributed. entryType is
+                    // set at write time, so a user typing "Report Submitted"
+                    // into an update cannot make the timeline anonymous.
+                    anonymous={entry.entryType !== 'COMMENT'}
                 />
             ))}
         </View>

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { photosSchema } from './photo.schema';
 
 export const createIssueSchema = z.object({
   title: z.string().min(3).max(200),
@@ -10,8 +11,6 @@ export const createIssueSchema = z.object({
   district: z.string().max(200).optional(),
   subregion: z.string().max(200).optional(),
   name: z.string().max(200).optional(),
-  images: z.array(z.string().url()).max(10).default([]),
+  photos: photosSchema.default([]),
   locationSource: z.string().max(50).optional(),
-  photoTakenAt: z.coerce.date().optional(),
-  photoTakenAtSource: z.string().max(50).optional(),
 }).strip();

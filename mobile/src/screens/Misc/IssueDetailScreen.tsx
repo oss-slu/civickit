@@ -156,6 +156,7 @@ const IssueDetailScreen = () => {
   }
 
   const [category, setCategory] = useState<String>(issue.category.replace(/_/g, " ").toLowerCase())
+  const photoUrls = issue.photos.map((photo) => photo.url)
 
   return (
     <View style={{ ...styles.page, }}>
@@ -190,20 +191,20 @@ const IssueDetailScreen = () => {
 
         {/* Image Gallery */}
         <ImageGallery
-          images={issue.images}
+          images={photoUrls}
           height={imageHeight}
           width={imageWidth} />
 
         {/* Claimed By */}
         {issue.claimedById &&
           <View style={{ ...styles.claimedByContainter }}>
-            {issue.claimedByOrg?.profileImage &&
-              <Image source={{ uri: issue.claimedByOrg.profileImage }} style={styles.orgProfilePic} />
+            {issue.claimedByOrg?.profilePhoto &&
+              <Image source={{ uri: issue.claimedByOrg.profilePhoto.url }} style={styles.orgProfilePic} />
             }
 
-            <View style={{ paddingLeft: !issue.claimedByOrg?.profileImage ? spacing.sm : 0 }}>
+            <View style={{ paddingLeft: !issue.claimedByOrg?.profilePhoto ? spacing.sm : 0 }}>
               <Text style={styles.claimedByLabel}>Issue Claimed By</Text>
-              <View style={{ flexDirection: "row", columnGap: spacing.xs, paddingLeft: !issue.claimedByOrg?.profileImage ? spacing.xs : 0 }}>
+              <View style={{ flexDirection: "row", columnGap: spacing.xs, paddingLeft: !issue.claimedByOrg?.profilePhoto ? spacing.xs : 0 }}>
                 <Text style={{ ...styles.claimedByText, fontWeight: typography.weightBold }}>{issue.claimedByUser?.name}</Text>
                 <Text style={styles.claimedByText}>with</Text>
                 <Text style={{ ...styles.claimedByText, fontWeight: typography.weightBold, }}>{issue.claimedByOrg?.name}</Text>

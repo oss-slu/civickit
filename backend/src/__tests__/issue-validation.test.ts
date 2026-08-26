@@ -9,7 +9,6 @@ const validBody = {
   latitude: 38.6270,
   longitude: -90.1994,
   address: '123 Main St',
-  images: ['https://example.com/photo.jpg'],
 };
 
 describe('createIssueSchema', () => {
@@ -29,12 +28,18 @@ describe('createIssueSchema', () => {
     expect(result.success).toBe(false);
   });
 
-  it('rejects images containing a non-URL string', () => {
+  it('rejects photos containing a non-Cloudinary url', () => {
     const result = createIssueSchema.safeParse({
       ...validBody,
-      images: ['not-a-url'],
+      photos: [{ url: 'https://evil.example.com/tracker.gif' }],
     });
     expect(result.success).toBe(false);
+  });
+
+  it('defaults photos to an empty array when absent', () => {
+    const result = createIssueSchema.safeParse(validBody);
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.photos).toEqual([]);
   });
 
   it('rejects an out-of-range latitude', () => {

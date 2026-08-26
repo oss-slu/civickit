@@ -7,8 +7,12 @@
 import { IssueService } from '../../issue.service';
 import { IssueRepository } from '../../../repositories/issue.repository';
 import { describe, beforeEach, vi, it, expect, Mocked } from 'vitest';
-import { CreateIssueDTO, extractPhotoMetadataFromExif, resolvePhotoMetadata } from '@civickit/shared';
+import { CreateIssueDTO, extractPhotoMetadataFromExif, resolveIssueLocation, resolvePhotoTakenAt } from '@civickit/shared';
 import { mock } from 'node:test';
+import { PhotoRepository } from '../../../repositories/photo.repository';
+import { AuthRepository } from '../../../repositories/auth.repository';
+import { OrgRepository } from '../../../repositories/org.repository';
+import { MembershipRepository } from '../../../repositories/membership.repository';
 
 // Mock the repository, not integration test
 vi.mock('../../../src/repositories/issue.repository');
@@ -16,11 +20,15 @@ vi.mock('../../../src/repositories/issue.repository');
 describe('IssueService', () => {
   let issueService: IssueService;
   let mockIssueRepository: Mocked<IssueRepository>;
+  let mockPhotoRepository: Mocked<PhotoRepository>
+  let mockAuthRepository: Mocked<AuthRepository>
+  let mockOrgRepository: Mocked<OrgRepository>
+  let mockMembershipRepository: Mocked<MembershipRepository>
 
   beforeEach(() => {
     // Create mock repository
     mockIssueRepository = {
-      create: vi.fn(),
+      createWithPhotos: vi.fn(),
       findById: vi.fn(),
       findNearby: vi.fn(),
       findByUser: vi.fn(),
@@ -28,8 +36,34 @@ describe('IssueService', () => {
       claimIssue: vi.fn(),
       releaseIssue: vi.fn(),
     } as unknown as Mocked<IssueRepository>;
+    mockPhotoRepository = {
+      createMany: vi.fn(),
+      findById: vi.fn(),
+      findOriginalsByIssueIds: vi.fn().mockResolvedValue(new Map()),
+      findByTimelineEntryIds: vi.fn().mockResolvedValue(new Map()),
+      softDelete: vi.fn(),
+    } as unknown as Mocked<PhotoRepository>;
+    mockAuthRepository = {
+      create: vi.fn(),
+      findById: vi.fn(),
+      findNearby: vi.fn(),
+    } as unknown as Mocked<AuthRepository>;
 
-    issueService = new IssueService(mockIssueRepository);
+    mockOrgRepository = {
+      findOrgsForIssue: vi.fn(),
+      findIssuesForOrg: vi.fn(),
+      findById: vi.fn()
+    } as unknown as Mocked<OrgRepository>;
+
+    mockMembershipRepository = {
+      create: vi.fn(),
+      findById: vi.fn(),
+      findByUser: vi.fn(),
+      findByUserAndOrg: vi.fn(),
+      findByOrganization: vi.fn(),
+    } as unknown as Mocked<MembershipRepository>;
+
+    issueService = new IssueService(mockIssueRepository, mockPhotoRepository, mockOrgRepository, mockAuthRepository, mockMembershipRepository);
   });
 
   const makeInput = (
@@ -42,12 +76,19 @@ describe('IssueService', () => {
     latitude: 38.627,
     longitude: -90.1994,
     address: "",
-    images: [],
+    photos: [],
     ...overrides,
   });
 
+  // Unclaimed issues carry explicit nulls rather than objects full of
+  // undefined, so a client can test the field directly.
+  const otherInfo = {
+    claimedByOrg: null,
+    claimedByUser: null,
+  }
+
   describe('createIssue', () => {
-    it('should create an issue successfully', async () => {
+    it('should create an issue and return its photos nested', async () => {
       const mockIssue = {
         id: 'test-id',
         title: 'Test Issue',
@@ -56,43 +97,45 @@ describe('IssueService', () => {
         status: 'REPORTED',
         latitude: 38.6270,
         longitude: -90.1994,
-        images: [],
         userId: 'user-123',
         createdAt: new Date(),
         updatedAt: new Date(),
       };
+      const photo = { id: 'photo-1', url: 'https://res.cloudinary.com/demo/a.jpg', position: 0 };
 
-      mockIssueRepository.create.mockResolvedValue(mockIssue as any);
+      mockIssueRepository.createWithPhotos.mockResolvedValue({
+        issue: mockIssue,
+        photos: [photo],
+      } as any);
 
       const result = await issueService.createIssue(
-        makeInput(),
-        'user-123'
+        makeInput({ photos: [{ url: 'https://res.cloudinary.com/demo/a.jpg' }] }),
+        'user-123',
       );
 
-      expect(result).toEqual(mockIssue);
-      expect(mockIssueRepository.create).toHaveBeenCalledWith({
-        ...makeInput(),
-        userId: 'user-123',
-      });
-      expect(mockIssueRepository.create).toHaveBeenCalledTimes(1);
+      expect(result).toEqual({ ...mockIssue, photos: [photo] });
+      expect(mockIssueRepository.createWithPhotos).toHaveBeenCalledTimes(1);
     });
 
-    it('should pass photo metadata through when creating an issue', async () => {
+    it('should write the issue and its photos in a single repository call', async () => {
       const input = makeInput({
         latitude: 38.64,
         longitude: -90.22,
         locationSource: 'exif',
-        photoTakenAt: '2026-06-18T14:30:00.000Z',
-        photoTakenAtSource: 'exif',
+        photos: [{ url: 'https://res.cloudinary.com/demo/a.jpg' }],
       });
 
-      mockIssueRepository.create.mockResolvedValue({ id: 'test-id', ...input } as any);
+      mockIssueRepository.createWithPhotos.mockResolvedValue({
+        issue: { id: 'test-id', ...input },
+        photos: [],
+      } as any);
 
       await issueService.createIssue(input, 'user-123');
 
-      expect(mockIssueRepository.create).toHaveBeenCalledWith({
+      expect(mockIssueRepository.createWithPhotos).toHaveBeenCalledWith({
         ...input,
         userId: 'user-123',
+        status: 'REPORTED',
       });
     });
 
@@ -111,7 +154,7 @@ describe('IssueService', () => {
           'user-123'
         )
       ).rejects.toThrow('Category is required');
-      expect(mockIssueRepository.create).not.toHaveBeenCalled(); // proves validation stops execution before hitting the DB
+      expect(mockIssueRepository.createWithPhotos).not.toHaveBeenCalled(); // proves validation stops execution before hitting the DB
     });
     it('should throw if latitude is missing', async () => {
       await expect(
@@ -120,7 +163,7 @@ describe('IssueService', () => {
           'user-123'
         )
       ).rejects.toThrow('Latitude and longitude are required');
-      expect(mockIssueRepository.create).not.toHaveBeenCalled();
+      expect(mockIssueRepository.createWithPhotos).not.toHaveBeenCalled();
     });
 
     it('should throw if longitude is missing', async () => {
@@ -130,11 +173,14 @@ describe('IssueService', () => {
           'user-123'
         )
       ).rejects.toThrow('Latitude and longitude are required');
-      expect(mockIssueRepository.create).not.toHaveBeenCalled();
+      expect(mockIssueRepository.createWithPhotos).not.toHaveBeenCalled();
     });
   });
 
   describe('photo metadata helpers', () => {
+    const DEVICE = { latitude: 38.627, longitude: -90.1994 };
+    const FALLBACK_TIME = '2026-06-19T15:00:00.000Z';
+
     it('should prefer EXIF location and timestamp over phone fallback', () => {
       const exifMetadata = extractPhotoMetadataFromExif({
         GPSLatitude: 38.64,
@@ -143,54 +189,73 @@ describe('IssueService', () => {
         DateTimeOriginal: '2026:06:18 14:30:00',
       });
 
-      const resolved = resolvePhotoMetadata([exifMetadata], {
-        latitude: 38.627,
-        longitude: -90.1994,
-        takenAt: '2026-06-19T15:00:00.000Z',
-      });
-
-      expect(resolved).toMatchObject({
+      expect(resolveIssueLocation([exifMetadata], DEVICE)).toEqual({
         latitude: 38.64,
         longitude: -90.22,
         locationSource: 'exif',
+      });
+      expect(resolvePhotoTakenAt(exifMetadata, FALLBACK_TIME)).toEqual({
+        photoTakenAt: new Date('2026-06-18 14:30:00').toISOString(),
         photoTakenAtSource: 'exif',
       });
-      expect(resolved.photoTakenAt).toBe(new Date('2026-06-18 14:30:00').toISOString());
     });
 
     it('should fall back to phone location and time when EXIF is missing', () => {
-      const resolved = resolvePhotoMetadata([extractPhotoMetadataFromExif({})], {
-        latitude: 38.627,
-        longitude: -90.1994,
-        takenAt: '2026-06-19T15:00:00.000Z',
-      });
+      const empty = extractPhotoMetadataFromExif({});
 
-      expect(resolved).toEqual({
-        latitude: 38.627,
-        longitude: -90.1994,
+      expect(resolveIssueLocation([empty], DEVICE)).toEqual({
+        ...DEVICE,
         locationSource: 'device',
-        photoTakenAt: '2026-06-19T15:00:00.000Z',
+      });
+      expect(resolvePhotoTakenAt(empty, FALLBACK_TIME)).toEqual({
+        photoTakenAt: FALLBACK_TIME,
         photoTakenAtSource: 'device',
       });
     });
 
     it('should reject 0,0 EXIF coordinates and fall back to phone location', () => {
-      const resolved = resolvePhotoMetadata([extractPhotoMetadataFromExif({
+      const nullIsland = extractPhotoMetadataFromExif({
         GPSLatitude: 0,
         GPSLongitude: 0,
         DateTimeOriginal: '2026:06:18 14:30:00',
-      })], {
-        latitude: 38.627,
-        longitude: -90.1994,
-        takenAt: '2026-06-19T15:00:00.000Z',
       });
 
-      expect(resolved).toMatchObject({
-        latitude: 38.627,
-        longitude: -90.1994,
+      expect(resolveIssueLocation([nullIsland], DEVICE)).toEqual({
+        ...DEVICE,
         locationSource: 'device',
-        photoTakenAtSource: 'exif',
       });
+      // The timestamp is still real even though the coordinates were not.
+      expect(resolvePhotoTakenAt(nullIsland, FALLBACK_TIME).photoTakenAtSource).toBe('exif');
+    });
+
+    it('should use the first photo that has coordinates, not merely the first photo', () => {
+      const withoutGps = extractPhotoMetadataFromExif({ DateTimeOriginal: '2026:06:18 14:30:00' });
+      const withGps = extractPhotoMetadataFromExif({
+        GPSLatitude: 38.64,
+        GPSLongitude: 90.22,
+        GPSLongitudeRef: 'W',
+      });
+
+      expect(resolveIssueLocation([withoutGps, withGps], DEVICE)).toEqual({
+        latitude: 38.64,
+        longitude: -90.22,
+        locationSource: 'exif',
+      });
+    });
+
+    it('should report device for an empty photo list', () => {
+      expect(resolveIssueLocation([], DEVICE)).toEqual({ ...DEVICE, locationSource: 'device' });
+    });
+
+    it('should not read dimensions out of EXIF', () => {
+      const result = extractPhotoMetadataFromExif({
+        ImageWidth: 3024,
+        ImageLength: 4032,
+        Orientation: 6,
+      });
+
+      expect(result.width).toBeUndefined();
+      expect(result.height).toBeUndefined();
     });
   });
 
@@ -198,22 +263,12 @@ describe('IssueService', () => {
     it('should return issue if found', async () => {
       const mockIssue = {
         id: '123',
-        claimedByOrg: {
-          id: undefined,
-          name: undefined,
-          profileImage: undefined,
-        },
-        claimedByUser: {
-          id: undefined,
-          name: undefined,
-          profileImage: undefined,
-        },
       };
       mockIssueRepository.findById.mockResolvedValue(mockIssue as any);
 
       const result = await issueService.getIssueById('123');
 
-      expect(result).toEqual(mockIssue);
+      expect(result).toEqual({ id: '123', photos: [], ...otherInfo });
       expect(mockIssueRepository.findById).toHaveBeenCalledWith('123');
     });
 
@@ -232,33 +287,13 @@ describe('IssueService', () => {
         {
           id: 'issue-1',
           upvoteCount: 3,
-          claimedByOrg: {
-            id: undefined,
-            name: undefined,
-            profileImage: undefined,
-          },
-          claimedByUser: {
-            id: undefined,
-            name: undefined,
-            profileImage: undefined,
-          },
         },
         {
           id: 'issue-2',
           upvoteCount: 0,
-          claimedByOrg: {
-            id: undefined,
-            name: undefined,
-            profileImage: undefined,
-          },
-          claimedByUser: {
-            id: undefined,
-            name: undefined,
-            profileImage: undefined,
-          },
         },
       ];
-      mockIssueRepository.findNearby.mockResolvedValue(mockIssues as any);
+      mockIssueRepository.findNearby.mockResolvedValue(mockIssues.map((mi) => { return { ...mi } }) as any);
 
       const result = await issueService.getNearbyIssues(38.627, -90.1994);
 
@@ -268,7 +303,7 @@ describe('IssueService', () => {
         undefined,
         undefined
       );
-      expect(result).toEqual(mockIssues);
+      expect(result).toEqual(mockIssues.map((mi) => ({ ...mi, photos: [], ...otherInfo })));
       result.forEach((issue) => {
         expect(typeof issue.upvoteCount).toBe('number');
       });
@@ -298,7 +333,8 @@ describe('IssueService', () => {
 
       const result = await issueService.getIssuesByUser('user-123');
 
-      expect(result).toEqual(mockIssues);
+      expect(result).toEqual(mockIssues.map((mi) => ({ ...mi, photos: [], ...otherInfo })));
+
       result.forEach((issue) => {
         expect(typeof issue.upvoteCount).toBe('number');
       });
@@ -317,7 +353,11 @@ describe('IssueService', () => {
       expect(mockIssueRepository.findByUpvoter).toHaveBeenCalledTimes(1);
       expect(mockIssueRepository.findByUpvoter).toHaveBeenCalledWith('user-123', undefined);
       expect(mockIssueRepository.findById).not.toHaveBeenCalled();
-      expect(result).toEqual(mockIssues);
+      expect(result).toEqual([
+        {
+          id: 'issue-1', upvoteCount: 2, photos: [], ...otherInfo,
+        },
+      ]);
       result.forEach((issue) => {
         expect(typeof issue.upvoteCount).toBe('number');
       });
@@ -338,7 +378,9 @@ describe('IssueService', () => {
       expect(mockIssueRepository.updateStatus).toHaveBeenCalledWith('issue-1', {
         status: 'RESOLVED',
       });
-      expect(result).toEqual(updated);
+      expect(result).toEqual({
+        id: 'issue-1', status: 'RESOLVED', photos: [], ...otherInfo,
+      });
     });
 
     // PATCH /:issueId/status reads req.body.status with no body validation, so
@@ -368,7 +410,7 @@ describe('IssueService', () => {
 
       const result = await issueService.claimIssue('issue-1', 'user-1');
 
-      expect(result).toEqual(claimed);
+      expect(result).toEqual({ id: claimed.id, claimedById: 'user-1', photos: [], ...otherInfo });
       expect(mockIssueRepository.claimIssue).toHaveBeenCalledWith('issue-1', {
         claimedById: 'user-1',
       });

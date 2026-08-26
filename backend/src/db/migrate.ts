@@ -12,10 +12,12 @@ import { sqlStateOf } from './errors';
 const MIGRATIONS_FOLDER = './drizzle';
 const EXTENSIONS_FILE = `${MIGRATIONS_FOLDER}/extensions.sql`;
 
-// duplicate_object and duplicate_table. Applying 0000_init to a database that
-// already has the schema -- in practice, one created before the Drizzle
-// cutover, which has no applied-migrations table to tell us so.
-const ALREADY_EXISTS = ['42710', '42P07'];
+// duplicate_object, duplicate_table and duplicate_column. Applying a migration
+// to a database that already has the schema -- in practice, one created before
+// the Drizzle cutover, which has no applied-migrations table to tell us so, or
+// one built by an earlier version of these migrations before they were
+// renumbered.
+const ALREADY_EXISTS = ['42710', '42P07', '42701'];
 
 export async function runMigrations(connectionString: string): Promise<void> {
   const pool = new Pool({ connectionString });

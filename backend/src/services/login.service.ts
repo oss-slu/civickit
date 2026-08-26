@@ -7,9 +7,10 @@ import { LoginDTO, LoginResponse } from "@civickit/shared";
 import "dotenv/config";
 import { AppError } from "../utils/errors";
 import { JWT_SECRET } from "../config/env";
+import { PhotoRepository } from "../repositories/photo.repository";
 
 export class LoginService {
-  constructor(private loginRepository: LoginRepository) { }
+  constructor(private loginRepository: LoginRepository, private photoRepository: PhotoRepository) { }
 
   async login(credentials: LoginDTO): Promise<LoginResponse | AppError> {
     const user = await this.loginRepository.findByEmail(credentials.email);
@@ -28,6 +29,19 @@ export class LoginService {
     //generate token with user id
     const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' })
 
+    // The row types its timestamps as Date; the shared Photo type describes the
+    // wire shape, where they are ISO strings. Express would serialize them
+    // either way -- this is the one boundary that declares a response type, so
+    // it is the one place the conversion has to be explicit.
+    const photoRow = user.profilePhotoId
+      ? await this.photoRepository.findById(user.profilePhotoId)
+      : null;
+    const profilePhoto = photoRow && {
+      ...photoRow,
+      createdAt: photoRow.createdAt.toISOString(),
+      photoTakenAt: photoRow.photoTakenAt?.toISOString() ?? null,
+    };
+
     const loginResponse: LoginResponse = {
       token: token,
       user: {
@@ -35,8 +49,8 @@ export class LoginService {
         name: String(user.name),
         email: String(user.email),
         createdAt: String(user.createdAt),
-        profileImage: String(user.profileImage),
-        role: user.role
+        role: user.role,
+        profilePhoto,
       }
     };
 

@@ -22,4 +22,15 @@ export function first<T>(rows: T[]): T | null {
   return rows[0] ?? null;
 }
 
+/**
+ * Either the pool-backed `db` or an open transaction. Repository methods that
+ * can participate in a transaction take one of these and default to `db`, so
+ * existing callers are unaffected.
+ *
+ * A read issued on `db` from inside a transaction runs on a different
+ * connection and will not see that transaction's uncommitted rows -- which is
+ * why this has to be threaded through rather than assumed.
+ */
+export type Executor = typeof db | Parameters<Parameters<typeof db.transaction>[0]>[0];
+
 export default db;

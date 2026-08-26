@@ -1,11 +1,33 @@
 // mobile/src/services/cloudinaryService.ts
+import type { CreatePhotoDTO, PhotoMetadataSource } from '@civickit/shared';
 import { uploadApi } from '../api';
 import type { UploadSignature } from '../api/upload';
 
 interface CloudinaryUploadResponse {
     secure_url: string;
     public_id: string;
+    width: number;
+    height: number;
     [key: string]: any;
+}
+
+/**
+ * What Cloudinary tells us about a stored asset. Its width and height are
+ * post-upload and orientation-normalized, which is why nothing downstream has
+ * to interpret an EXIF Orientation tag.
+ */
+export interface UploadedPhoto {
+    url: string;
+    publicId: string;
+    width: number;
+    height: number;
+}
+
+/** A locally selected photo, with the metadata only the device can supply. */
+export interface PendingPhoto {
+    uri: string;
+    photoTakenAt: string;
+    photoTakenAtSource: PhotoMetadataSource;
 }
 
 // Cache upload signatures briefly to avoid repeated backend requests
@@ -44,7 +66,7 @@ async function getUploadSignature(): Promise<UploadSignature> {
 
 // Upload an image directly to Cloudinary from the mobile app using a signed request
 // Returns the secure URL of the uploaded image
-export async function uploadImageToCloudinary(imageUri: string): Promise<string> {
+export async function uploadImageToCloudinary(imageUri: string): Promise<UploadedPhoto> {
     try {
         const uploadStartTime = Date.now();
         const timings = {} as any;
@@ -95,22 +117,41 @@ export async function uploadImageToCloudinary(imageUri: string): Promise<string>
             total: `${timings.totalMs}ms`,
         });
 
-        return data.secure_url;
+        return {
+            url: data.secure_url,
+            publicId: data.public_id,
+            width: data.width,
+            height: data.height,
+        };
     } catch (error) {
         console.error('Error uploading to Cloudinary:', error);
         throw error;
     }
 }
 
-// Upload multiple images to Cloudinary in parallel using signed requests
-// Returns an array of secure URLs
-export async function uploadImagesToCloudinary(imageUris: string[]): Promise<string[]> {
+/**
+ * Uploads in parallel and returns objects that are already the `photos` array
+ * of the create-issue body.
+ *
+ * Metadata travels with each photo rather than in a second array zipped by
+ * index: Promise.all preserves order, but pairing across two lists breaks
+ * silently the moment a count differs, attaching one photo's timestamp to
+ * another photo.
+ */
+export async function uploadPhotos(photos: PendingPhoto[]): Promise<CreatePhotoDTO[]> {
     try {
-        const uploadPromises = imageUris.map(uri => uploadImageToCloudinary(uri));
-        const urls = await Promise.all(uploadPromises);
-        return urls;
+        return await Promise.all(
+            photos.map(async (photo) => {
+                const uploaded = await uploadImageToCloudinary(photo.uri);
+                return {
+                    ...uploaded,
+                    photoTakenAt: photo.photoTakenAt,
+                    photoTakenAtSource: photo.photoTakenAtSource,
+                };
+            }),
+        );
     } catch (error) {
-        console.error('Error uploading images to Cloudinary:', error);
+        console.error('Error uploading photos to Cloudinary:', error);
         throw error;
     }
 }

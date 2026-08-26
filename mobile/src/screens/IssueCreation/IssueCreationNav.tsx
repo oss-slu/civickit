@@ -11,7 +11,7 @@ import { userLocation } from '../../types/userLocation';
 import { useState } from 'react';
 import DuplicateCheckScreen from './DuplicateCheckScreen';
 import { ImagesContext, PhotoMetadataContext, UserLocationContext, AddressContext, TitleContext, CategoryContext, DescriptionContext, FormStartedContext } from '../../contexts/FormContexts';
-import type { PhotoMetadata } from '../../utils/photoMetadata';
+import type { PhotoMetadata } from '@civickit/shared';
 
 const Stack = createNativeStackNavigator<StackParams>();
 

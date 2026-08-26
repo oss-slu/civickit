@@ -19,6 +19,13 @@ import { ALLOWED_ORIGINS } from './config/env';
 
 dotenv.config();
 
+// Node terminates the process on an unhandled rejection by default. Every write
+// path is awaited, so reaching this is a bug -- but logging and staying up
+// beats taking the API down with it.
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled promise rejection:', reason);
+});
+
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 

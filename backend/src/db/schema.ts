@@ -17,6 +17,7 @@ import {
   customType,
   doublePrecision,
   index,
+  integer,
   pgEnum,
   pgTable,
   text,
@@ -77,6 +78,18 @@ export const boundarySource = pgEnum('BoundarySource', [
   'FREEHAND',
 ]);
 
+export const photoTimestampSource = pgEnum('PhotoTimestampSource', ['exif', 'device']);
+
+/**
+ * Plan 004 extends this with SYSTEM_CLAIMED, SYSTEM_DECLINED,
+ * SYSTEM_STATUS_CHANGED, SYSTEM_SCHEDULED and SYSTEM_REFERRED_TO_CITY. Only the
+ * two values the photo work needs are declared here.
+ */
+export const timelineEntryType = pgEnum('TimelineEntryType', [
+  'COMMENT',
+  'SYSTEM_REPORT_SUBMITTED',
+]);
+
 /** Prisma stored DateTime as TIMESTAMP(3); keeping the precision avoids drift. */
 const timestamp3 = (name: string) => timestamp(name, { precision: 3 });
 
@@ -127,12 +140,11 @@ export const users = pgTable(
     email: text('email').notNull().unique('user_email_key'),
     name: text('name').notNull(),
     passwordHash: text('passwordHash'),
-    profileImage: text('profileImage'),
+    profilePhotoId: text('profilePhotoId'),
     role: role('role').notNull().default('REPORTER'),
     createdAt: timestamp3('createdAt').notNull().defaultNow(),
     updatedAt: updatedAt(),
     emailVerified: boolean('emailVerified').notNull().default(false),
-    image: text('image'),
   },
   (table) => [index('user_email_idx').on(table.email)],
 );
@@ -151,14 +163,9 @@ export const issues = pgTable(
     district: text('district'),
     subregion: text('subregion'),
     name: text('name'),
-    // Prisma left this nullable in the database but never wrote null. Declaring
-    // it NOT NULL DEFAULT '{}' matches how the application has always behaved.
-    images: text('images').array().notNull().default([]),
     createdAt: timestamp3('createdAt').notNull().defaultNow(),
     updatedAt: updatedAt(),
     locationSource: text('locationSource').notNull().default('device'),
-    photoTakenAt: timestamp3('photoTakenAt'),
-    photoTakenAtSource: text('photoTakenAtSource').notNull().default('device'),
     userId: text('userId')
       .notNull()
       .references(() => users.id, { onDelete: 'restrict', onUpdate: 'cascade' }),
@@ -186,13 +193,56 @@ export const timelineEntries = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: 'restrict', onUpdate: 'cascade' }),
     status: issueStatus('status').notNull().default('REPORTED'),
-    images: text('images').array().notNull().default([]),
+    entryType: timelineEntryType('entryType').notNull().default('COMMENT'),
   },
   (table) => [
     index('TimelineEntry_issueId_idx').on(table.issueId),
     index('TimelineEntry_createdAt_idx').on(table.createdAt),
   ],
 );
+
+/**
+ * Photos are owned parts, not shared entities. `issueId` is set on every issue
+ * photo whenever it arrived; `timelineEntryId` is set only for photos added by
+ * a status update. So `timelineEntryId IS NULL` means "filed with the original
+ * report", and a profile photo has neither column set.
+ *
+ * No CHECK constraint: both columns being set is the correct state for an
+ * update photo, so there is nothing contradictory to guard against.
+ */
+export const photos = pgTable(
+  'Photo',
+  {
+    id: cuid(),
+    userId: text('userId')
+      .notNull()
+      .references(() => users.id, { onDelete: 'restrict', onUpdate: 'cascade' }),
+    issueId: text('issueId').references(() => issues.id, {
+      onDelete: 'cascade',
+      onUpdate: 'cascade',
+    }),
+    timelineEntryId: text('timelineEntryId').references(() => timelineEntries.id, {
+      onDelete: 'cascade',
+      onUpdate: 'cascade',
+    }),
+    url: text('url').notNull(),
+    publicId: text('publicId'),
+    width: integer('width'),
+    height: integer('height'),
+    photoTakenAt: timestamp3('photoTakenAt'),
+    photoTakenAtSource: photoTimestampSource('photoTakenAtSource'),
+    position: integer('position').notNull().default(0),
+    createdAt: timestamp3('createdAt').notNull().defaultNow(),
+    deletedAt: timestamp3('deletedAt'),
+  },
+  (table) => [
+    index('Photo_issueId_idx').on(table.issueId),
+    index('Photo_timelineEntryId_idx').on(table.timelineEntryId),
+    index('Photo_userId_idx').on(table.userId),
+  ],
+);
+
+export type Photo = typeof photos.$inferSelect;
 
 export const upvotes = pgTable(
   'Upvote',
@@ -329,8 +379,8 @@ export const organizations = pgTable(
     status: orgStatus('status').notNull().default('PENDING'),
     tier: orgTier('tier'),
     // An empty scope routes nothing, which is the safe reading of a
-    // misconfigured org. Declared NOT NULL DEFAULT '{}' for the same reason
-    // Issue.images is: Prisma left the column nullable but never wrote null.
+    // misconfigured org. Declared NOT NULL DEFAULT '{}' because Prisma left the
+    // column nullable but never wrote null.
     categoryScope: issueCategory('categoryScope').array().notNull().default([]),
     // How the geofence was defined, and a reference back to its source so
     // official boundaries can be re-synced when a city redistricts.
@@ -340,7 +390,7 @@ export const organizations = pgTable(
     geofence: geography('geofence'),
     createdAt: timestamp3('createdAt').notNull().defaultNow(),
     updatedAt: updatedAt(),
-    profileImage: text('profileImage'),
+    profilePhotoId: text('profilePhotoId'),
   },
   (table) => [
     index('Organization_status_idx').on(table.status),

@@ -6,9 +6,10 @@ import { CreateAuthDTO } from "@civickit/shared";
 import { SafeUser } from '../types/auth.types'
 import { z } from 'zod';
 import { AppError } from "../utils/errors";
+import { PhotoRepository } from "../repositories/photo.repository";
 
 export class AuthService {
-  constructor(private authRepository: AuthRepository) { }
+  constructor(private authRepository: AuthRepository, private photoRepository: PhotoRepository) { }
 
   async registerUser(data: CreateAuthDTO): Promise<SafeUser> {
     const { email, password, name } = data;
@@ -60,6 +61,15 @@ export class AuthService {
     if (!user) {
       throw new AppError('User not found', 404);
     }
-    return user
+
+    // One shape either way. The version this replaced returned the raw
+    // profilePhotoId when it was null and a reshaped object when it was set,
+    // so clients had to handle two shapes for one endpoint.
+    const { profilePhotoId, ...rest } = user;
+    const profilePhoto = profilePhotoId
+      ? (await this.photoRepository.findById(profilePhotoId)) ?? null
+      : null;
+
+    return { ...rest, profilePhoto };
   }
 }

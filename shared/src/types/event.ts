@@ -15,13 +15,13 @@ export interface Event {
     address: string;
     createdAt: string;
     issue: Pick<Issue, 'id' | 'title'>;
-    organizaer: Pick<User, 'id' | 'name' | 'profileImage'>;
+    organizaer: Pick<User, 'id' | 'name'>;
     rsvpCount: number
 }
 
 export interface EventRsvp {
     id: string
-    user: Pick<User, 'id' | 'name' | 'profileImage'>
+    user: Pick<User, 'id' | 'name'>
     event: Pick<Event, 'id' | 'title'>
     status: RsvpStatus
     createdAt: string

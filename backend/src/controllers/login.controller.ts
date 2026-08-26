@@ -3,9 +3,10 @@ import { Request, Response, NextFunction } from 'express';
 import { LoginService } from '../services/login.service';
 import { LoginRepository } from '../repositories/login.repository';
 import { LoginDTO } from '@civickit/shared';
+import { PhotoRepository } from '../repositories/photo.repository';
 
 const loginRepository = new LoginRepository();
-const loginService = new LoginService(loginRepository);
+const loginService = new LoginService(loginRepository, new PhotoRepository());
 
 export class LoginController {
   async login(req: Request, res: Response, next: NextFunction) {
