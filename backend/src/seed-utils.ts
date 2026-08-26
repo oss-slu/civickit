@@ -10,10 +10,18 @@
  * - Detailed logging
  */
 
-import { count, eq } from 'drizzle-orm';
+import { count, eq, sql } from 'drizzle-orm';
 import db from './db/index.js';
 import * as schema from './db/schema.js';
-import { userTemplates, type SeedIssueTemplate, type SeedUserTemplate } from './seed-data.js';
+import {
+    organizationTemplates,
+    orgMembershipTemplates,
+    userTemplates,
+    type SeedIssueTemplate,
+    type SeedOrgMembershipTemplate,
+    type SeedOrgTemplate,
+    type SeedUserTemplate,
+} from './seed-data.js';
 import { uploadImageToCloudinary } from './utils/cloudinary-upload.js';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -36,8 +44,15 @@ function log(level: 'info' | 'warn' | 'error', message: string, data?: unknown) 
 }
 
 /**
- * Clean all data from the database (issues, timeline entries, upvotes, events, users)
+ * Clean all data from the database (issues, timeline entries, upvotes, events,
+ * organizations, memberships, users)
  * Deletes in reverse FK order to respect foreign key constraints
+ *
+ * Photo is absent on purpose: issue and timeline photos cascade from their
+ * parent rows. A *profile* photo has neither issueId nor timelineEntryId, so it
+ * cascades from nothing, and Photo.userId is onDelete: restrict -- if the users
+ * delete below ever starts failing on a Photo FK, that is why. No seed fixture
+ * writes a profile photo today.
  */
 export async function cleanupDatabase() {
     if (DRY_RUN) {
@@ -53,6 +68,12 @@ export async function cleanupDatabase() {
     await db.delete(schema.eventRsvps);
     await db.delete(schema.events);
     await db.delete(schema.issues);
+    // OrgMembership.organizationId references Organization, so it goes first.
+    // Its userId is onDelete: cascade, so deleting users first would also work
+    // -- but Organization has no FK to user to lean on, and this function's
+    // contract is reverse-FK order, so both are listed explicitly.
+    await db.delete(schema.orgMemberships);
+    await db.delete(schema.organizations);
     await db.delete(schema.users);
 
     log('info', 'All tables cleared');
@@ -65,6 +86,10 @@ export async function seedDatabase(issueTemplates: SeedIssueTemplate[]) {
     if (DRY_RUN) {
         log('info', 'DRY RUN MODE - No changes will be written');
         log('info', `Would create ${userTemplates.length} users and ${issueTemplates.length} issues`);
+        log(
+            'info',
+            `Would create ${organizationTemplates.length} organizations and ${orgMembershipTemplates.length} memberships`,
+        );
         return;
     }
 
@@ -73,12 +98,100 @@ export async function seedDatabase(issueTemplates: SeedIssueTemplate[]) {
     const users = await createUsers(userTemplates);
     log('info', `  Inserted ${users.length} users`);
 
-    // 2. Upload images and create issues
+    // 2. Create organizations and their memberships. Independent of issues --
+    // geo-matching joins the two by geometry, not by foreign key.
+    log('info', 'Creating organizations...');
+    const orgs = await createOrganizations(organizationTemplates);
+    log('info', `  Inserted ${orgs.length} organizations`);
+
+    log('info', 'Creating org memberships...');
+    await createOrgMemberships(orgMembershipTemplates, users, orgs);
+
+    // 3. Upload images and create issues
     log('info', 'Processing images and creating issues...');
     await createIssues(issueTemplates, users);
 
-    // 3. Print summary
+    // 4. Print summary
     await printSummary();
+}
+
+/**
+ * Create pilot organizations.
+ *
+ * This deliberately does not go through OrgRepository.create -- that path still
+ * carries a `TODO: add in geofence` and would produce orgs with a NULL geofence,
+ * which findOrgsForIssue can never match.
+ */
+async function createOrganizations(orgTemplates: SeedOrgTemplate[]) {
+    const orgs = [];
+
+    for (const template of orgTemplates) {
+        // `geofence` is geography(MultiPolygon,4326) behind an opaque customType
+        // with no toDriver, so the value has to arrive as SQL rather than as a
+        // bound string. Three things here break if changed:
+        //
+        // - ST_Multi is required. The column is MultiPolygon and a bare POLYGON
+        //   is rejected with "Geometry type (Polygon) does not match column
+        //   type (MultiPolygon)". ST_Multi promotes one polygon at no cost.
+        // - It is ST_GeomFromText(wkt, 4326)::geography, not ST_GeogFromText --
+        //   ST_Multi operates on geometry, so build the geometry and cast after.
+        // - The insert stays in Drizzle rather than db.execute because `id` and
+        //   `updatedAt` are client-generated ($defaultFn); a hand-written raw
+        //   INSERT would have to supply both.
+        const [org] = await db
+            .insert(schema.organizations)
+            .values({
+                name: template.name,
+                slug: template.slug,
+                type: template.type,
+                status: template.status,
+                tier: template.tier,
+                categoryScope: template.categoryScope,
+                boundarySource: template.boundarySource,
+                boundaryRef: template.boundaryRef,
+                geofence: sql`ST_Multi(ST_GeomFromText(${template.geofenceWKT}, 4326))::geography`,
+            })
+            // Narrowed on purpose: the seed needs id/name/slug, and reading the
+            // opaque geography column back is not something any repository does.
+            .returning({
+                id: schema.organizations.id,
+                name: schema.organizations.name,
+                slug: schema.organizations.slug,
+            });
+
+        log('info', `  Created org: ${org.name} (${org.slug})`);
+        orgs.push(org);
+    }
+
+    return orgs;
+}
+
+/**
+ * Attach seeded users to seeded orgs. Membership is what makes a responder --
+ * see docs/design-decisions/responder-model.md.
+ */
+async function createOrgMemberships(
+    templates: SeedOrgMembershipTemplate[],
+    users: { id: string; email: string }[],
+    orgs: { id: string; slug: string }[],
+) {
+    for (const template of templates) {
+        const user = users.find((u) => u.email === template.userEmail);
+        const org = orgs.find((o) => o.slug === template.orgSlug);
+
+        // A typo in a fixture should fail loudly here rather than silently
+        // seeding an org with no members and a Dispatch screen with no login.
+        if (!user) throw new Error(`No seeded user for ${template.userEmail}`);
+        if (!org) throw new Error(`No seeded org for ${template.orgSlug}`);
+
+        await db.insert(schema.orgMemberships).values({
+            userId: user.id,
+            organizationId: org.id,
+            role: template.role,
+        });
+
+        log('info', `  ${template.userEmail} -> ${template.orgSlug} (${template.role})`);
+    }
 }
 
 /**
@@ -237,6 +350,10 @@ async function printSummary() {
     const [{ value: userCount }] = await db.select({ value: count() }).from(schema.users);
     const [{ value: issueCount }] = await db.select({ value: count() }).from(schema.issues);
     const [{ value: upvoteCount }] = await db.select({ value: count() }).from(schema.upvotes);
+    const [{ value: orgCount }] = await db.select({ value: count() }).from(schema.organizations);
+    const [{ value: membershipCount }] = await db
+        .select({ value: count() })
+        .from(schema.orgMemberships);
 
     // Count by category
     const categoryCounts = await db
@@ -254,6 +371,8 @@ async function printSummary() {
         users: userCount,
         issues: issueCount,
         endorsements: upvoteCount,
+        organizations: orgCount,
+        orgMemberships: membershipCount,
         byCategory: Object.fromEntries(categoryCounts.map(c => [c.category, c.total])),
         byStatus: Object.fromEntries(statusCounts.map(s => [s.status, s.total])),
     });
