@@ -17,7 +17,7 @@ import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-cont
 import LoginScreen from './src/screens/Login/LoginScreen';
 import RegisterScreen from './src/screens/Login/RegisterScreen';
 import IssueCreationNav from './src/screens/IssueCreation/IssueCreationNav';
-import React from 'react';
+import React, { useState } from 'react';
 import { LocationProvider } from './src/contexts/LocationContext';
 import { NearbyIssuesProvider } from './src/contexts/NearbyIssuesContext';
 import LandingScreenNav from './src/screens/Landing/LandingScreenNav';
@@ -28,6 +28,8 @@ import Constants from 'expo-constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import QueueNav from './src/screens/Queue/QueueNav';
 import DispatchNav from './src/screens/Dispatch/DispatchNav';
+import { Issue, IssueStatus, PhotoMetadata } from '@civickit/shared';
+import { CurrentIssueContext, FormStartedContext, ImagesContext, MessageContext, StatusContext, PhotoMetadataContext } from './src/contexts/UpdateFormContexts';
 
 const Tab = createBottomTabNavigator<TabParams>();
 
@@ -47,31 +49,49 @@ const queryClient = new QueryClient({
 
 const Stack = createNativeStackNavigator<StackParams>();
 
+
+
 function MainTabNavigator() {
   const { width, height } = Dimensions.get("window")
   const { role } = useAuth()
-  console.log(role)
+  console.log("Role:", role)
+  //issue updating form contexts
+  const [images, setImages] = useState<string[]>([]);
+  const [photoMetadata, setPhotoMetadata] = useState<PhotoMetadata[]>([]);
+  const [message, setMessage] = useState<string>("");
+  const [status, setStatus] = useState<IssueStatus | null>(null);
+  const [formStarted, setFormStarted] = useState(false)
+  const [currentIssue, setCurrentIssue] = useState<Issue | null>(null)
+
   return (
-    <SafeAreaView style={{
-      width,
-      height,
-      flex: 1,
-    }}>
-      <StatusBar style="dark"
-        translucent={true}
-        hidden={false}
-      />
-      <LocationProvider>
-        <NearbyIssuesProvider>
-          <Tab.Navigator
-            screenOptions={{
+    <ContextWrapper
+      images={images} setImages={setImages}
+      photoMetadata={photoMetadata} setPhotoMetadata={setPhotoMetadata}
+      status={status} setStatus={setStatus}
+      message={message} setMessage={setMessage}
+      formStarted={formStarted} setFormStarted={setFormStarted}
+      currentIssue={currentIssue} setCurrentIssue={setCurrentIssue}
+
+    >
+      <SafeAreaView style={{
+        width,
+        height,
+        flex: 1,
+      }}>
+        <StatusBar style="dark"
+          translucent={true}
+          hidden={false}
+        />
+        <LocationProvider>
+          <NearbyIssuesProvider>
+            <Tab.Navigator screenOptions={{
               tabBarStyle: {
                 backgroundColor: palette.ckVeryLightGray,
                 //an explicit height makes getTabBarHeight return it verbatim and
                 //skip adding insets.bottom, but BottomTabBar still applies
                 //paddingBottom: insets.bottom — so the inset has to be added here
                 //or it eats the space the icons need.
-                height: size.navBarHeight,
+                height: size.xxl + spacing.sm,
                 elevation: 0,
               },
               tabBarShowLabel: false,
@@ -79,102 +99,101 @@ function MainTabNavigator() {
               tabBarInactiveTintColor: colors.textPrimary,
               animation: "shift",
               headerTitleAlign: "left",
-              tabBarHideOnKeyboard: true
+            }}>
 
-            }}
-          >
-            <Tab.Screen name="Map" component={LandingScreenNav}
-              options={{
-                tabBarIcon: ({ color, focused }) => (
-                  <View style={{
-                    ...styles.iconBackground,
-                    backgroundColor: focused ? palette.ckGrayBlue : palette.ckVeryLightGray
-                  }}>
-                    <MapIcon
-                      color={color}
-                      size={size.lg}
-                      style={{ ...styles.icon }}
-                    />
-                  </View>
-                ),
-                headerShown: false
-              }} />
-
-            {(role === 'ORG_ADMIN' || role === 'ORG_MEMBER') && <Tab.Screen name="Dispatch Nav" component={DispatchNav}
-              options={{
-                tabBarIcon: ({ color, focused }) => (
-                  <View style={{
-                    ...styles.iconBackground,
-                    backgroundColor: focused ? palette.ckGrayBlue : palette.ckVeryLightGray
-                  }}>
-                    <MenuIcon
-                      color={color}
-                      size={size.xl}
-                      style={{ ...styles.icon, marginTop: 0 }}
-                    />
-                  </View>
-                ),
-                headerShown: false
-              }} />}
-
-
-            <Tab.Screen name="ReportIssue" component={IssueCreationNav}
-              options={{
-                tabBarIcon: ({ focused }) => (
-                  <View
-                    style={{
-                      ...styles.plusButton,
-                      backgroundColor: focused ? palette.ckYellow : palette.ckRed
+              <Tab.Screen name="Map" component={LandingScreenNav}
+                options={{
+                  tabBarIcon: ({ color, focused }) => (
+                    <View style={{
+                      ...styles.iconBackground,
+                      backgroundColor: focused ? palette.ckGrayBlue : palette.ckVeryLightGray
                     }}>
-                    <PlusIcon
-                      color={colors.textContrast}
-                      size={size.xl}
-                      style={styles.plusIcon}
-                    />
-                  </View>
-                ),
-                headerShown: false
-              }} />
+                      <MapIcon
+                        color={color}
+                        size={size.lg}
+                        style={{ ...styles.icon }}
+                      />
+                    </View>
+                  ),
+                  headerShown: false
+                }} />
 
-            {role != "REPORTER" && <Tab.Screen name="Queue Nav" component={QueueNav}
-              options={{
-                tabBarIcon: ({ color, focused }) => (
-                  <View style={{
-                    ...styles.iconBackground,
-                    backgroundColor: focused ? palette.ckGrayBlue : palette.ckVeryLightGray
-                  }}>
-                    <ClipBoardIcon
-                      color={color}
-                      size={size.lg}
-                      style={{ ...styles.icon }}
-                    />
-                  </View>
-                ),
-                headerShown: false
-              }} />}
-
-            <Tab.Screen name="Stats Nav" component={StatsNav}
-              options={{
-                tabBarIcon: ({ color, focused }) => (
-                  <View style={{
-                    ...styles.iconBackground,
-                    backgroundColor: focused ? palette.ckGrayBlue : palette.ckVeryLightGray
-                  }}>
-                    <LineGraphIcon
-                      color={color}
-                      size={size.lg}
-                      style={{ ...styles.icon }}
-                    />
-                  </View>
-                ),
-                headerShown: false
-              }} />
+              {(role === 'ORG_ADMIN' || role === 'ORG_MEMBER') && <Tab.Screen name="Dispatch Nav" component={DispatchNav}
+                options={{
+                  tabBarIcon: ({ color, focused }) => (
+                    <View style={{
+                      ...styles.iconBackground,
+                      backgroundColor: focused ? palette.ckGrayBlue : palette.ckVeryLightGray
+                    }}>
+                      <MenuIcon
+                        color={color}
+                        size={size.xl}
+                        style={{ ...styles.icon, marginTop: 0 }}
+                      />
+                    </View>
+                  ),
+                  headerShown: false
+                }} />}
 
 
-          </Tab.Navigator>
-        </NearbyIssuesProvider>
-      </LocationProvider>
-    </SafeAreaView>
+              <Tab.Screen name="ReportIssue" component={IssueCreationNav}
+                options={{
+                  tabBarIcon: ({ focused }) => (
+                    <View
+                      style={{
+                        ...styles.plusButton,
+                        backgroundColor: focused ? palette.ckYellow : palette.ckRed
+                      }}>
+                      <PlusIcon
+                        color={colors.textContrast}
+                        size={size.xl}
+                        style={styles.plusIcon}
+                      />
+                    </View>
+                  ),
+                  headerShown: false
+                }} />
+
+              {role != "REPORTER" && <Tab.Screen name="Queue Nav" component={QueueNav}
+                options={{
+                  tabBarIcon: ({ color, focused }) => (
+                    <View style={{
+                      ...styles.iconBackground,
+                      backgroundColor: focused ? palette.ckGrayBlue : palette.ckVeryLightGray
+                    }}>
+                      <ClipBoardIcon
+                        color={color}
+                        size={size.lg}
+                        style={{ ...styles.icon }}
+                      />
+                    </View>
+                  ),
+                  headerShown: false
+                }} />}
+
+              <Tab.Screen name="Stats Nav" component={StatsNav}
+                options={{
+                  tabBarIcon: ({ color, focused }) => (
+                    <View style={{
+                      ...styles.iconBackground,
+                      backgroundColor: focused ? palette.ckGrayBlue : palette.ckVeryLightGray
+                    }}>
+                      <LineGraphIcon
+                        color={color}
+                        size={size.lg}
+                        style={{ ...styles.icon }}
+                      />
+                    </View>
+                  ),
+                  headerShown: false
+                }} />
+
+
+            </Tab.Navigator>
+          </NearbyIssuesProvider>
+        </LocationProvider>
+      </SafeAreaView>
+    </ContextWrapper>
   )
 }
 
@@ -231,6 +250,8 @@ export default function App() {
 }
 
 
+
+
 const styles = StyleSheet.create({
   plusButton: {
     position: "absolute",
@@ -274,3 +295,29 @@ const styles = StyleSheet.create({
     // borderWidth: 2
   }
 });
+
+function ContextWrapper({
+  images, setImages,
+  photoMetadata, setPhotoMetadata,
+  message, setMessage,
+  status, setStatus,
+  formStarted, setFormStarted,
+  currentIssue, setCurrentIssue,
+  children, }: any) {
+  return (
+
+    <ImagesContext.Provider value={{ images, setImages }}>
+      <PhotoMetadataContext.Provider value={{ photoMetadata, setPhotoMetadata }}>
+        <MessageContext.Provider value={{ message, setMessage }}>
+          <StatusContext.Provider value={{ status, setStatus }}>
+            <FormStartedContext.Provider value={{ formStarted, setFormStarted }}>
+              <CurrentIssueContext.Provider value={{ currentIssue, setCurrentIssue }}>
+                {children}
+              </CurrentIssueContext.Provider>
+            </FormStartedContext.Provider>
+          </StatusContext.Provider>
+        </MessageContext.Provider>
+      </PhotoMetadataContext.Provider>
+    </ImagesContext.Provider>
+  )
+}

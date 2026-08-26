@@ -131,7 +131,6 @@ describe('TimelineService', () => {
                 'issue1',
                 'user1'
             );
-
             expect(result).toEqual(mockReturn);
 
         });
@@ -202,6 +201,7 @@ describe('TimelineService', () => {
             }];
             mockTimelineRepository.findByUser.mockResolvedValue(mockUpdate as any);
             const result = await timelineService.getUserUpdates(mockUser.id)
+            expect(result.updates).toEqual(mockReturn);
             expect(result.updates).toEqual(mockReturn);
         });
 

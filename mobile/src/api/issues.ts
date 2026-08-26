@@ -139,6 +139,10 @@ export function claimIssue(issueId: string): Promise<Issue> {
     });
 }
 
+export function updateIssue(issueId: string, update: PostUpdateDTO): Promise<TimelineEntry> {
+    return apiFetch(`/issues/${encodeURIComponent(issueId)}/update`, { method: 'POST', body: update, auth: true });
+}
+
 export function releaseIssue(issueId: string): Promise<Issue> {
     return apiFetch(`/issues/${encodeURIComponent(issueId)}/release`, {
         method: 'POST', auth: true

@@ -94,7 +94,7 @@ export default function IssueSquare({ issue, variant = 'compact', onPress = null
     };
 
     const statusColor =
-        statusColors[localIssue.status.toLowerCase()] || statusColors.default;
+        statusColors[localIssue.status] || statusColors.default;
 
     const styles = StyleSheet.create({
         pressable: {

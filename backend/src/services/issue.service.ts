@@ -1,6 +1,6 @@
 // backend/src/services/issue.service.ts
 
-import { IssueRepository, NearbyIssue } from '../repositories/issue.repository';
+import { IssueRepository } from '../repositories/issue.repository';
 import { CreateIssueDTO, IssueStatus } from '@civickit/shared';
 import { Issue, issueStatus } from '../db/schema';
 import { AppError } from '../utils/errors';

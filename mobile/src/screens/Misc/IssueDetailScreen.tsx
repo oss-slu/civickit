@@ -1,5 +1,5 @@
 // mobile/src/screens/Misc/IssueDetailScreen.tsx
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useContext } from 'react';
 import { Platform, Text, ScrollView, FlatList, Image, StyleSheet, View, TouchableOpacity, useWindowDimensions, useAnimatedValue, TextInput } from 'react-native';
 import { useRoute, RouteProp, useNavigation, useFocusEffect } from '@react-navigation/native';
 import { GetNearbyIssueResponse, Issue } from '@civickit/shared';
@@ -11,17 +11,17 @@ import { authApi, issuesApi, orgsApi } from '../../api';
 import Pin from '../../components/Pin';
 import { showLocation } from 'react-native-map-link';
 import Header from '../../components/Header';
-import { Animated } from 'react-native';
 import StatusBadge from '../../components/StatusBadge';
 import CategoryIcon from '../../components/CategoryIcon';
-import TimelineEntry from '../../components/TimelineEntry';
 import ImageGallery from '../../components/ImageGallery';
 import Timeline from '../../components/Timeline';
 import { useAuth } from '../../contexts/AuthContext';
 import ModalPopUp from '../../components/ModalPopup';
-import { popup } from 'leaflet';
 import { StackParams } from '../../types/StackParams';
 import { StackNavigationProp } from '@react-navigation/stack';
+import UpdatePopup from '../../components/UpdatePopup';
+import { formatted } from '../../utils/dbValues';
+import UnclaimIssuePopup from '../../components/UnclaimIssuePopup';
 
 let MapView: any = null;
 let Marker: any = null;
@@ -44,12 +44,10 @@ const IssueDetailScreen = () => {
   //reports its real height on layout and corrects this
   const [headerOffset, setHeaderOffset] = useState(spacing.xxxl)
   const [issue, setIssue] = useState<Issue | GetNearbyIssueResponse>(route.params.issue);
-
   const { width } = useWindowDimensions();
   const imageWidth = width - spacing.md * 2;
   const imageHeight = imageWidth * 1.25;
   const { role, organization, user } = useAuth()
-  const [releaseMessage, setReleaseMessage] = useState("")
 
   const [hasEndorsed, setHasEndorsed] = useState(false);
 
@@ -62,9 +60,9 @@ const IssueDetailScreen = () => {
   const resolvedAddress = issue.address || 'No address available';
   const formatSource = (source?: string) => source === 'exif' ? 'Photo metadata' : 'Device GPS';
 
+
   //header collapse
   const [lineNum, setLineNum] = useState(4)
-
   const modifyHeader = ({ contentOffset }: any) => {
     if (contentOffset.y > 0) {
       setLineNum(1)
@@ -137,25 +135,6 @@ const IssueDetailScreen = () => {
     }
   }
 
-  const handleRelease = async () => {
-    try {
-      await issuesApi.addTimelineEntry(issue.id, {
-        message: releaseMessage.length > 0 ? organization.name + " unclaimed this issue: " + releaseMessage : organization.name + " unclaimed this issue",
-        status: "REPORTED"
-      })
-      setIssue(await issuesApi.releaseIssue(issue.id))
-    } catch (error) {
-      navigation.push('Error', { errorMessage: 'Issue Release Failed' });
-      throw error;
-    }
-
-  }
-
-  const handleUpdate = async () => {
-    console.log("Update Pressed")
-  }
-
-  const [category, setCategory] = useState<String>(issue.category.replace(/_/g, " ").toLowerCase())
   const photoUrls = issue.photos.map((photo) => photo.url)
 
   return (
@@ -166,7 +145,7 @@ const IssueDetailScreen = () => {
         {/* Image Caption/at a glance info */}
         <View style={styles.imageCaption}>
 
-          <View style={{ flexDirection: "row", columnGap: spacing.sm }}>
+          <View style={{ flexDirection: "row", columnGap: spacing.sm, rowGap: spacing.sm, width: '80%', flexWrap: 'wrap' }}>
 
             <StatusBadge status={issue.status} style={{ paddingHorizontal: spacing.md }} textStyle={{ fontSize: typography.sizeLg }} />
 
@@ -176,7 +155,7 @@ const IssueDetailScreen = () => {
                 size={typography.sizeXl}
               />
               <Text style={styles.catValue}>
-                {category}
+                {formatted(issue.category)}
               </Text>
             </View>
           </View>
@@ -245,7 +224,7 @@ const IssueDetailScreen = () => {
 
         </View>
 
-        <Timeline entries={timelineEntries} />
+        <Timeline entries={timelineEntries} issueCategory={issue.category} />
 
         {/* Map */}
         {Platform.OS !== 'web' && MapView && Marker ? (
@@ -280,31 +259,12 @@ const IssueDetailScreen = () => {
         {((role == "ORG_ADMIN" || role == "ORG_MEMBER") &&
           (issue.claimedById != null && issue.claimedByOrg?.id == organization.id)) &&
 
-          <ModalPopUp
-            buttonBody={
-              <Text style={styles.releaseText}>Unclaim Issue</Text>}
-            closeButtonBody={<Text style={styles.cancelText}>Cancel</Text>}
-            closeButtonStyle={{ position: "relative" }}
-            buttonStyle={styles.releaseButton}
-          >
-            <View style={styles.popup}>
-              <Text style={styles.warningText}>Are you sure?</Text>
-              <TextInput onChangeText={setReleaseMessage}
-                value={releaseMessage}
-                placeholder='Add a note...'
-                style={styles.releaseMessage}
-                multiline
-                numberOfLines={5}
-                maxLength={500}
-                focusable
-              />
-              <TouchableOpacity style={styles.releaseButtonTwo} onPress={handleRelease}>
-                <Text style={styles.longButtonText}>Yes, unclaim this issue</Text>
-              </TouchableOpacity>
-            </View>
-          </ModalPopUp>
-
+          <UnclaimIssuePopup
+            issue={issue}
+            setIssue={setIssue} />
         }
+
+
       </ScrollView>
 
       <Header title={issue.title}
@@ -315,15 +275,16 @@ const IssueDetailScreen = () => {
       {/*TODO: add check for service area/*}
       {/* Endorse / Claim / Update Button */}
       {((role != "ORG_ADMIN" && role != "ORG_MEMBER") || //user is a reporter
-        (issue.claimedById != null && issue.claimedByOrg?.id != organization.id)) ? //issue claimed by a different org
+        (issue.claimedById != null && issue.claimedByOrg?.id != organization.id) || //issue claimed by a different org
+        !organization.categoryScope.includes(issue.category)) ? //issue is not a category this org serves
 
-        <TouchableOpacity style={{ ...styles.longButton, backgroundColor: hasEndorsed ? palette.ckGreen : palette.ckRed, bottom: spacing.ml, marginHorizontal: spacing.ml }} onPress={handleEndorse}>
+        <TouchableOpacity style={{ ...globalStyles.longButton, ...globalStyles.shadow, backgroundColor: hasEndorsed ? palette.ckGreen : palette.ckRed, bottom: spacing.ml, marginHorizontal: spacing.ml }} onPress={handleEndorse}>
           {hasEndorsed ?
             <View style={{ flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
-              <Text style={styles.longButtonText}>Endorsed</Text>
+              <Text style={globalStyles.longButtonText}>Endorsed</Text>
               <CheckMarkIcon color={colors.textContrast} size={typography.sizeXl} />
             </View> :
-            <Text style={styles.longButtonText}>Endorse</Text>
+            <Text style={globalStyles.longButtonText}>Endorse</Text>
           }
         </TouchableOpacity>
         :
@@ -342,9 +303,8 @@ const IssueDetailScreen = () => {
             </TouchableOpacity>
 
 
-            <TouchableOpacity style={{ ...styles.longButton, backgroundColor: palette.ckGreen }} onPress={handleUpdate}>
-              <Text style={styles.longButtonText}>Update</Text>
-            </TouchableOpacity>
+            <UpdatePopup issue={issue} setIssue={setIssue} />
+
           </View> :
 
           <View style={styles.buttonBar}>
@@ -356,8 +316,8 @@ const IssueDetailScreen = () => {
                 <CheckMarkIcon color={colors.textContrast} size={typography.sizeXl} />
               }
             </TouchableOpacity>
-            <TouchableOpacity style={{ ...styles.longButton, backgroundColor: palette.ckRed }} onPress={handleClaim}>
-              <Text style={styles.longButtonText}>Claim</Text>
+            <TouchableOpacity style={{ ...globalStyles.longButton, ...globalStyles.shadow, backgroundColor: palette.ckRed }} onPress={handleClaim}>
+              <Text style={globalStyles.longButtonText}>Claim</Text>
             </TouchableOpacity>
           </View>
 
@@ -385,25 +345,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
     alignItems: 'center',
+    alignSelf: 'flex-end',
     flexDirection: "row",
     columnGap: spacing.sm,
-    height: "100%"
+    // height: "100%"
   },
 
   countValue: {
     fontSize: typography.sizeXl,
     fontWeight: 'bold',
-  },
-
-  releaseMessage: {
-    ...globalStyles.textBox,
-    ...globalStyles.bodyText,
-    minHeight: size.x4l,
-    justifyContent: "flex-start",
-    height: "auto",
-    width: "100%",
-    color: colors.textPrimary,
-
   },
 
   catValue: {
@@ -416,13 +366,11 @@ const styles = StyleSheet.create({
   infoRowText: {
     fontSize: typography.sizeLg,
     color: colors.textPrimary,
-    //textTransform: 'capitalize' causes region to lowercase, and Pm to act weird, need to fix categories without doing this line because now tags is all lowercase
   },
 
   claimedByText: {
     fontSize: typography.sizeLg,
     color: colors.textPrimary,
-    //textTransform: 'capitalize' causes region to lowercase, and Pm to act weird, need to fix categories without doing this line because now tags is all lowercase
   },
 
   claimedByContainter: {
@@ -455,7 +403,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     columnGap: spacing.sm,
     alignItems: "center",
-    justifyContent: "space-between"
+    justifyContent: "space-between",
   },
 
 
@@ -490,16 +438,6 @@ const styles = StyleSheet.create({
     width: "100%",
   },
 
-  longButton: {
-    backgroundColor: palette.ckRed,
-    padding: spacing.md,
-    borderRadius: borderRadius.full,
-    alignItems: 'center',
-    flexGrow: 1,
-    flexShrink: 0,
-    ...globalStyles.shadow
-  },
-
   littleEndorseButton: {
     padding: spacing.md + 3,
     borderRadius: borderRadius.full,
@@ -508,49 +446,9 @@ const styles = StyleSheet.create({
     ...globalStyles.shadow
   },
 
-  longButtonText: {
-    fontSize: typography.sizeXl,
-    fontWeight: 'bold',
-    color: colors.textContrast
-  },
-
-  releaseButton: {
-    backgroundColor: palette.ckLightGray,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderRadius: borderRadius.full,
-    alignSelf: 'center',
-    marginTop: spacing.md
-  },
-  releaseText: {
-    color: colors.textSecondary,
-    fontSize: typography.sizeLg
-  },
-  cancelText: {
-    fontSize: typography.sizeXl,
-    fontWeight: 'bold',
-    color: colors.textContrast,
-  },
-  releaseButtonTwo: {
-    backgroundColor: palette.ckGreen,
-    paddingVertical: spacing.sm,
-    alignItems: "center",
-    borderRadius: borderRadius.full,
-    width: "100%"
-  },
-  warningText: {
-    color: colors.textPrimary,
-    fontSize: typography.sizeXl,
-    fontWeight: typography.weightMedium
-  },
-  popup: {
-    alignItems: "center",
-    rowGap: spacing.sm,
-    marginBottom: spacing.sm
-  },
   orgProfilePic: {
     width: size.xl,
     height: size.xl,
     borderRadius: borderRadius.full
-  }
+  },
 },);

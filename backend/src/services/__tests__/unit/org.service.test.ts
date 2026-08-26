@@ -82,6 +82,7 @@ describe('OrgService', () => {
       const result = await orgService.findIssuesForOrg('org-1');
 
       expect(result).toEqual(mockReturn);
+      expect(result).toEqual(mockReturn);
       expect(mockOrgRepository.findIssuesForOrg).toHaveBeenCalledWith('org-1');
     });
 

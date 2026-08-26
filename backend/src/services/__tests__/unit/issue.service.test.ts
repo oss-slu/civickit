@@ -326,8 +326,8 @@ describe('IssueService', () => {
   describe('getIssuesByUser', () => {
     it('should pass the repository rows through with their upvoteCount', async () => {
       const mockIssues = [
-        { id: 'issue-1', upvoteCount: 5 },
-        { id: 'issue-2', upvoteCount: 0 },
+        { id: 'issue-1', upvoteCount: 5, },
+        { id: 'issue-2', upvoteCount: 0, },
       ];
       mockIssueRepository.findByUser.mockResolvedValue(mockIssues as any);
 
@@ -370,7 +370,9 @@ describe('IssueService', () => {
     });
 
     it('should pass a valid status through to the repository', async () => {
-      const updated = { id: 'issue-1', status: 'RESOLVED' };
+      const updated = {
+        id: 'issue-1', status: 'RESOLVED',
+      };
       (mockIssueRepository.updateStatus as any).mockResolvedValue(updated);
 
       const result = await issueService.updateStatus('issue-1', 'RESOLVED');

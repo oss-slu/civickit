@@ -5,6 +5,7 @@ import { IssueStatusArray } from "../types/IssueStatusArray";
 import { borderRadius, colors, palette, size, spacing, statusColors, typography } from "../styles/theme";
 import { Text, StyleSheet, View } from "react-native"
 import { IssueCategoryArray } from "../types/IssueCategoryArray";
+import { dbFormatted } from "../utils/dbValues";
 
 const catColors = [
     palette.ckRed,
@@ -25,9 +26,9 @@ export default function CategoryPieChart({ categoryNumbers }: any) {
     useEffect(() => {
         i = 0;
         setPieData(IssueCategoryArray.map(category => ({
-            value: categoryNumbers[category.toUpperCase().replace(" ", "_")],
+            value: categoryNumbers[dbFormatted(category)],
             color: catColors[i++],
-            text: categoryNumbers[category.toUpperCase().replace(" ", "_")],
+            text: categoryNumbers[dbFormatted(category)],
             category: category
         })))
 

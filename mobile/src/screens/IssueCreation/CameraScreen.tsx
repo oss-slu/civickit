@@ -6,28 +6,36 @@ import { CameraView, CameraType, useCameraPermissions, FlashMode } from 'expo-ca
 import { MessageView } from '../../components/MessageView';
 import Button from '../../components/Button';
 import { borderRadius, colors, palette, size, spacing, typography } from '../../styles';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { StaticScreenProps, useFocusEffect, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { StackParams } from '../../types/StackParams';
 import { FlashlightOffIcon, FlashlightOnIcon, FlipCameraIcon, LightingFillIcon, LightingOutlineIcon, PictureIcon, WarningIcon } from '../../components/Icons';
 import WrapperButton from '../../components/WrapperButton';
-import { FormStartedContext, ImagesContext, PhotoMetadataContext } from '../../contexts/FormContexts';
+import { FormStartedContext as CreationFormStartedContext, ImagesContext as CreationImagesContext, PhotoMetadataContext as CreationPhotoMetadataContext } from '../../contexts/CreationFormContexts';
+import { FormStartedContext as UpdateFormStartedContext, ImagesContext as UpdateImagesContext, PhotoMetadataContext as UpdatePhotoMetadataContext } from '../../contexts/UpdateFormContexts';
+import { CurrentIssueContext } from '../../contexts/UpdateFormContexts';
 import { useNearbyIssues } from '../../contexts/NearbyIssuesContext';
 import LoadingScreen from '../Misc/LoadingScreen';
 import { extractPhotoMetadataFromExif } from '@civickit/shared';
 import { MAX_PHOTOS } from '../../constants/photos';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocation } from '../../contexts/LocationContext';
+import { FormSource } from '../../types/FormSource';
+
+type Props = StaticScreenProps<{
+    source: FormSource
+}>;
 
 
-export default function CameraScreen() {
-    const { images, setImages } = useContext(ImagesContext);
-    const { photoMetadata, setPhotoMetadata } = useContext(PhotoMetadataContext);
+export default function CameraScreen({ route }: Props) {
+    const { images, setImages } = route.params.source == 'ISSUE_CREATION' ? useContext(CreationImagesContext) : useContext(UpdateImagesContext)
+    const { photoMetadata, setPhotoMetadata } = route.params.source == 'ISSUE_CREATION' ? useContext(CreationPhotoMetadataContext) : useContext(UpdatePhotoMetadataContext)
+    const { currentIssue, setCurrentIssue } = useContext(CurrentIssueContext)
     const [facing, setFacing] = useState<CameraType>('back');
     const [flashOn, setFlashOn] = useState<FlashMode>('off')
     const [enableTorch, setEnableTorch] = useState<boolean>(false)
     const [permissions, requestPermission] = useCameraPermissions();
-    const { formStarted, setFormStarted } = useContext(FormStartedContext)
+    const { formStarted, setFormStarted } = route.params.source == 'ISSUE_CREATION' ? useContext(CreationFormStartedContext) : useContext(UpdateFormStartedContext)
     const [mounted, setMounted] = useState(true)
     const { inBounds } = useLocation()
 
@@ -87,18 +95,26 @@ export default function CameraScreen() {
 
         const photo = await ref.current?.takePictureAsync({ shutterSound: false, exif: true });
         if (photo?.uri) {
+            const meta = extractPhotoMetadataFromExif(photo.exif)
+            let w = photo.width
+            let h = photo.height
+            if (meta.orientation == 6) {
+                w = photo.height
+                h = photo.width
+            }
+
             navigation.replace("Photo Validation", {
                 uri: photo.uri,
                 metadata: {
-                    ...extractPhotoMetadataFromExif(photo.exif),
-                    width: photo.width,
-                    height: photo.height,
+                    ...meta,
+                    width: w,
+                    height: h,
                 },
+                source: route.params.source
             })
         }
 
     };
-
 
 
     const pickImage = async () => {
@@ -122,10 +138,14 @@ export default function CameraScreen() {
                 }))
                 setPhotoMetadata([...photoMetadata, ...metadataList]);
                 setImages([...images, ...resultList]);
-                if (!formStarted && data.issues.filter((i: any) => i.distance <= 15.24).length > 0) {
-                    navigation.replace("DuplicateCheck", {})
-                } else {
-                    navigation.replace("Report An Issue", {})
+                if (route.params.source == 'ISSUE_CREATION') {
+                    if (!formStarted && data.issues.filter((i: any) => i.distance <= 15.24).length > 0) {
+                        navigation.replace("DuplicateCheck", {})
+                    } else {
+                        navigation.replace("Report An Issue", {})
+                    }
+                } else if (currentIssue) {
+                    navigation.popTo("Issue Details", { issue: currentIssue })
                 }
 
             }
@@ -161,9 +181,11 @@ export default function CameraScreen() {
                 </WrapperButton>
 
 
-                <View style={[styles.warningContainer]}>
-                    <Text style={styles.warningText}>If you believe this is an emergency, please exit the app and dial 911 immediately.</Text>
-                </View>
+                {route.params.source == 'ISSUE_CREATION' &&
+                    <View style={[styles.warningContainer]}>
+                        <Text style={styles.warningText}>If you believe this is an emergency, please exit the app and dial 911 immediately.</Text>
+                    </View>
+                }
 
                 <WrapperButton onPress={toggleFlash} style={{
                     ...styles.roundButton,

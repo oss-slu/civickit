@@ -29,22 +29,22 @@ export default function TimelineEntry({ timelineEntry, issueCategory = "OTHER", 
                 {pictures.length == 0 ?
                     <View style={{
                         ...styles.dot, flexDirection: "row", alignItems: "center", justifyContent: "center",
-                        backgroundColor: statusColors[timelineEntry.status.toLowerCase()].background,
-                        borderColor: statusColors[timelineEntry.status.toLowerCase()].background
+                        backgroundColor: statusColors[timelineEntry.status].background,
+                        borderColor: statusColors[timelineEntry.status].background
                     }}>
                         <CategoryIcon
                             category={issueCategory}
-                            color={statusColors[timelineEntry.status.toLowerCase()].text}
+                            color={statusColors[timelineEntry.status].text}
                             size={typography.sizeXxl}
                             style={{ borderWidth: 0, height: "100%", alignSelf: "center", paddingLeft: 4, paddingTop: 7 }}
                         />
                     </View>
                     :
                     <Image source={{ uri: timelineEntry.photos[0].url }}
-                        style={styles.dot} />
+                        style={{ ...styles.dot, borderColor: statusColors[timelineEntry.status].background }} />
                 }
 
-                {!last && <View style={{ ...styles.line, height: height, backgroundColor: statusColors[timelineEntry.status.toLowerCase()].background }} />}
+                {!last && <View style={{ ...styles.line, height: height, backgroundColor: statusColors[timelineEntry.status].background }} />}
             </View>
 
 
@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
     },
     leftContainter: {
         flexDirection: "column",
-        alignItems: "center"
+        alignItems: "center",
     },
     dot: {
         height: size.xxl,
@@ -153,7 +153,6 @@ const styles = StyleSheet.create({
         marginTop: spacing.xs,
         borderRadius: borderRadius.full,
         borderWidth: 3,
-        borderColor: palette.ckRed,
     },
     timestamp: {
         fontSize: typography.sizeMd,
@@ -186,6 +185,6 @@ const styles = StyleSheet.create({
     picture: {
         width: size.x4l,
         height: size.x4l,
-        borderRadius: borderRadius.lg
+        borderRadius: borderRadius.lg,
     }
 })

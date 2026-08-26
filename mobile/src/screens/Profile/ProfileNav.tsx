@@ -11,6 +11,8 @@ import { palette, colors, globalStyles, size, spacing, typography, borderRadius 
 import Button from '../../components/Button';
 import IssueDetailScreen from '../Misc/IssueDetailScreen';
 import LeaderBoardScreen from '../Misc/LeaderboardScreen';
+import PhotoValidationScreen from '../IssueCreation/PhotoValidationScreen';
+import CameraScreen from '../IssueCreation/CameraScreen';
 const Stack = createNativeStackNavigator<StackParams>();
 
 export default function ProfileNav() {
@@ -64,6 +66,14 @@ export default function ProfileNav() {
             <Stack.Screen name="My Endorsements" component={LeaderBoardScreen}
                 options={{
                     headerShown: false
+                }} />
+            <Stack.Screen name="Photo Validation" component={PhotoValidationScreen}
+                options={{
+                    headerShown: false
+                }} />
+            <Stack.Screen name="Camera" component={CameraScreen}
+                options={{
+                    headerShown: false,
                 }} />
         </Stack.Navigator>
     );

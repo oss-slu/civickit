@@ -25,6 +25,7 @@ export default function SelectedImage({ source, metadata, onDeletePressed, width
         }
     }
 
+
     const styles = StyleSheet.create({
         container: {
             justifyContent: "center",

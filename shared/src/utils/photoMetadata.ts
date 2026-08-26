@@ -12,6 +12,7 @@ export interface PhotoMetadata {
      */
     width?: number;
     height?: number;
+    orientation?: number;
 }
 
 const toNumber = (value: unknown): number | undefined => {
@@ -56,10 +57,13 @@ export function extractPhotoMetadataFromExif(exif?: Record<string, unknown> | nu
     const resolvedLongitude = longitude === undefined ? undefined : longitudeRef.toUpperCase() === 'W' ? -Math.abs(longitude) : longitude;
     const hasUsableLocation = isUsableCoordinate(resolvedLatitude, resolvedLongitude);
 
+    const Orientation = toNumber(exif.Orientation)
+
     return {
         latitude: hasUsableLocation ? resolvedLatitude : undefined,
         longitude: hasUsableLocation ? resolvedLongitude : undefined,
         takenAt: parseDate(exif.DateTimeOriginal ?? exif.DateTimeDigitized ?? exif.DateTime ?? exif.timestamp),
+        orientation: Orientation
     };
 }
 

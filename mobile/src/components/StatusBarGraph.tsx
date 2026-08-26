@@ -4,19 +4,20 @@ import { BarChart, PieChart } from "react-native-gifted-charts"
 import { IssueStatusArray } from "../types/IssueStatusArray";
 import { borderRadius, colors, spacing, statusColors } from "../styles/theme";
 import { Text, StyleSheet } from "react-native"
+import { dbFormatted } from "../utils/dbValues";
 
 export default function StatusBarGraph({ statusNumbers }: any) {
     const [barData, setBarData] = useState<any>(undefined)
 
     useEffect(() => {
         setBarData(IssueStatusArray.map(status => ({
-            value: statusNumbers[status.toUpperCase().replace(" ", "_")],
-            frontColor: statusColors[status.toLowerCase().replace(" ", "_")].background,
+            value: statusNumbers[dbFormatted(status)],
+            frontColor: statusColors[dbFormatted(status)].background,
             label: status,
             topLabelComponent: () => (
                 <Text style={{
-                    color: statusColors[status.toLowerCase().replace(" ", "_")].background
-                }}>{statusNumbers[status.toUpperCase().replace(" ", "_")]}</Text>
+                    color: statusColors[dbFormatted(status)].background
+                }}>{statusNumbers[dbFormatted(status)]}</Text>
             )
         })))
     }, [statusNumbers])

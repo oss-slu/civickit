@@ -100,6 +100,33 @@ export const globalStyles = StyleSheet.create({
         textAlign: "center"
     },
 
+    longButton: {
+        backgroundColor: palette.ckRed,
+        padding: spacing.md,
+        borderRadius: borderRadius.full,
+        alignItems: 'center',
+        flexGrow: 1,
+        flexShrink: 0,
+    },
+    longButtonText: {
+        fontSize: typography.sizeXl,
+        fontWeight: 'bold',
+        color: colors.textContrast
+    },
+    textBoxBig: {
+        borderRadius: borderRadius.lg,
+        backgroundColor: colors.backgroundSecondary,
+        paddingHorizontal: spacing.md,
+        paddingVertical: spacing.sm,
+        fontSize: typography.sizeMd,
+        lineHeight: 22,
+        minHeight: size.x4l,
+        justifyContent: "flex-start",
+        height: "auto",
+        width: "100%",
+        color: colors.textPrimary,
+    },
+
     thumbnail: {
         width: size.xxxl,
         height: size.xxxl,

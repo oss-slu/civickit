@@ -188,10 +188,9 @@ const styles = StyleSheet.create({
     header: {
         rowGap: spacing.sm,
         flexDirection: "column",
-        borderBottomWidth: 3,
-        borderColor: colors.backgroundSecondary,
         alignItems: "flex-start",
         width: "100%",
+        marginTop: spacing.sm,
     },
     headerText: {
         color: colors.textPrimary,
