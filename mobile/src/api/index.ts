@@ -8,4 +8,3 @@ export * as authApi from './auth';
 export * as issuesApi from './issues';
 export * as uploadApi from './upload';
 export * as orgsApi from './orgs'
-export * as imagesApi from './images'
