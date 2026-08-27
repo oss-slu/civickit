@@ -20,7 +20,12 @@
 
 import "dotenv/config";
 import { seedDatabase, cleanupDatabase } from './seed-utils.js';
-import { issueTemplates, userTemplates } from './seed-data.js';
+import {
+    issueTemplates,
+    organizationTemplates,
+    orgMembershipTemplates,
+    userTemplates,
+} from './seed-data.js';
 
 // Logging utility
 function log(level: 'info' | 'warn' | 'error', message: string, data?: unknown) {
@@ -106,6 +111,8 @@ Examples:
 Data:
   Users:    ${userTemplates.length} (password: password123)
   Issues:   ${issueTemplates.length}
+  Orgs:     ${organizationTemplates.length} (${organizationTemplates.map((o) => o.slug).join(', ')})
+  Members:  ${orgMembershipTemplates.length} (${orgMembershipTemplates.map((m) => m.userEmail).join(', ')})
   Location: St. Louis, MO (Midtown area)
   `);
 }

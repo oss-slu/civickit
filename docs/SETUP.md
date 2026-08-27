@@ -165,6 +165,43 @@ set REACT_NATIVE_PACKAGER_HOSTNAME=<your tailscale ip> && npx expo start
 Image uploads go from the phone straight to Cloudinary, so they keep working on
 cellular either way.
 
+### When you aren't in St. Louis
+
+The app is geographically fenced in two independent places, and both fail closed
+outside the service area:
+
+- The nearby-issues feed asks the backend for issues within **5 miles** of the
+  device. Every seed fixture is in Midtown St. Louis, so from anywhere else the
+  Dispatch and Queue screens are simply empty.
+- `inBounds` tests the device against the St. Louis city boundary. Outside it,
+  the app shows "You are outside of our service area" and disables issue
+  submission.
+
+Neither is a bug, and neither is fixable from the backend — both read the device
+GPS directly. So a developer in another city sees an empty, half-disabled app
+and has no way to tell that apart from something actually being broken.
+
+To borrow St. Louis coordinates, create `mobile/.env.local` (gitignored) with:
+
+```
+EXPO_PUBLIC_DEV_LOCATION=midtown
+```
+
+Then restart Metro with the cache cleared — Expo inlines `EXPO_PUBLIC_*` at
+bundle time, so a plain reload will not pick it up:
+
+```bash
+npm start -c
+```
+
+`midtown` sits inside the seeded Midtown CID geofence and within 5 miles of all
+twelve seeded issues. Use `out-of-area` to test the outside-the-service-area
+banner deliberately, including from inside St. Louis. For any other point, set
+`EXPO_PUBLIC_DEV_LAT` and `EXPO_PUBLIC_DEV_LNG` instead — see
+`mobile/.env.example`.
+
+This applies in development only; release builds ignore it entirely.
+
 ## Web Setup
 ```bash
 cd web
