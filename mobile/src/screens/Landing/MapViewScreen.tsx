@@ -17,6 +17,7 @@ import { getDistance, isPointInPolygon } from 'geolib';
 import CalloutListPopup from '../../components/CalloutListPopup';
 import { GetNearbyIssueResponse } from '@civickit/shared';
 import cityBounds from '../../../assets/shapes/stl_boundary_inverted.json'
+import { useAuth } from '../../contexts/AuthContext';
 // import Geojson from 'react-native-geojson';
 
 interface IssueCluster {
@@ -43,6 +44,7 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
     const posAnim = useAnimatedValue(0);
     const [paddingBottom, setPaddingBottom] = useState("110%")
     const { setInBounds } = useLocation()
+    const { role, organization } = useAuth()
     //initial value matches the initialRegion delta (0.05) with the same
     //zoom factor used in onRegionChange, so the first render clusters the
     //same way as every render after the map settles
@@ -207,6 +209,10 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
     //wrap the hole once too — an inline [stlPoints] literal is a new array on
     //every render, which rebuilds the native path and can drop the overlay
     const boundaryHoles = useMemo(() => [stlPoints], [stlPoints])
+
+    if (role == 'ORG_ADMIN' || role == 'ORG_MEMBER') {
+        console.log(organization.geofence.rows[0].st_asgeojson.coordinates[0])
+    }
 
     return (
         <View style={{ flex: 1 }}>

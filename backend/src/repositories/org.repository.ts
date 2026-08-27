@@ -50,7 +50,13 @@ export class OrgRepository {
   }
 
   async findById(id: string) {
-    return first(await db.select().from(organizations).where(eq(organizations.id, id)).limit(1));
+    const org = first(await db.select().from(organizations).where(eq(organizations.id, id)).limit(1));
+    const geofence = await db.execute(sql`SELECT ST_AsGeoJSON(st_transform(${org?.geofence},4326))::json`)
+    return {
+      ...org,
+      geofence
+    }
+
   }
 
   // Orgs whose geofence contains the issue's point AND whose categoryScope
