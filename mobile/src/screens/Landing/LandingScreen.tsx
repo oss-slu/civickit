@@ -1,5 +1,5 @@
 // mobile/src/screens/Landing/LandingScreen.tsx
-import { useCallback, useContext, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { useAuth } from '../../contexts/AuthContext';
 import { MessageView } from "../../components/MessageView";
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
@@ -21,6 +21,8 @@ import Button from "../../components/Button";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { StackParams } from "../../types/StackParams";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { orgsApi } from "../../api";
+import { geoJSON } from "leaflet";
 
 export default function LandingScreen({ children }: any) {
     const insets = useSafeAreaInsets()
@@ -28,12 +30,24 @@ export default function LandingScreen({ children }: any) {
     const [refreshing, setRefreshing] = useState(false)
     const [visibleCategories, setVisibleCategories] = useState(IssueCategoryArray)
     const [visibleStatuses, setVisibleStatuses] = useState(IssueStatusArray)
+
     const navigation = useNavigation<StackNavigationProp<StackParams>>()
     const { inBounds } = useLocation()
 
     //get contexts from above layer(s)
     const { data, isLoading, isFetching, error, refetch } = useNearbyIssues()
     const location = useLocation().location
+
+    const [availableAreas, setAvailableAreas] = useState<any[]>([])
+    const areaName = "St. Louis"
+    const [visibleAreas, setVisibleAreas] = useState<any[]>([])
+    const [allChecked, setAllChecked] = useState(true)
+    //have 1 option represent "All of St. Louis" -> when checked, everything else is unchecked
+    //get list of organizations and get their geofence's
+    //write "get stl issues" route (or just make radius big enough that it covers all of stl) 
+    //assign random colors to areas (relativly low opacity) -> like in cat stats
+    //include colors on selected so can tell what's what w/o labels
+    //or have labels appear on zoom in
 
     const mapRef = useRef<MapView | null>(null);
 
@@ -50,6 +64,30 @@ export default function LandingScreen({ children }: any) {
             }, 800);
         }
     }, [isFetching, isMinLoading, refetch]);
+
+    const getAreaOrgs = async () => {
+        const activeorgs = await orgsApi.getAllActiveOrgs()
+        const active = []
+        for (let i = 0; i < activeorgs.length; i++) {
+            const gf = toCoords(activeorgs[i])
+            active.push({
+                name: activeorgs[i].name,
+                profilePhoto: activeorgs[i].profilePhoto,
+                geofence: gf,
+            })
+        }
+
+        setAvailableAreas(active)
+    }
+
+    useEffect(() => {
+        getAreaOrgs()
+    }, [])
+
+    const toCoords = (gj: any) => {
+        const c = gj.geofence.rows[0].st_asgeojson.coordinates[0][0].map((point: any) => ({ latitude: point[1], longitude: point[0] }))
+        return c
+    }
 
     useFocusEffect(
         useCallback(() => {
@@ -118,9 +156,7 @@ export default function LandingScreen({ children }: any) {
                         <AccountIcon size={styles.button.fontSize} color={styles.button.color} />
                     </WrapperButton>
 
-                    {/* Will eventually be a dropdown of regions/neighbordhoods etc..
-                        Static label until then — the caret was removed because it
-                        read as tappable on a View with no press handler. */}
+
                     <View style={styles.region}>
                         <Text style={styles.regionText}
                             numberOfLines={1}
