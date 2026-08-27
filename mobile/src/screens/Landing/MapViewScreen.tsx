@@ -44,7 +44,7 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
     const posAnim = useAnimatedValue(0);
     const [paddingBottom, setPaddingBottom] = useState("110%")
     const { setInBounds } = useLocation()
-    const { role, organization } = useAuth()
+    const { role, geofence } = useAuth()
     //initial value matches the initialRegion delta (0.05) with the same
     //zoom factor used in onRegionChange, so the first render clusters the
     //same way as every render after the map settles
@@ -210,10 +210,6 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
     //every render, which rebuilds the native path and can drop the overlay
     const boundaryHoles = useMemo(() => [stlPoints], [stlPoints])
 
-    if (role == 'ORG_ADMIN' || role == 'ORG_MEMBER') {
-        console.log(organization.geofence.rows[0].st_asgeojson.coordinates[0])
-    }
-
     return (
         <View style={{ flex: 1 }}>
             <MapView
@@ -235,12 +231,21 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
             >
                 {markerList}
                 <Polygon
-                    key="stl-outline"
+                    key="org-geofence"
                     coordinates={stlPoints}
                     strokeColor={'black'}
                     strokeWidth={1}
                     fillColor='rgba(0,0,0,0)'
                 />
+                {(role == 'ORG_ADMIN' || role == 'ORG_MEMBER') && geofence &&
+                    <Polygon
+                        key="org-geodence"
+                        coordinates={geofence}
+                        strokeColor={'black'}
+                        strokeWidth={1}
+                        fillColor='rgba(0,0,0,0)'
+                    />
+                }
                 <Polygon
                     key="stl-shading"
                     coordinates={worldPoints}

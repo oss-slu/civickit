@@ -4,6 +4,7 @@ import { getToken, saveToken, deleteToken } from '../services/tokenStorage';
 import { User } from '@civickit/shared';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { authApi, queryKeys, setUnauthorizedHandler, orgsApi } from '../api';
+import { LatLng } from 'leaflet';
 
 type Role = "REPORTER" | "ORG_MEMBER" | "ORG_ADMIN" | "ADMIN"
 interface AuthContextType {
@@ -16,6 +17,7 @@ interface AuthContextType {
     user: User | null;
     role: Role | null
     organization: any
+    geofence: any
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -27,6 +29,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [user, setUser] = useState<User | null>(null);
     const [role, setRole] = useState<Role | null>(null)
     const [organization, setOrganization] = useState<any>(null)
+    const [geofence, setGeofence] = useState<LatLng[]>()
     const queryClient = useQueryClient()
 
     // On mount, check for token to determine if user is logged in
@@ -52,7 +55,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
 
         const getOrgByUserId = async (userId: any) => {
-            setOrganization(await orgsApi.getOrgByUserId(userId))
+            const org = await orgsApi.getOrgByUserId(userId)
+            setOrganization(org)
+            setGeofence(org.geofence.rows[0].st_asgeojson.coordinates[0][0].map((point: any) => ({ latitude: point[1], longitude: point[0] })))
         }
 
         if (user != null) {
@@ -116,7 +121,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
 
     return (
-        <AuthContext.Provider value={{ isLoggedIn, isLoading, authToken, login, logout, setUser, user, role, organization }}>
+        <AuthContext.Provider value={{ isLoggedIn, isLoading, authToken, login, logout, setUser, user, role, organization, geofence }}>
             {children}
         </AuthContext.Provider>
     );

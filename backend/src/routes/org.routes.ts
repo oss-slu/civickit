@@ -15,6 +15,7 @@ router.get('/:orgId/getMembershipsbyOrgId', authMiddleware, orgController.getMem
 
 router.get('/:userId/getOrgByUserId', authMiddleware, orgController.getOrgByUserId);
 router.get('/:userId/getMembershipByUserId', authMiddleware, orgController.getMembershipByUserId);
+router.get('/active', authMiddleware, orgController.getAllActiveOrgs)
 
 
 

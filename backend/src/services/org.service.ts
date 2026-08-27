@@ -53,6 +53,15 @@ export class OrgService {
     return await this.getOrgWithPhoto(org);
   }
 
+  async getAllActiveOrgs() {
+    let orgs = await this.orgRepository.findAllActive();
+    for (let i = 0; i < orgs.length; i++) {
+      orgs[i] = await this.getOrgWithPhoto(orgs[i]);
+    }
+
+    return orgs
+  }
+
   async getOrgByUserId(userId: string) {
     const membership = await membershipRepository.findByUser(userId)
     if (!membership) {

@@ -59,6 +59,20 @@ export class OrgRepository {
 
   }
 
+  async findAllActive() {
+    let orgs: any = await db.select().from(organizations).where(eq(organizations.status, "ACTIVE"));
+    for (let i = 0; i < orgs.length; i++) {
+      const geofence = await db.execute(sql`SELECT ST_AsGeoJSON(st_transform(${orgs[i]?.geofence},4326))::json`)
+      orgs[i] = {
+        ...orgs[i],
+        geofence
+      }
+    }
+
+    return orgs
+
+  }
+
   // Orgs whose geofence contains the issue's point AND whose categoryScope
   // includes the issue's category AND are ACTIVE.
   //

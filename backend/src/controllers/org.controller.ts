@@ -57,6 +57,15 @@ export class OrgController {
     }
   }
 
+  async getAllActiveOrgs(req: Request, res: Response, next: NextFunction) {
+    try {
+      const orgs = await orgService.getAllActiveOrgs();
+      res.json(orgs);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async getOrgByUserId(req: Request, res: Response, next: NextFunction) {
     try {
       const org = await orgService.getOrgByUserId(String(req.params.userId));
