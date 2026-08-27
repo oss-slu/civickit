@@ -7,7 +7,6 @@ node_modules/
 .expo/
 dist/
 web-build/
-expo-env.d.ts
 
 # Native
 .kotlin/
@@ -30,17 +29,9 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# local env files
-.env
-.env*.local
-
 # typescript
 *.tsbuildinfo
 
 # generated native folders
 /ios
 /android
-
-# android info
-civickit-f67b4-firebase-adminsdk-fbsvc-e7d6b559c9.json
-google-services.json

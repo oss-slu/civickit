@@ -10,6 +10,7 @@ import uploadRoutes from './routes/upload.routes';
 import loginRoutes from './routes/login.routes';
 import orgRoutes from './routes/org.routes'
 import RateLimit from 'express-rate-limit';
+import pushTokenRoutes from './routes/pushToken.routes';
 import { errorHandler } from './middleware/error.middleware';
 import { requestLogger } from './middleware/logger.middleware';
 import { toNodeHandler } from "better-auth/node";
@@ -67,12 +68,12 @@ app.get('/health', (req, res) => {
 app.use(limiter)
 
 // Routes
-// TODO: Add routes
 app.use('/api/issues', issueRoutes);
 app.use('/api/organizations', orgRoutes)
 app.use('/api/auth/login', loginRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/push-tokens', pushTokenRoutes)
 
 // Error handling
 // 404 handler

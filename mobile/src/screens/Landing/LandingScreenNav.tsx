@@ -37,11 +37,6 @@ export default function LandingScreenNav() {
             <Stack.Screen name="Issue Details" component={IssueDetailScreen}
                 options={({ route }) => ({
                     headerShadowVisible: false,
-                    headerTitle: () => {
-                        return (
-                            <Header title={route.params.issue.title} numberOfLines={3} />
-                        )
-                    },
                     headerShown: false
                 })} />
             <Stack.Screen name="Error" component={ErrorScreen} />

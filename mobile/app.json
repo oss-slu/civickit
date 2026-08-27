@@ -1,14 +1,14 @@
 {
   "expo": {
-    "name": "mobile",
+    "name": "Civickit",
     "slug": "mobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/logos/ckLogocolorwbg.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/logos/ckLogocolorwbg.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -17,14 +17,20 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/logos/ckLogocolorwbg.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.mobile",
-      "softwareKeyboardLayoutMode": "adjustPan"
+      "package": "org.civickit.civickit",
+      "softwareKeyboardLayoutMode": "adjustPan",
+      "config": {
+        "googleMaps": {
+          "apiKey": "process.env.GOOGLE_MAPS_API_KEY"
+        }
+      }
     },
+    "scheme": "civickit",
     "web": {
       "favicon": "./assets/favicon.ico"
     },

@@ -201,6 +201,20 @@ export const timelineEntries = pgTable(
   ],
 );
 
+export const pushTokens = pgTable(
+  'PushToken',
+  {
+    id: cuid(),
+    userId: text('userId').notNull(),
+    token: text('token').notNull().unique(),
+    platform: text('platform').notNull(),
+    createdAt: timestamp3('createdAt').notNull().defaultNow(),
+    lastSeenAt: timestamp3('lastSeenAt').notNull().defaultNow(),
+  },
+);
+
+
+
 /**
  * Photos are owned parts, not shared entities. `issueId` is set on every issue
  * photo whenever it arrived; `timelineEntryId` is set only for photos added by

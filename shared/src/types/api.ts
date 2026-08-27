@@ -12,6 +12,13 @@ export interface ApiResponse<T> {
     message?: string;
 }
 
+
+export interface PushTokenDTO {
+    userId: string;
+    token: string;
+    platform: string;
+}
+
 export interface CreateIssueDTO {
     title: string;
     description: string;

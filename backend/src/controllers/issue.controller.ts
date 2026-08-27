@@ -9,6 +9,9 @@ import { AuthRepository } from '../repositories/auth.repository';
 import { PhotoRepository } from '../repositories/photo.repository';
 import { OrgRepository } from '../repositories/org.repository';
 import { MembershipRepository } from '../repositories/membership.repository';
+import { NotificationService } from '../services/notification.service';
+import { PushTokenRepository } from '../repositories/pushToken.repository'
+
 
 const photoRepository = new PhotoRepository()
 const issueRepository = new IssueRepository()
@@ -22,6 +25,13 @@ const issueService = new IssueService(
 const timelineService = new TimelineService(
   new TimelineRepository(), photoRepository, authRepository,
 );
+const pushTokenRepository = new PushTokenRepository()
+const notificationService = new NotificationService(
+  pushTokenRepository,
+  issueRepository,
+  orgRepository,
+  membershipRepository)
+
 
 // Parses an optional `limit` query param, clamped to [1, 200], defaulting to 100.
 function parseLimit(raw: unknown): number {
@@ -69,6 +79,13 @@ export class IssueController {
         String(issue.id),
         userId,
       );
+
+      try {
+        await notificationService.notifyNewIssue(issue.id)
+      } catch {
+        console.log("Could not send notifications")
+      }
+
 
       res.status(201).json(issue);
     } catch (error) {
