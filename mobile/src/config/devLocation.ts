@@ -2,6 +2,25 @@
 import { userLocation } from '../types/userLocation';
 
 /**
+ * Named places a developer is likely to want to stand in, so the common cases
+ * need no coordinates at all. Latitude and longitude are easy to swap and the
+ * consequence is a silent empty feed, so not typing them is the point.
+ */
+const DEV_LOCATIONS: Record<string, userLocation> = {
+    // Inside the seeded Midtown CID geofence, and within 5 miles of all twelve
+    // seeded issues (farthest is 2.44mi). The default for testing the
+    // responder flow from anywhere.
+    midtown: { latitude: 38.6365, longitude: -90.222 },
+
+    // Deliberately outside the service area, for testing the "You are outside
+    // of our service area" banner and the disabled submit button *without*
+    // leaving St. Louis.
+    'out-of-area': { latitude: 39.7817, longitude: -89.6501 },
+};
+
+export const DEV_LOCATION_NAMES = Object.keys(DEV_LOCATIONS);
+
+/**
  * A fixed location to stand in for the device's GPS during development.
  *
  * Two separate things in this app key off where the phone physically is, and
@@ -18,10 +37,17 @@ import { userLocation } from '../types/userLocation';
  * GPS app or a simulator, and it replaces a commented-out `setLocation(...)`
  * line that previously had to be edited by hand and un-edited before commit.
  *
- * Set both halves in `mobile/.env.local` (gitignored):
+ * Normally set a named place in `mobile/.env.local` (gitignored):
+ *
+ *   EXPO_PUBLIC_DEV_LOCATION=midtown
+ *
+ * For a point with no name, set both halves instead:
  *
  *   EXPO_PUBLIC_DEV_LAT=38.6365
  *   EXPO_PUBLIC_DEV_LNG=-90.2220
+ *
+ * Explicit coordinates win over a name, matching how env.ts lets an explicit
+ * EXPO_PUBLIC_API_URL beat the derived one.
  *
  * Ignored entirely in release builds — see the `__DEV__` guard below — so this
  * cannot ship a hardcoded location to users even if the vars leak into a
@@ -32,9 +58,22 @@ export function getDevLocationOverride(): userLocation | null {
 
     const lat = process.env.EXPO_PUBLIC_DEV_LAT;
     const lng = process.env.EXPO_PUBLIC_DEV_LNG;
+    const name = process.env.EXPO_PUBLIC_DEV_LOCATION?.trim();
 
-    // Neither set is the normal case: use the real device location.
-    if (!lat && !lng) return null;
+    // Nothing set at all is the normal case: use the real device location.
+    if (!lat && !lng && !name) return null;
+
+    if (!lat && !lng && name) {
+        const preset = DEV_LOCATIONS[name.toLowerCase()];
+        if (!preset) {
+            throw new Error(
+                `Unknown EXPO_PUBLIC_DEV_LOCATION "${name}". ` +
+                `Valid names: ${DEV_LOCATION_NAMES.join(', ')}. ` +
+                'Or set EXPO_PUBLIC_DEV_LAT and EXPO_PUBLIC_DEV_LNG instead.',
+            );
+        }
+        return preset;
+    }
 
     // One set without the other is a typo, not a half-configuration. Failing
     // loudly beats silently ignoring it and leaving the developer wondering why
