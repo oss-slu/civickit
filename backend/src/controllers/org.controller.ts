@@ -59,7 +59,11 @@ export class OrgController {
 
   async getAllActiveOrgs(req: Request, res: Response, next: NextFunction) {
     try {
-      const orgs = await orgService.getAllActiveOrgs();
+      let shortened = false
+      if (req.route.path == '/active/short') {
+        shortened = true
+      }
+      const orgs = await orgService.getAllActiveOrgs(shortened);
       res.json(orgs);
     } catch (error) {
       next(error);

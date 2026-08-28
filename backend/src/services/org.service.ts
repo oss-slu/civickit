@@ -53,8 +53,8 @@ export class OrgService {
     return await this.getOrgWithPhoto(org);
   }
 
-  async getAllActiveOrgs() {
-    let orgs = await this.orgRepository.findAllActive();
+  async getAllActiveOrgs(shortened = false) {
+    let orgs = await this.orgRepository.findAllActive(shortened);
     for (let i = 0; i < orgs.length; i++) {
       orgs[i] = await this.getOrgWithPhoto(orgs[i]);
     }

@@ -51,7 +51,7 @@ export class OrgRepository {
 
   async findById(id: string) {
     const org = first(await db.select().from(organizations).where(eq(organizations.id, id)).limit(1));
-    const geofence = await db.execute(sql`SELECT ST_AsGeoJSON(st_transform(${org?.geofence},4326))::json`)
+    const geofence = await this.getGeofence(org)
     return {
       ...org,
       geofence
@@ -59,20 +59,28 @@ export class OrgRepository {
 
   }
 
-  async findAllActive() {
+  async findAllActive(shortened = false) {
     let orgs: any = await db.select().from(organizations).where(eq(organizations.status, "ACTIVE"));
-    for (let i = 0; i < orgs.length; i++) {
-      const geofence = await db.execute(sql`SELECT ST_AsGeoJSON(st_transform(${orgs[i]?.geofence},4326))::json`)
-      orgs[i] = {
-        ...orgs[i],
-        geofence
+    if (!shortened) {
+      for (let i = 0; i < orgs.length; i++) {
+        const geofence = await this.getGeofence(orgs[i])
+        orgs[i] = {
+          ...orgs[i],
+          geofence
+        }
+      }
+    } else {
+      for (let i = 0; i < orgs.length; i++) {
+        delete orgs[i].geofence
       }
     }
-
     return orgs
 
   }
 
+  async getGeofence(org: any) {
+    return await db.execute(sql`SELECT ST_AsGeoJSON(st_transform(${org.geofence},4326))::json`)
+  }
   // Orgs whose geofence contains the issue's point AND whose categoryScope
   // includes the issue's category AND are ACTIVE.
   //
