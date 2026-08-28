@@ -66,14 +66,14 @@ export default function LandingScreen({ children }: any) {
     }, [isFetching, isMinLoading, refetch]);
 
     const getAreaOrgs = async () => {
-        const activeorgs = await orgsApi.getAllActiveOrgs()
+        const activeorgs = await orgsApi.getAllActiveOrgs(true)
         const active = []
         for (let i = 0; i < activeorgs.length; i++) {
             const gf = toCoords(activeorgs[i])
             active.push({
                 name: activeorgs[i].name,
+                id: activeorgs[i].id,
                 profilePhoto: activeorgs[i].profilePhoto,
-                geofence: gf,
             })
         }
 
