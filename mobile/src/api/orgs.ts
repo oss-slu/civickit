@@ -31,8 +31,15 @@ export function getOrgByUserId(
 }
 
 export function getAllActiveOrgs(
-    options: { limit?: number; signal?: AbortSignal } = {},
+    shortened = false
 ): Promise<Org[]> {
+
+    if (shortened) {
+        return apiFetch(`/organizations/active/short`, {
+            method: 'GET',
+            auth: true
+        });
+    }
     return apiFetch(`/organizations/active`, {
         method: 'GET',
         auth: true
