@@ -86,7 +86,7 @@ const IssueDetailScreen = () => {
     getIssue()
     setLoading(false)
 
-  }, [])
+  }, [route.params])
 
   useEffect(() => {
     if (issue) {

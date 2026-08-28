@@ -24,11 +24,6 @@
       "predictiveBackGestureEnabled": false,
       "package": "org.civickit.civickit",
       "softwareKeyboardLayoutMode": "adjustPan",
-      "config": {
-        "googleMaps": {
-          "apiKey": "process.env.GOOGLE_MAPS_API_KEY"
-        }
-      },
       "googleServicesFile": "./google-services.json"
     },
     "scheme": "civickit",
