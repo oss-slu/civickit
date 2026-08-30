@@ -475,3 +475,12 @@ export function MenuIcon(props: IconProps) {
             style={props.style} />
     )
 }
+
+export function MultiplePinsIcon(props: IconProps) {
+    return (
+        <MaterialCommunityIcons name="map-marker-multiple-outline"
+            color={props.color}
+            size={props.size}
+            style={props.style} />
+    )
+}

@@ -17,6 +17,7 @@ router.get('/:userId/getOrgByUserId', authMiddleware, orgController.getOrgByUser
 router.get('/:userId/getMembershipByUserId', authMiddleware, orgController.getMembershipByUserId);
 router.get('/active/short', authMiddleware, orgController.getAllActiveOrgs)
 router.get('/active/', authMiddleware, orgController.getAllActiveOrgs)
+router.get('/:orgId/geofence', authMiddleware, orgController.getGeofence)
 
 
 

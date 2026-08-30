@@ -5,7 +5,6 @@ export const IssueStatusArray = [
     'Acknowledged',
     'In Progress',
     'Resolved',
-    'Community Resolved',
     'Closed'
 ]
 

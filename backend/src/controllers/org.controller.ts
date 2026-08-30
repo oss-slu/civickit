@@ -97,6 +97,15 @@ export class OrgController {
     }
   }
 
+  async getGeofence(req: Request, res: Response, next: NextFunction) {
+    try {
+      const geofence = await orgService.getGeofence(String(req.params.orgId));
+      res.json(geofence);
+    } catch (error) {
+      next(error);
+    }
+  }
+
 
 
 }

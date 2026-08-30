@@ -49,13 +49,17 @@ export class OrgRepository {
     return (await this.findById(inserted.id))!;
   }
 
-  async findById(id: string) {
+  async findById(id: string, solveGeofence = false) {
     const org = first(await db.select().from(organizations).where(eq(organizations.id, id)).limit(1));
-    const geofence = await this.getGeofence(org)
-    return {
-      ...org,
-      geofence
+    if (solveGeofence) {
+      const geofence = await this.getGeofence(org)
+      return {
+        ...org,
+        geofence
+      }
     }
+    return org
+
 
   }
 
@@ -81,6 +85,9 @@ export class OrgRepository {
   async getGeofence(org: any) {
     return await db.execute(sql`SELECT ST_AsGeoJSON(st_transform(${org.geofence},4326))::json`)
   }
+
+
+
   // Orgs whose geofence contains the issue's point AND whose categoryScope
   // includes the issue's category AND are ACTIVE.
   //
