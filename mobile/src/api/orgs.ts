@@ -45,3 +45,12 @@ export function getAllActiveOrgs(
         auth: true
     });
 }
+
+export function getGeofence(
+    orgId: string,
+): Promise<Org> {
+    return apiFetch(`/organizations/${encodeURIComponent(orgId)}/geofence`, {
+        method: 'GET',
+        auth: true
+    });
+}

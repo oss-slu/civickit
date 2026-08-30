@@ -45,12 +45,21 @@ export class OrgService {
   }
 
   async getOrgById(id: string) {
-    const org = await this.orgRepository.findById(id);
+    const org = await this.orgRepository.findById(id, true);
     if (!org) {
       throw new AppError('Organization not found', 404);
     }
 
     return await this.getOrgWithPhoto(org);
+  }
+
+  async getGeofence(id: string) {
+    const org = await this.orgRepository.findById(id);
+    if (!org) {
+      throw new AppError('Organization not found', 404);
+    }
+
+    return await this.orgRepository.getGeofence(org)
   }
 
   async getAllActiveOrgs(shortened = false) {

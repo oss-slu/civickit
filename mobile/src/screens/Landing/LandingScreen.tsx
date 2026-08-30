@@ -2,12 +2,11 @@
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { useAuth } from '../../contexts/AuthContext';
 import { MessageView } from "../../components/MessageView";
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { AccountIcon, DefaultCategoryIcon, FilterIcon, RecenterIcon, RefreshIcon, StatusIcon, WarningIcon } from '../../components/Icons';
+import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
+import { AccountIcon, DefaultCategoryIcon, FilterIcon, MenuIcon, MultiplePinsIcon, RecenterIcon, RefreshIcon, StatusIcon, WarningIcon } from '../../components/Icons';
 import { borderRadius, colors, globalStyles, palette, size, spacing, typography } from '../../styles';
 import { IssueCategoryArray } from "../../types/IssueCategoryArray";
 import { IssueStatusArray } from "../../types/IssueStatusArray";
-
 import CheckList from "../../components/CheckList";
 import WrapperButton from "../../components/WrapperButton";
 import LoadingScreen from "../Misc/LoadingScreen";
@@ -22,27 +21,38 @@ import { StackNavigationProp } from "@react-navigation/stack";
 import { StackParams } from "../../types/StackParams";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { orgsApi } from "../../api";
-import { geoJSON } from "leaflet";
+import { statusColors } from "../../styles/theme";
+import { categoryDisplay, orgColors, orgDisplay, statusDisplay, transformToCompare } from "../../components/filterHelpers";
 
-export default function LandingScreen({ children }: any) {
+export default function LandingScreen() {
     const insets = useSafeAreaInsets()
     const [isMinLoading, setIsMinLoading] = useState(false) //to avoid quick ui flicker when refetching data
     const [refreshing, setRefreshing] = useState(false)
     const [visibleCategories, setVisibleCategories] = useState(IssueCategoryArray)
-    const [visibleStatuses, setVisibleStatuses] = useState(IssueStatusArray)
+    const localIssueStatusArray = IssueStatusArray.map((status) => {
+        return {
+            status: status,
+            color: statusColors[status.toLowerCase().replace(" ", "_")].background
+        }
+    })
+    const [visibleStatuses, setVisibleStatuses] = useState(localIssueStatusArray)
 
     const navigation = useNavigation<StackNavigationProp<StackParams>>()
     const { inBounds } = useLocation()
+    const { organization, role } = useAuth()
 
     //get contexts from above layer(s)
     const { data, isLoading, isFetching, error, refetch } = useNearbyIssues()
     const location = useLocation().location
 
-    const [availableAreas, setAvailableAreas] = useState<any[]>([])
-    const areaName = "St. Louis"
-    const [visibleAreas, setVisibleAreas] = useState<any[]>([])
-    const [allChecked, setAllChecked] = useState(true)
-    //have 1 option represent "All of St. Louis" -> when checked, everything else is unchecked
+    const [availableOrgs, setAvailableOrgs] = useState<any[]>([])
+    const [visibleOrgs, setVisibleOrgs] = useState<any[]>([])
+    const showUnclaimedIssues = "Unclaimed Issues"
+    const [unclaimedChecked, setUnclaimedChecked] = useState([showUnclaimedIssues])
+    const filterbyBoundary = "Only show issues within selected boundaries"
+    const [filterByBoundaryChecked, setfilterByBoundaryChecked] = useState([filterbyBoundary])
+    const [visibleClaimers, setVisibleClaimers] = useState<any[]>([])
+
     //get list of organizations and get their geofence's
     //write "get stl issues" route (or just make radius big enough that it covers all of stl) 
     //assign random colors to areas (relativly low opacity) -> like in cat stats
@@ -58,6 +68,7 @@ export default function LandingScreen({ children }: any) {
             if (refetch != undefined) {
                 refetch();
             }
+            getAreaOrgs()
             // Ensure animation plays for at least 800ms (one full spin)
             setTimeout(() => {
                 setIsMinLoading(false);
@@ -66,28 +77,35 @@ export default function LandingScreen({ children }: any) {
     }, [isFetching, isMinLoading, refetch]);
 
     const getAreaOrgs = async () => {
-        const activeorgs = await orgsApi.getAllActiveOrgs(true)
-        const active = []
-        for (let i = 0; i < activeorgs.length; i++) {
-            const gf = toCoords(activeorgs[i])
-            active.push({
-                name: activeorgs[i].name,
-                id: activeorgs[i].id,
-                profilePhoto: activeorgs[i].profilePhoto,
+        setIsMinLoading(true)
+        let orgs = await orgsApi.getAllActiveOrgs(false)
+        let i = 0
+        orgs = orgs.map((org) => {
+            const o = {
+                ...org,
+                color: orgColors[i]
+            }
+
+            i = (i + 1) % orgColors.length
+            return o
+        })
+        if (role == 'ORG_ADMIN' || role == 'ORG_MEMBER') {
+            orgs.forEach((org) => {
+                if (org.id == organization.id) {
+                    setVisibleOrgs([org])
+                }
             })
         }
-
-        setAvailableAreas(active)
+        setVisibleClaimers(orgs)
+        setAvailableOrgs(orgs)
+        setIsMinLoading(false)
     }
+
 
     useEffect(() => {
         getAreaOrgs()
     }, [])
 
-    const toCoords = (gj: any) => {
-        const c = gj.geofence.rows[0].st_asgeojson.coordinates[0][0].map((point: any) => ({ latitude: point[1], longitude: point[0] }))
-        return c
-    }
 
     useFocusEffect(
         useCallback(() => {
@@ -119,7 +137,20 @@ export default function LandingScreen({ children }: any) {
 
     const resetFilter = () => {
         setVisibleCategories(IssueCategoryArray)
-        setVisibleStatuses(IssueStatusArray)
+        setVisibleStatuses(localIssueStatusArray)
+        setVisibleClaimers(availableOrgs)
+        setUnclaimedChecked(["Unclaimed Issues"])
+    }
+
+    const resetMapFilter = () => {
+        setVisibleOrgs([])
+        availableOrgs.forEach((org) => {
+            if (role == 'ORG_ADMIN' || role == 'ORG_MEMBER') {
+                if (org.id == organization.id) {
+                    setVisibleOrgs([org])
+                }
+            }
+        })
     }
 
     const recenterMap = () => {
@@ -135,8 +166,13 @@ export default function LandingScreen({ children }: any) {
 
     const visibleIssues = data.issues.filter((issue: any) =>
         visibleCategories.map(i => i.toLowerCase()).includes(issue.category.replace(/_/g, " ").toLowerCase()) &&
-        visibleStatuses.map(i => i.toUpperCase().replace(/ /g, "_")).includes(issue.status)
+        visibleStatuses.map(i => i.status.toUpperCase().replace(/ /g, "_")).includes(issue.status) &&
+        ((unclaimedChecked.length > 0 && issue.claimedById == null) || (issue.claimedByOrg && visibleClaimers.map(i => i.id).includes(issue.claimedByOrg.id)))
     )
+
+    const orgDisplayWrapper = (item: any) => {
+        return orgDisplay(item, organization)
+    }
 
     return (
         <View style={{ flex: 1 }}>
@@ -145,6 +181,7 @@ export default function LandingScreen({ children }: any) {
                 ref={mapRef}
                 issues={visibleIssues}
                 refetch={refetch}
+                visibleOrgs={visibleOrgs}
             />
 
             <View style={[styles.topBar]}>
@@ -170,13 +207,35 @@ export default function LandingScreen({ children }: any) {
                         <ScrollView contentContainerStyle={styles.filterBody} style={{ maxHeight: 600 }}>
                             <Button text={"Reset"} onPress={resetFilter} style={styles.resetFilterButton} />
                             <View>
+                                <Text style={styles.filterHeading}>Claimed By:</Text>
+                                <CheckList
+                                    data={[showUnclaimedIssues]}
+                                    buttonStyle={styles.button}
+                                    selectedValues={unclaimedChecked}
+                                    setSelectedValues={setUnclaimedChecked}
+                                    checkBoxColor={palette.ckMediumGray}
+                                    transformToCompare={transformToCompare}
+                                />
+                                <CheckList
+                                    data={availableOrgs}
+                                    toDisplay={orgDisplayWrapper}
+                                    buttonStyle={styles.button}
+                                    selectedValues={visibleClaimers}
+                                    setSelectedValues={setVisibleClaimers}
+                                    checkBoxColor={palette.ckLightGreen}
+                                    dataProvidesColor={true}
+                                />
+                            </View>
+
+                            <View>
                                 <Text style={styles.filterHeading}>Statuses</Text>
                                 <CheckList
-                                    data={IssueStatusArray}
+                                    data={localIssueStatusArray}
                                     buttonStyle={styles.button}
                                     selectedValues={visibleStatuses}
                                     setSelectedValues={setVisibleStatuses}
-                                    checkBoxColor={palette.ckYellow}
+                                    dataProvidesColor={true}
+                                    toDisplay={statusDisplay}
                                 />
                             </View>
 
@@ -188,6 +247,7 @@ export default function LandingScreen({ children }: any) {
                                     selectedValues={visibleCategories}
                                     setSelectedValues={setVisibleCategories}
                                     checkBoxColor={palette.ckBlue}
+                                    toDisplay={categoryDisplay}
                                 />
                             </View>
                         </ScrollView>
@@ -201,10 +261,40 @@ export default function LandingScreen({ children }: any) {
 
                 </View>
 
-                <WrapperButton onPress={recenterMap}
-                    style={styles.recenterButton}>
-                    <RecenterIcon size={styles.recenterButton.fontSize} color={styles.recenterButton.color} />
-                </WrapperButton>
+                <View style={styles.optionsBar}>
+                    <WrapperButton onPress={recenterMap}
+                        style={styles.button}>
+                        <RecenterIcon size={styles.button.fontSize} color={styles.button.color} />
+                    </WrapperButton>
+                    <ModalPopUp
+                        buttonStyle={styles.button}
+                        buttonBody={<MultiplePinsIcon size={styles.button.fontSize} color={styles.button.color} />}
+                    >
+                        <ScrollView contentContainerStyle={styles.filterBody} style={{ minHeight: 200, maxHeight: 600 }}>
+                            <Button text={"Reset"} onPress={resetMapFilter} style={styles.resetFilterButton} />
+                            <CheckList
+                                data={[filterbyBoundary]}
+                                buttonStyle={styles.button}
+                                selectedValues={filterByBoundaryChecked}
+                                setSelectedValues={setfilterByBoundaryChecked}
+                                checkBoxColor={palette.ckLightGreen}
+                            />
+                            <View>
+                                <Text style={styles.filterHeading}>Organization Boundaries</Text>
+                                <CheckList
+                                    data={availableOrgs}
+                                    toDisplay={orgDisplayWrapper}
+                                    buttonStyle={styles.button}
+                                    selectedValues={visibleOrgs}
+                                    setSelectedValues={setVisibleOrgs}
+                                    checkBoxColor={palette.ckLightGreen}
+                                    dataProvidesColor={true}
+                                    transformToCompare={transformToCompare}
+                                />
+                            </View>
+                        </ScrollView>
+                    </ModalPopUp>
+                </View>
             </View>
 
             {!inBounds &&
@@ -241,6 +331,7 @@ const styles = StyleSheet.create({
         fontSize: typography.sizeXxl,
         padding: spacing.sm
     },
+
     textContainer: {
         backgroundColor: palette.ckDark,
         padding: spacing.sm,
@@ -267,11 +358,13 @@ const styles = StyleSheet.create({
         position: "absolute",
         left: 0,
         right: 0,
-        flexDirection: "row",
-        alignItems: "center",
+        flexDirection: "column",
+        alignItems: "flex-start",
         justifyContent: "space-between",
         padding: spacing.sd,
+        paddingTop: spacing.md,
         columnGap: spacing.sd,
+        rowGap: spacing.sm
     },
     optionsBar: {
         //shrinks instead of pushing the recenter button off-screen
@@ -285,7 +378,7 @@ const styles = StyleSheet.create({
         columnGap: spacing.xs,
         ...globalStyles.shadow,
     },
-    recenterButton: {
+    mapOptionsButton: {
         //matches the options bar's height: spacing.xs of bar padding plus
         //spacing.sm of button padding equals spacing.sd around the same 28pt icon
         flexShrink: 0,
@@ -293,7 +386,7 @@ const styles = StyleSheet.create({
         color: colors.textPrimary,
         padding: spacing.sd,
         fontSize: typography.sizeXxl,
-        ...globalStyles.shadow,
+        // ...globalStyles.shadow,
     },
 
     filterHeading: {
