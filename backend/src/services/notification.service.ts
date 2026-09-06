@@ -14,9 +14,9 @@ export class NotificationService {
         private membershipRepository: MembershipRepository
     ) { }
 
-    async notifyNewIssue(issueId: string) {
+    async notifyNewIssue(issue: any) {
         //get issue
-        const issue = await this.issueRepository.findById(issueId)
+        // const issue = await this.issueRepository.findById(issueId)
 
         if (issue) {
             //get orgs for that issue
@@ -36,7 +36,7 @@ export class NotificationService {
                     .findByOrganization(orgs[i].id)
 
                 orgMemberships.forEach((om) => {
-                    if (om) {
+                    if (om && om.userId != issue.userId) {
                         members.push(om.userId)
                     }
                 })

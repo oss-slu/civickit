@@ -81,7 +81,7 @@ export class IssueController {
       );
 
       try {
-        await notificationService.notifyNewIssue(issue.id)
+        await notificationService.notifyNewIssue(issue)
       } catch {
         console.log("Could not send notifications")
       }
