@@ -26,6 +26,8 @@ export class NotificationService {
                 issue.category
             )
 
+            console.log(orgs)
+
             //get org members
             let members: string[] = []
             for (let i = 0; i < orgs.length; i++) {
