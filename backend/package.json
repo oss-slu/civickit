@@ -42,6 +42,7 @@
     "cloudinary": "^2.9.0",
     "cors": "^2.8.5",
     "drizzle-orm": "^0.45.2",
+    "expo-server-sdk": "^7.2.0",
     "express": "^5.2.1",
     "express-rate-limit": "^8.2.1",
     "express-validator": "^7.3.1",

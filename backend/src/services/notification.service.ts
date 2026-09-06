@@ -92,9 +92,9 @@ export class NotificationService {
                     console.log({ chunk, receipts })
 
                     const failedReceipts = Object.values(receipts).filter(
-                        (receipt) => receipt.status !== 'ok'
+                        (receipt: any) => receipt.status !== 'ok'
                     )
-                    failedReceipts.forEach(({ message, details }) => {
+                    failedReceipts.forEach(({ message, details }: any) => {
                         console.error(`There was an error sending a notification: ${message}`)
                         if (details && details.error) {
                             console.error(`The error code is ${details.error}`)
