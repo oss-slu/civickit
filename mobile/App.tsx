@@ -1,5 +1,5 @@
 // mobile/App.tsx
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, useNavigation, useNavigationContainerRef } from '@react-navigation/native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ApiError } from './src/api';
 import { AuthProvider, useAuth } from './src/contexts/AuthContext';
@@ -17,7 +17,7 @@ import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-cont
 import LoginScreen from './src/screens/Login/LoginScreen';
 import RegisterScreen from './src/screens/Login/RegisterScreen';
 import IssueCreationNav from './src/screens/IssueCreation/IssueCreationNav';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { LocationProvider } from './src/contexts/LocationContext';
 import { NearbyIssuesProvider } from './src/contexts/NearbyIssuesContext';
 import LandingScreenNav from './src/screens/Landing/LandingScreenNav';
@@ -28,6 +28,9 @@ import Constants from 'expo-constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import QueueNav from './src/screens/Queue/QueueNav';
 import DispatchNav from './src/screens/Dispatch/DispatchNav';
+import * as Notifications from 'expo-notifications';
+import NavContainer from './src/components/NavContainer';
+
 
 const Tab = createBottomTabNavigator<TabParams>();
 
@@ -178,13 +181,15 @@ function MainTabNavigator() {
   )
 }
 
+
 function AppNavigator() {
   const { isLoggedIn, isLoading } = useAuth();
   const insets = useSafeAreaInsets();
 
+
   if (isLoading) return <LoadingScreen />
   return (
-    <NavigationContainer>
+    <NavContainer>
       <Stack.Navigator screenOptions={{ animation: 'slide_from_right' }}>
         {isLoggedIn ? (
           <>
@@ -202,11 +207,26 @@ function AppNavigator() {
         )}
       </Stack.Navigator>
       {isLoggedIn && <FlashMessage position="top" />}
-    </NavigationContainer>
+    </NavContainer>
   )
 }
 
+
 export default function App() {
+  useEffect(() => {
+
+    //stops banner from being hidden when app is foregrounded
+    Notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldPlaySound: false,
+        shouldSetBadge: false,
+        shouldShowBanner: true,
+        shouldShowList: true,
+      }),
+    });
+
+  }, []);
+
   if (queryClient != null) {
     return (
       <GestureHandlerRootView style={{ flex: 1 }}>

@@ -3,7 +3,10 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { getToken, saveToken, deleteToken } from '../services/tokenStorage';
 import { User } from '@civickit/shared';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { authApi, queryKeys, setUnauthorizedHandler, orgsApi } from '../api';
+import { authApi, queryKeys, setUnauthorizedHandler, orgsApi, pushApi } from '../api';
+import { Platform } from 'react-native';
+import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants';
 
 type Role = "REPORTER" | "ORG_MEMBER" | "ORG_ADMIN" | "ADMIN"
 interface AuthContextType {
@@ -27,6 +30,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [user, setUser] = useState<User | null>(null);
     const [role, setRole] = useState<Role | null>(null)
     const [organization, setOrganization] = useState<any>(null)
+    const [expoPushToken, setExpoPushToken] = useState('');
+
     const queryClient = useQueryClient()
 
     // On mount, check for token to determine if user is logged in
@@ -39,6 +44,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             }
         })();
     }, []); //no dependencies bc it runs once on mount to check for token
+
+    //On mount, gets push notif token
+    useEffect(() => {
+        registerForPushNotificationsAsync()
+            .then(token => {
+                setExpoPushToken(token ?? '')
+            })
+            .catch((error: any) => setExpoPushToken(`${error}`));
+    })
 
     //get user role
     useEffect(() => {
@@ -71,11 +85,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     //logout deletes token + updates state
     const logout = async () => {
+        await pushApi.removePushToken(expoPushToken)
         await deleteToken();
         setAuthToken(null);
         setUser(null)
         setRole(null)
         setIsLoggedIn(false);
+        setExpoPushToken('')
         queryClient.clear();
     };
 
@@ -96,6 +112,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const login = async (token: string) => {
         await saveToken(token);
         setAuthToken(token);
+
+        //register push token
+        await pushApi.registerPushToken({
+            token: expoPushToken,
+            platform: Platform.OS
+        })
+
         setIsLoggedIn(true);
     };
 
@@ -129,3 +152,45 @@ export const useAuth = () => {
     }
     return context;
 };
+
+function handleTokenRegistrationError(errorMessage: string) {
+    alert(errorMessage);
+    throw new Error(errorMessage);
+}
+
+async function registerForPushNotificationsAsync() {
+    if (Platform.OS === 'android') {
+        await Notifications.setNotificationChannelAsync('default', {
+            name: 'default',
+            importance: Notifications.AndroidImportance.MAX,
+            vibrationPattern: [0, 250, 250, 250],
+            lightColor: '#FF231F7C',
+        });
+    }
+
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+    if (existingStatus !== 'granted') {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+    }
+    if (finalStatus !== 'granted') {
+        handleTokenRegistrationError('Permission not granted to get push token for push notification!');
+        return;
+    }
+    const projectId = Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId;
+    if (!projectId) {
+        handleTokenRegistrationError('Project ID not found');
+    }
+    try {
+        const pushTokenString = (
+            await Notifications.getExpoPushTokenAsync({
+                projectId,
+            })
+        ).data;
+        // console.log(pushTokenString);
+        return pushTokenString;
+    } catch (e: unknown) {
+        handleTokenRegistrationError(`${e}`);
+    }
+}

@@ -9,6 +9,10 @@ export {
 } from './enums/issue'
 
 export {
+    PushToken
+} from './types/pushToken'
+
+export {
     OrgType,
     OrgStatus,
     OrgRole,
@@ -24,7 +28,8 @@ export {
     LoginDTO,
     LoginResponse,
     CreateAuthDTO,
-    GetNearbyIssueResponse
+    GetNearbyIssueResponse,
+    PushTokenDTO
 } from './types/api'
 
 export {
