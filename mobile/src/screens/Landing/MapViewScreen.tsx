@@ -45,7 +45,6 @@ export default function MapViewScreen({ ref, issues, refetch, visibleOrgs }: any
     const posAnim = useAnimatedValue(0);
     const [paddingBottom, setPaddingBottom] = useState("110%")
     const { setInBounds } = useLocation()
-    const { role, geofence } = useAuth()
     const [visiblePolygons, setVisiblePolygons] = useState<any[]>([])
     //initial value matches the initialRegion delta (0.05) with the same
     //zoom factor used in onRegionChange, so the first render clusters the
