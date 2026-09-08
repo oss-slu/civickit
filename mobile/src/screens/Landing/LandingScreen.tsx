@@ -267,6 +267,7 @@ export default function LandingScreen() {
                                     checkBoxColor={palette.ckLightGreen}
                                     dataProvidesColor={true}
                                 />
+                                {availableOrgs.length == 0 && <Text style={{ color: colors.textSecondary, fontSize: typography.sizeSm, fontWeight: typography.weightMedium }}>There are no organizaions in this service area</Text>}
                             </View>
 
                             <View>
@@ -333,7 +334,7 @@ export default function LandingScreen() {
                             <View >
                                 <Text style={styles.filterHeading}>Visible Organization</Text>
                                 <Text style={styles.filterHeading}>Boundaries</Text>
-                                <CheckList
+                                {availableOrgs.length > 0 ? <CheckList
                                     data={availableOrgs}
                                     toDisplay={orgDisplayWrapper}
                                     buttonStyle={styles.button}
@@ -342,7 +343,8 @@ export default function LandingScreen() {
                                     checkBoxColor={palette.ckLightGreen}
                                     dataProvidesColor={true}
                                     transformToCompare={transformToCompare}
-                                />
+                                /> :
+                                    <Text style={{ ...globalStyles.heading2, alignSelf: "center", padding: spacing.md }}>No Available Organizations</Text>}
                             </View>
                         </ScrollView>
                     </ModalPopUp>
