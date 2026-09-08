@@ -36,6 +36,10 @@ export default function LandingScreen() {
         }
     })
     const [visibleStatuses, setVisibleStatuses] = useState(localIssueStatusArray)
+    const archivedResolved = "Archived Resolved"
+    const [archivedResolvedChecked, setArchivedResolvedChecked] = useState([])
+    const archivedClosed = "Archived Closed"
+    const [archivedClosedChecked, setArchivedClosedChecked] = useState([])
 
     const navigation = useNavigation<StackNavigationProp<StackParams>>()
     const { inBounds } = useLocation()
@@ -49,8 +53,6 @@ export default function LandingScreen() {
     const [visibleOrgs, setVisibleOrgs] = useState<any[]>([])
     const showUnclaimedIssues = "Unclaimed Issues"
     const [unclaimedChecked, setUnclaimedChecked] = useState([showUnclaimedIssues])
-    const filterbyBoundary = "Only show issues within selected boundaries"
-    const [filterByBoundaryChecked, setfilterByBoundaryChecked] = useState([filterbyBoundary])
     const [visibleClaimers, setVisibleClaimers] = useState<any[]>([])
 
     //get list of organizations and get their geofence's
@@ -60,6 +62,15 @@ export default function LandingScreen() {
     //or have labels appear on zoom in
 
     const mapRef = useRef<MapView | null>(null);
+
+    useEffect(() => {
+        if (visibleStatuses.filter((s) => s.status == "Closed").length == 0) {
+            setArchivedClosedChecked([])
+        }
+        if (visibleStatuses.filter((s) => s.status == "Resolved").length == 0) {
+            setArchivedResolvedChecked([])
+        }
+    }, [visibleStatuses])
 
     const handleRefresh = useCallback(() => {
         console.log("refresh")
@@ -140,6 +151,8 @@ export default function LandingScreen() {
         setVisibleStatuses(localIssueStatusArray)
         setVisibleClaimers(availableOrgs)
         setUnclaimedChecked(["Unclaimed Issues"])
+        setArchivedClosedChecked([])
+        setArchivedResolvedChecked([])
     }
 
     const resetMapFilter = () => {
@@ -164,14 +177,43 @@ export default function LandingScreen() {
         });
     };
 
-    const visibleIssues = data.issues.filter((issue: any) =>
-        visibleCategories.map(i => i.toLowerCase()).includes(issue.category.replace(/_/g, " ").toLowerCase()) &&
-        visibleStatuses.map(i => i.status.toUpperCase().replace(/ /g, "_")).includes(issue.status) &&
-        ((unclaimedChecked.length > 0 && issue.claimedById == null) || (issue.claimedByOrg && visibleClaimers.map(i => i.id).includes(issue.claimedByOrg.id)))
+
+    const visibleIssues = data.issues.filter((issue: any) => {
+        const today = new Date()
+        let lastMonth = (today.getUTCMonth() - 1) % 13
+        const issueUpdated = new Date(issue.updatedAt)
+
+        if ((((issue.status != "RESOLVED") || archivedResolvedChecked.length == 1) &&
+            ((issue.status != "CLOSED") || archivedClosedChecked.length == 1)) ||
+            ((issueUpdated.getUTCMonth() == today.getUTCMonth() && issueUpdated.getUTCDate() <= today.getUTCDate()) ||
+                (issueUpdated.getUTCMonth() == lastMonth && issueUpdated.getUTCDate() >= today.getUTCDate()))
+        ) {
+
+            return visibleCategories.map(i => i.toLowerCase()).includes(issue.category.replace(/_/g, " ").toLowerCase()) &&
+                visibleStatuses.map(i => i.status.toUpperCase().replace(/ /g, "_")).includes(issue.status) &&
+                ((unclaimedChecked.length > 0 && issue.claimedById == null) || (issue.claimedByOrg && visibleClaimers.map(i => i.id).includes(issue.claimedByOrg.id)))
+        }
+        return false
+
+
+    }
     )
 
     const orgDisplayWrapper = (item: any) => {
         return orgDisplay(item, organization)
+    }
+
+    const archivedStatusDisplay = (status: any) => {
+        let option = ""
+        if (status == archivedClosed) {
+            option = "Closed"
+        } else {
+            option = "Resolved"
+        }
+        return (<View style={{ paddingHorizontal: spacing.sm }}>
+            <Text style={{ fontSize: typography.sizeLg, color: colors.textPrimary }}>{status}</Text>
+            <Text style={{ fontSize: typography.sizeSm, color: colors.textSecondary, fontWeight: typography.weightMedium }}>{option} issues older than 1 month</Text>
+        </View>)
     }
 
     return (
@@ -237,6 +279,22 @@ export default function LandingScreen() {
                                     dataProvidesColor={true}
                                     toDisplay={statusDisplay}
                                 />
+                                <CheckList
+                                    data={[archivedResolved]}
+                                    buttonStyle={styles.button}
+                                    selectedValues={archivedResolvedChecked}
+                                    setSelectedValues={setArchivedResolvedChecked}
+                                    checkBoxColor={palette.ckLightGreen}
+                                    toDisplay={archivedStatusDisplay}
+                                />
+                                <CheckList
+                                    data={[archivedClosed]}
+                                    buttonStyle={styles.button}
+                                    selectedValues={archivedClosedChecked}
+                                    setSelectedValues={setArchivedClosedChecked}
+                                    checkBoxColor={palette.ckGrayBlue}
+                                    toDisplay={archivedStatusDisplay}
+                                />
                             </View>
 
                             <View>
@@ -272,15 +330,9 @@ export default function LandingScreen() {
                     >
                         <ScrollView contentContainerStyle={styles.filterBody} style={{ minHeight: 200, maxHeight: 600 }}>
                             <Button text={"Reset"} onPress={resetMapFilter} style={styles.resetFilterButton} />
-                            <CheckList
-                                data={[filterbyBoundary]}
-                                buttonStyle={styles.button}
-                                selectedValues={filterByBoundaryChecked}
-                                setSelectedValues={setfilterByBoundaryChecked}
-                                checkBoxColor={palette.ckLightGreen}
-                            />
-                            <View>
-                                <Text style={styles.filterHeading}>Organization Boundaries</Text>
+                            <View >
+                                <Text style={styles.filterHeading}>Visible Organization</Text>
+                                <Text style={styles.filterHeading}>Boundaries</Text>
                                 <CheckList
                                     data={availableOrgs}
                                     toDisplay={orgDisplayWrapper}

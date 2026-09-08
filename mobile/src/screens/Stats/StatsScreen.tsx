@@ -3,7 +3,7 @@ import { MessageView } from "../../components/MessageView";
 import { Dimensions, RefreshControl, ScrollView, Text, StyleSheet, View } from "react-native"
 import { borderRadius, colors, globalStyles, size, spacing, typography } from "../../styles";
 import LoadingScreen from "../Misc/LoadingScreen";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import StatusSummaryCard from "../../components/StatusSummaryCard";
 import { IssueStatusArray } from "../../types/IssueStatusArray";
 import { IssueCategoryArray } from "../../types/IssueCategoryArray";
@@ -13,17 +13,20 @@ import ModalDropdown from "../../components/ModalDropdown";
 import { CaretDownIcon, RefreshIcon, RightArrowIcon } from "../../components/Icons";
 import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "../../contexts/LocationContext";
-import { issuesApi, queryKeys } from "../../api";
+import { issuesApi, orgsApi, queryKeys } from "../../api";
 import { FlatList } from "react-native-gesture-handler";
 import { GetNearbyIssueResponse } from "@civickit/shared/src/types/api";
 import WrapperButton from "../../components/WrapperButton";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { StackParams } from "../../types/StackParams";
-import { radiusOptions } from "../../types/RadiusOptions";
 import { timeOptions } from "../../types/TimeOptions";
 import Leaderboard from "../../components/Leaderboard";
 import Header from "../../components/Header";
+import { orgColors } from "../../components/filterHelpers";
+import { radiusOptions as baseOptions } from "../../types/RadiusOptions";
+import { isPointInPolygon } from "geolib";
+import cityBounds from '../../../assets/shapes/stl_boundary_inverted.json'
 
 type record = Record<string, number>;
 
@@ -41,8 +44,12 @@ export default function StatsScreen() {
     const queryClient = useQueryClient()
     const location = useLocation().location
     const navigation = useNavigation<StackNavigationProp<StackParams>>()
-
-    const radiusMiles = parseInt(radius)
+    const [availableOrgs, setAvailableOrgs] = useState<any[]>([])
+    const cityName = "St. Louis"
+    const cityRadius = 20 //approximate and overshooting
+    const [radiusMiles, setRadiusMiles] = useState(parseInt(radius))
+    const [radiusOptions, setRadiusOptions] = useState<any[]>([...baseOptions, cityName])
+    const [polygonFilter, setPolygonFilter] = useState(false)
 
     const { data, isLoading, error, refetch } = useQuery({
         queryKey: queryKeys.issues.nearby({
@@ -61,14 +68,31 @@ export default function StatsScreen() {
         placeholderData: keepPreviousData,
     }, queryClient);
 
+    const getAreaOrgs = async () => {
+        let orgs = await orgsApi.getAllActiveOrgs(false)
+        const orgNames = orgs.map((org) => {
+            return org.name
+        })
+        setAvailableOrgs(orgs)
+        setRadiusOptions([...baseOptions, cityName, ...orgNames])
+    }
+
+    useEffect(() => {
+        getAreaOrgs()
+    }, [])
+
     useFocusEffect(
         useCallback(() => {
             refetch()
-
+            getAreaOrgs()
 
         }, [])
     )
 
+    const stlPoints = useMemo(
+        () => cityBounds.features[0].geometry.coordinates[0][1].map((point: any) => ({ latitude: point[1], longitude: point[0] })),
+        []
+    )
 
     useEffect(() => {
         if (data != undefined) {
@@ -126,7 +150,22 @@ export default function StatsScreen() {
                 filteredData = data.issues
             }
 
-
+            if (polygonFilter) {
+                let org = availableOrgs.find((o) => o.name == radius)
+                if (org) {
+                    filteredData = filteredData.filter((issue) => {
+                        return isPointInPolygon({ latitude: issue.latitude, longitude: issue.longitude },
+                            toCoords(org.geofence)
+                        )
+                    })
+                } else if (radius == cityName) {
+                    filteredData = filteredData.filter((issue) => {
+                        return isPointInPolygon({ latitude: issue.latitude, longitude: issue.longitude },
+                            stlPoints
+                        )
+                    })
+                }
+            }
 
             //create records
             const newStatusNumbers: record = {}
@@ -158,7 +197,7 @@ export default function StatsScreen() {
             setFilteredData(filteredData)
         }
 
-    }, [data, time])
+    }, [data, time, radius])
 
 
 
@@ -180,13 +219,24 @@ export default function StatsScreen() {
         )
     }
 
-
     //filter by radius (refetch with new radius)
     const handleRadiusChange = (newRadius: any) => {
         setRadius(newRadius)
+        if (!Number.isNaN(parseInt(newRadius))) {
+            setRadiusMiles(parseInt(newRadius))
+            setPolygonFilter(false)
+        } else {
+            setRadiusMiles(cityRadius)
+            setPolygonFilter(true)
+        }
         setStatusNumbers({})
         setCategoryNumbers({})
         refetch()
+    }
+
+    const toCoords = (gj: any) => {
+        const c = gj.rows[0].st_asgeojson.coordinates[0][0].map((point: any) => ({ latitude: point[1], longitude: point[0] }))
+        return c
     }
 
     return (
@@ -299,8 +349,7 @@ const styles = StyleSheet.create({
         alignItems: "flex-start",
         alignContent: 'flex-start',
         rowGap: spacing.xs,
-        borderBottomWidth: 3,
-        borderColor: colors.backgroundSecondary
+        paddingTop: spacing.md,
     },
     leaderboardContainer: {
         margin: spacing.sm,
