@@ -77,6 +77,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         await deleteToken();
         setAuthToken(null);
         setUser(null)
+        setOrganization(null)
         setRole(null)
         setIsLoggedIn(false);
         queryClient.clear();

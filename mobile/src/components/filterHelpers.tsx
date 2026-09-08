@@ -17,7 +17,7 @@ export const orgDisplay = (item: any, organization: any) => {
         <View style={{ flexDirection: "row", alignItems: "center", columnGap: spacing.sm, paddingHorizontal: spacing.sm }}>
             {item.profilePhoto && <Image source={{ uri: item.profilePhoto.url }} style={styles.orgProfilePic} />}
             <Text style={{ ...styles.optionText }}>
-                {item.name} {organization.id == item.id && "(Me)"}
+                {item.name} {(organization && organization.id == item.id) && "(Me)"}
 
             </Text>
         </View>
