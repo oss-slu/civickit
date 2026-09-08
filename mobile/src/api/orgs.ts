@@ -1,12 +1,14 @@
 // mobile/src/api/orgs.ts
-import type { CreateIssueDTO, GetNearbyIssueResponse, Issue, OrgRole, PostUpdateDTO, User } from '@civickit/shared';
+import type { CreateIssueDTO, GetNearbyIssueResponse, Issue, IssueCategory, OrgRole, OrgStatus, OrgTier, OrgType, PostUpdateDTO, User } from '@civickit/shared';
 import { apiFetch } from './client';
+import { Org } from '@civickit/shared/src/types/org';
 
 export interface Membership {
     userId: string;
     organizationId: string;
     role: OrgRole
 }
+
 
 export function getMembershipByUserId(
     userId: string,
@@ -21,8 +23,33 @@ export function getMembershipByUserId(
 export function getOrgByUserId(
     userId: string,
     options: { limit?: number; signal?: AbortSignal } = {},
-): Promise<Membership> {
+): Promise<Org> {
     return apiFetch(`/organizations/${encodeURIComponent(userId)}/getOrgByUserId`, {
+        method: 'GET',
+        auth: true
+    });
+}
+
+export function getAllActiveOrgs(
+    shortened = false
+): Promise<Org[]> {
+
+    if (shortened) {
+        return apiFetch(`/organizations/active/short`, {
+            method: 'GET',
+            auth: true
+        });
+    }
+    return apiFetch(`/organizations/active`, {
+        method: 'GET',
+        auth: true
+    });
+}
+
+export function getGeofence(
+    orgId: string,
+): Promise<Org> {
+    return apiFetch(`/organizations/${encodeURIComponent(orgId)}/geofence`, {
         method: 'GET',
         auth: true
     });

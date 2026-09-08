@@ -13,5 +13,7 @@ export interface Org {
     type: OrgType,
     status: OrgStatus;
     categoryScope: IssueCategory[];
-    //add geofence later
+    boundarySource?: string;
+    boundaryRef?: string;
+    geofence?: any
 }

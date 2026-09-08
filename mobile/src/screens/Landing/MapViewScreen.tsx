@@ -17,6 +17,8 @@ import { getDistance, isPointInPolygon } from 'geolib';
 import CalloutListPopup from '../../components/CalloutListPopup';
 import { GetNearbyIssueResponse } from '@civickit/shared';
 import cityBounds from '../../../assets/shapes/stl_boundary_inverted.json'
+import { useAuth } from '../../contexts/AuthContext';
+import { orgsApi } from '../../api';
 // import Geojson from 'react-native-geojson';
 
 interface IssueCluster {
@@ -33,7 +35,7 @@ function isCluster(element: MapElement): element is IssueCluster {
     return (element as IssueCluster).issues != undefined
 }
 
-export default function MapViewScreen({ ref, issues, refetch }: any) {
+export default function MapViewScreen({ ref, issues, refetch, visibleOrgs }: any) {
     const navigation = useNavigation<StackNavigationProp<StackParams>>();
     const bottomSheetRef = useRef<BottomSheet>(null);
     const snapPoints = [36, "30%", "80%"]
@@ -43,6 +45,7 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
     const posAnim = useAnimatedValue(0);
     const [paddingBottom, setPaddingBottom] = useState("110%")
     const { setInBounds } = useLocation()
+    const [visiblePolygons, setVisiblePolygons] = useState<any[]>([])
     //initial value matches the initialRegion delta (0.05) with the same
     //zoom factor used in onRegionChange, so the first render clusters the
     //same way as every render after the map settles
@@ -106,6 +109,33 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
     } else if (currentElement != undefined && bottomSheetInd < 2) {
         openCallout()
     }
+
+    useEffect(() => {
+        getVisiblePolygons()
+    }, [visibleOrgs])
+
+    const getVisiblePolygons = () => {
+        setVisiblePolygons(visibleOrgs.map((p: any) => {
+            return (
+                <Polygon
+                    key={p.id}
+                    coordinates={toCoords(p.geofence)}
+                    strokeColor={p.color}
+                    strokeWidth={1}
+                    fillColor={`rgba(${parseInt(p.color.slice(1, 3), 16)},
+                                    ${parseInt(p.color.slice(3, 5), 16)},
+                                    ${parseInt(p.color.slice(5), 16)}, 0.25 )`}
+                />
+            )
+        }))
+
+    }
+
+    const toCoords = (gj: any) => {
+        const c = gj.rows[0].st_asgeojson.coordinates[0][0].map((point: any) => ({ latitude: point[1], longitude: point[0] }))
+        return c
+    }
+
 
     // clusters
     // greedy pass: each unclaimed issue seeds a cluster and absorbs every
@@ -228,6 +258,7 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
                 } : undefined}
             >
                 {markerList}
+                {visiblePolygons}
                 <Polygon
                     key="stl-outline"
                     coordinates={stlPoints}
