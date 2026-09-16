@@ -19,6 +19,8 @@ async function loadEnv(options: {
     debuggerHost?: string | null;
     apiUrl?: string;
     apiPort?: string;
+    devLat?: string;
+    devLng?: string;
 }) {
     vi.resetModules();
     (globalThis as any).__DEV__ = options.dev ?? true;
@@ -33,12 +35,20 @@ async function loadEnv(options: {
     if (options.apiPort === undefined) delete process.env.EXPO_PUBLIC_API_PORT;
     else process.env.EXPO_PUBLIC_API_PORT = options.apiPort;
 
+    if (options.devLat === undefined) delete process.env.EXPO_PUBLIC_DEV_LAT;
+    else process.env.EXPO_PUBLIC_DEV_LAT = options.devLat;
+
+    if (options.devLng === undefined) delete process.env.EXPO_PUBLIC_DEV_LNG;
+    else process.env.EXPO_PUBLIC_DEV_LNG = options.devLng;
+
     return import('../env');
 }
 
 beforeEach(() => {
     delete process.env.EXPO_PUBLIC_API_URL;
     delete process.env.EXPO_PUBLIC_API_PORT;
+    delete process.env.EXPO_PUBLIC_DEV_LAT;
+    delete process.env.EXPO_PUBLIC_DEV_LNG;
 });
 
 afterEach(() => {
@@ -144,5 +154,50 @@ describe('caching', () => {
         // A later Metro reconnection must not silently repoint the app mid-session.
         constantsMock.expoConfig = { hostUri: '10.0.0.99:8081' };
         expect(env.getApiBaseUrl()).toBe('http://10.0.0.5:3000/api');
+    });
+});
+
+describe('getDevLocationOverride', () => {
+    it('returns null when neither variable is set, so real GPS is used', async () => {
+        const { getDevLocationOverride } = await loadEnv({});
+        expect(getDevLocationOverride()).toBeNull();
+    });
+
+    it('returns the coordinates when both are set', async () => {
+        const { getDevLocationOverride } = await loadEnv({
+            devLat: '38.63965',
+            devLng: '-90.23581',
+        });
+        expect(getDevLocationOverride()).toEqual({ latitude: 38.63965, longitude: -90.23581 });
+    });
+
+    it('is ignored outside development, so a release build cannot be moved', async () => {
+        const { getDevLocationOverride } = await loadEnv({
+            dev: false,
+            devLat: '38.63965',
+            devLng: '-90.23581',
+        });
+        expect(getDevLocationOverride()).toBeNull();
+    });
+
+    it('rejects half a coordinate rather than silently using GPS', async () => {
+        const { getDevLocationOverride } = await loadEnv({ devLat: '38.63965' });
+        expect(() => getDevLocationOverride()).toThrow(/must be set together/);
+    });
+
+    it('rejects a non-numeric coordinate', async () => {
+        const { getDevLocationOverride } = await loadEnv({
+            devLat: 'midtown',
+            devLng: '-90.23581',
+        });
+        expect(() => getDevLocationOverride()).toThrow(/must be numbers/);
+    });
+
+    it('rejects a coordinate outside the valid range', async () => {
+        const { getDevLocationOverride } = await loadEnv({
+            devLat: '138.6',
+            devLng: '-90.23581',
+        });
+        expect(() => getDevLocationOverride()).toThrow(/within/);
     });
 });
