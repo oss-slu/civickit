@@ -251,7 +251,9 @@ const IssueDetailScreen = () => {
         {Platform.OS !== 'web' && MapView && Marker ? (
           <MapView
             style={styles.map}
-            provider={PROVIDER_GOOGLE}
+            // Apple Maps on iOS: Google there needs a key in a native build,
+            // which Expo Go cannot provide. See MapViewScreen.
+            provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
             initialRegion={{
               latitude: issue.latitude,
               longitude: issue.longitude,

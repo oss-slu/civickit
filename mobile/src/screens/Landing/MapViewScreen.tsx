@@ -2,10 +2,11 @@
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { View, Animated, useAnimatedValue } from 'react-native';
+import { View, Animated, useAnimatedValue, Platform } from 'react-native';
 import { Marker, PROVIDER_GOOGLE, Polygon } from 'react-native-maps';
 import { StackParams } from '../../types/StackParams';
 import { useLocation } from '../../contexts/LocationContext';
+import { getDevLocationOverride } from '../../config/env';
 import Pin from '../../components/Pin';
 import { colors, palette, size } from '../../styles';
 import MapView from "react-native-maps"
@@ -188,6 +189,10 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
 
 
     const checkUserLocation = (coordinate: any) => {
+        // The map reports the device's real GPS, which a dev location override
+        // deliberately contradicts. The effect below owns inBounds in that
+        // case; this would immediately overwrite it.
+        if (getDevLocationOverride()) return
         setInBounds(isPointInPolygon(coordinate, stlPoints))
     }
 
@@ -208,10 +213,24 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
     //every render, which rebuilds the native path and can drop the overlay
     const boundaryHoles = useMemo(() => [stlPoints], [stlPoints])
 
+    // onUserLocationChange only fires once the native map is up and tracking,
+    // so where the map cannot render, inBounds would sit at its initial false
+    // and wrongly report every user as outside the service area. Deciding from
+    // LocationContext keeps this consistent with the location the rest of the
+    // app already uses, dev override included.
+    useEffect(() => {
+        if (location) {
+            setInBounds(isPointInPolygon(location, stlPoints))
+        }
+    }, [location, stlPoints])
+
     return (
         <View style={{ flex: 1 }}>
             <MapView
-                provider={PROVIDER_GOOGLE}
+                // Google Maps on iOS needs an API key baked into a native
+                // build, which Expo Go cannot provide -- it renders blank.
+                // Apple Maps needs no key and works there.
+                provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
                 ref={ref}
                 showsUserLocation={true}
                 showsMyLocationButton={false}
