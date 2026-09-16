@@ -6,7 +6,7 @@ import { GetNearbyIssueResponse, Issue } from '@civickit/shared';
 import { format, formatDistanceToNow } from 'date-fns';
 import { DefaultCategoryIcon, CheckMarkCircleIcon, CheckMarkIcon, ClockIcon, LocationPinIcon, TagIcon, UpvoteIcon, WrenchIcon, TextIcon, CheckMarkDoneIcon } from '../../components/Icons';
 import { borderRadius, colors, globalStyles, palette, size, spacing, typography } from '../../styles';
-import { PROVIDER_GOOGLE } from 'react-native-maps/lib/ProviderConstants';
+import { PROVIDER_GOOGLE } from 'react-native-maps';
 import { authApi, issuesApi, orgsApi } from '../../api';
 import Pin from '../../components/Pin';
 import { showLocation } from 'react-native-map-link';
