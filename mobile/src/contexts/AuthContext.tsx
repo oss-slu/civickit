@@ -3,7 +3,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { getToken, saveToken, deleteToken } from '../services/tokenStorage';
 import { User } from '@civickit/shared';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { authApi, queryKeys, setUnauthorizedHandler, orgsApi } from '../api';
+import { ApiError, authApi, queryKeys, setUnauthorizedHandler, orgsApi } from '../api';
 
 type Role = "REPORTER" | "ORG_MEMBER" | "ORG_ADMIN" | "ADMIN"
 interface AuthContextType {
@@ -51,8 +51,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             }
         }
 
-        const getOrgByUserId = async (userId: any) => {
-            setOrganization(await orgsApi.getOrgByUserId(userId))
+        // A reporter with no organization is the ordinary case, and the
+        // endpoint reports it as 404 'Member not found' rather than an empty
+        // body. Until this was handled, that 404 rejected an un-awaited
+        // promise and surfaced as an uncaught rejection on every plain
+        // reporter login.
+        const getOrgByUserId = async (userId: string) => {
+            try {
+                setOrganization(await orgsApi.getOrgByUserId(userId))
+            } catch (error) {
+                if (error instanceof ApiError && error.status === 404) {
+                    setOrganization(null)
+                    return
+                }
+                // Anything else is unexpected. The app treats a missing
+                // organization as "not in one", so log it rather than
+                // leaving a floating rejection with no handler.
+                console.error('Could not load organization:', error)
+                setOrganization(null)
+            }
         }
 
         if (user != null) {
