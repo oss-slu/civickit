@@ -234,7 +234,12 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
                 ref={ref}
                 showsUserLocation={true}
                 showsMyLocationButton={false}
-                followsUserLocation={true}
+                // Apple Maps only, unsupported on Android, and it re-centers on
+                // the device continuously -- which fights every pan and zoom. It
+                // had never actually run: Android ignores it, and on iOS the map
+                // did not render at all. The recenter button is the deliberate
+                // way back to the user.
+                followsUserLocation={false}
                 style={{ flex: 1 }}
                 toolbarEnabled={false}
                 onRegionChangeComplete={(Region) => onRegionChange(Region)}
