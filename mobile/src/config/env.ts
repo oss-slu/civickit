@@ -97,3 +97,57 @@ export function getApiBaseUrl(): string {
     }
     return cachedBaseUrl;
 }
+
+/**
+ * A fixed location to use instead of the device's GPS, or null for real GPS.
+ *
+ * The seeded issues sit in Midtown St. Louis, so anyone developing from
+ * elsewhere sees an empty map and cannot exercise the nearby-issues flow at
+ * all. Setting both EXPO_PUBLIC_DEV_LAT and EXPO_PUBLIC_DEV_LNG in
+ * mobile/.env.local (which is gitignored) moves the app there.
+ *
+ * This replaces a commented-out setLocation call in LocationContext that had
+ * to be edited in place, and so was one `git add -A` away from shipping.
+ *
+ * Ignored outside development, so setting these in a release environment can
+ * never move real users.
+ */
+export function getDevLocationOverride(): { latitude: number; longitude: number } | null {
+    if (!__DEV__) return null;
+
+    const lat = process.env.EXPO_PUBLIC_DEV_LAT;
+    const lng = process.env.EXPO_PUBLIC_DEV_LNG;
+
+    if (!lat && !lng) return null;
+
+    // Half a coordinate is always a mistake, and silently ignoring it would
+    // look identical to the override not being picked up at all.
+    if (!lat || !lng) {
+        throw new Error(
+            'EXPO_PUBLIC_DEV_LAT and EXPO_PUBLIC_DEV_LNG must be set together; ' +
+            `got ${lat ? 'only EXPO_PUBLIC_DEV_LAT' : 'only EXPO_PUBLIC_DEV_LNG'}.`,
+        );
+    }
+
+    const latitude = Number(lat);
+    const longitude = Number(lng);
+
+    // Number('') is 0 and Number('abc') is NaN. Both would otherwise reach the
+    // map as a plausible-looking location off the coast of Africa, or as a
+    // blank screen, with nothing pointing back at the typo.
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+        throw new Error(
+            'EXPO_PUBLIC_DEV_LAT and EXPO_PUBLIC_DEV_LNG must be numbers; ' +
+            `got "${lat}" and "${lng}".`,
+        );
+    }
+
+    if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
+        throw new Error(
+            'EXPO_PUBLIC_DEV_LAT must be within [-90, 90] and EXPO_PUBLIC_DEV_LNG ' +
+            `within [-180, 180]; got ${latitude} and ${longitude}.`,
+        );
+    }
+
+    return { latitude, longitude };
+}

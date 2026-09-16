@@ -5,6 +5,7 @@ import { Alert } from "react-native";
 import * as Location from 'expo-location'
 import LoadingScreen from "../screens/Misc/LoadingScreen";
 import { MessageView } from "../components/MessageView";
+import { getDevLocationOverride } from "../config/env";
 
 interface LocationContextType {
     location: userLocation;
@@ -64,6 +65,16 @@ export const LocationProvider = ({ children }: any) => {
     }
 
     const getCurrentLocation = async () => {
+        // A configured dev location stands in for GPS entirely, ahead of the
+        // permission request -- so it also works where location is denied or,
+        // on a simulator, never set at all.
+        const override = getDevLocationOverride();
+        if (override) {
+            setLocation(override);
+            checkForErrors(override, true);
+            return;
+        }
+
         //check permission
         let { status } = await Location.requestForegroundPermissionsAsync()
         if (status !== 'granted') {
@@ -83,7 +94,6 @@ export const LocationProvider = ({ children }: any) => {
         if (coords) {
             const { latitude, longitude } = coords;
             setLocation({ latitude: latitude, longitude: longitude })
-            // setLocation({ latitude: 34.7465, longitude: -92.2896 })
             checkForErrors({ latitude: latitude, longitude: longitude }, true)
         }
     }
