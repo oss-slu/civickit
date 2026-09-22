@@ -39,6 +39,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "bcryptjs": "^3.0.3",
     "better-auth": "^1.6.23",
+    "buffer": "^6.0.3",
     "cloudinary": "^2.9.0",
     "cors": "^2.8.5",
     "drizzle-orm": "^0.45.2",
