@@ -65,6 +65,10 @@ export default function ProfileNav() {
                 options={{
                     headerShown: false
                 }} />
+            <Stack.Screen name="My Claimed Issues" component={LeaderBoardScreen}
+                options={{
+                    headerShown: false
+                }} />
         </Stack.Navigator>
     );
 

@@ -89,6 +89,16 @@ export function getIssuesUpvotedByUser(
     });
 }
 
+export function getIssuesClaimedByUser(
+    userId: string,
+    options: { limit?: number; signal?: AbortSignal } = {},
+): Promise<IssueListResponse<IssueListItem>> {
+    return apiFetch('/issues/userClaimed', {
+        query: { id: userId, limit: options.limit },
+        signal: options.signal,
+    });
+}
+
 export function createIssue(issue: Omit<CreateIssueDTO, 'status'>): Promise<Issue> {
     return apiFetch('/issues/', { method: 'POST', body: issue, auth: true });
 }
