@@ -1,4 +1,4 @@
-//mobile/src/components/StatusBarGraph.tsx
+//mobile/src/components/CategoryPieChart.tsx
 import { useEffect, useState } from "react";
 import { BarChart, PieChart } from "react-native-gifted-charts"
 import { IssueStatusArray } from "../types/IssueStatusArray";

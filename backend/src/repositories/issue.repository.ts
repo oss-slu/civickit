@@ -131,6 +131,10 @@ export class IssueRepository {
     return this.selectIssues().where(eq(issues.userId, id)).limit(limit);
   }
 
+  async findByClaimer(id: string, limit: number = 100) {
+    return this.selectIssues().where(eq(issues.claimedById, id)).limit(limit);
+  }
+
   async findByUpvoter(userId: string, limit: number = 100) {
     // EXISTS rather than a join: an issue with several upvotes must still come
     // back once.
