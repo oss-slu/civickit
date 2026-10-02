@@ -215,7 +215,7 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
                 ref={ref}
                 showsUserLocation={true}
                 showsMyLocationButton={false}
-                followsUserLocation={true}
+                followsUserLocation={false}
                 style={{ flex: 1 }}
                 pitchEnabled={false}
                 toolbarEnabled={false}
