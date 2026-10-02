@@ -217,6 +217,7 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
                 showsMyLocationButton={false}
                 followsUserLocation={true}
                 style={{ flex: 1 }}
+                pitchEnabled={false}
                 toolbarEnabled={false}
                 onRegionChangeComplete={(Region) => onRegionChange(Region)}
                 onUserLocationChange={(e) => { checkUserLocation(e.nativeEvent.coordinate) }}
