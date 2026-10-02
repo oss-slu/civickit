@@ -251,7 +251,7 @@ const IssueDetailScreen = () => {
         {Platform.OS !== 'web' && MapView && Marker ? (
           <MapView
             style={styles.map}
-            provider={PROVIDER_GOOGLE}
+            provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
             initialRegion={{
               latitude: issue.latitude,
               longitude: issue.longitude,

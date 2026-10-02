@@ -2,7 +2,7 @@
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { View, Animated, useAnimatedValue } from 'react-native';
+import { Platform, View, Animated, useAnimatedValue } from 'react-native';
 import { Marker, PROVIDER_GOOGLE, Polygon } from 'react-native-maps';
 import { StackParams } from '../../types/StackParams';
 import { useLocation } from '../../contexts/LocationContext';
@@ -211,7 +211,7 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
     return (
         <View style={{ flex: 1 }}>
             <MapView
-                provider={PROVIDER_GOOGLE}
+                provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
                 ref={ref}
                 showsUserLocation={true}
                 showsMyLocationButton={false}
