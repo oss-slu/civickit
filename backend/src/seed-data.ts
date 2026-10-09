@@ -12,7 +12,15 @@
  *           COMMUNITY_RESOLVED, CLOSED
  */
 
-import { IssueCategory, IssueStatus } from '@civickit/shared';
+import {
+    BoundarySource,
+    IssueCategory,
+    IssueStatus,
+    OrgRole,
+    OrgStatus,
+    OrgTier,
+    OrgType,
+} from '@civickit/shared';
 
 export interface SeedIssueTemplate {
     title: string;
@@ -33,6 +41,25 @@ export interface SeedUserTemplate {
     name: string;
     password: string;
     profilePhotoId?: string;
+}
+
+export interface SeedOrgTemplate {
+    name: string;
+    slug: string;
+    type: OrgType;
+    status: OrgStatus;
+    tier: OrgTier;
+    categoryScope: IssueCategory[];
+    boundarySource: BoundarySource;
+    boundaryRef: string | null;
+    // Plain WKT here; seed-utils turns it into geography(MultiPolygon,4326).
+    geofenceWKT: string;
+}
+
+export interface SeedOrgMembershipTemplate {
+    userEmail: string;
+    orgSlug: string;
+    role: OrgRole;
 }
 
 const baseUserTemplates: SeedUserTemplate[] = [
@@ -109,6 +136,45 @@ export const userTemplates: SeedUserTemplate[] = [
         name,
         password: 'password123',
     })),
+];
+
+// Pilot organizations. Stand-in for the self-serve registration wizard, which
+// is deferred past Demo Day -- without these there is no responder to log in as
+// and the org branches of requirePermission are unreachable outside the tests.
+export const organizationTemplates: SeedOrgTemplate[] = [
+    {
+        name: 'Midtown CID',
+        slug: 'midtown-cid',
+        type: 'CID',
+        status: 'ACTIVE',
+        tier: 'GROWTH',
+        // Covers 11 of the 12 seeded issues. GRAFFITI is deliberately absent --
+        // no issue seeds it, and leaving it out keeps the scope honest.
+        // ILLEGAL_DUMPING is left out so at least one in-geofence issue is
+        // provably out of scope, which is what proves the filter works.
+        categoryScope: ['BROKEN_SIDEWALK', 'STREETLIGHT', 'TRAFFIC_SIGNAL', 'POTHOLE'],
+        boundarySource: 'FREEHAND',
+        // FREEHAND boundaries have no upstream source, so boundaryRef stays
+        // null. A seeded OFFICIAL org would set it to something like
+        // 'stl-open-data:wards-2023:ward-7' plus a boundarySyncedAt timestamp.
+        boundaryRef: null,
+        // Bounding box lat 38.6300..38.6750, lng -90.2450..-90.1990, checked
+        // against every latitude/longitude pair in issueTemplates below: all
+        // twelve fall inside. WKT is lng-then-lat, and the ring must close on
+        // its first point.
+        geofenceWKT:
+            'POLYGON((-90.2450 38.6300, -90.1990 38.6300, -90.1990 38.6750, -90.2450 38.6750, -90.2450 38.6300))',
+    },
+];
+
+// Two members of one org on purpose. Issue.claimedById holds a *user* id and
+// authorization resolves the org through that user's membership, so a single
+// member can only demonstrate "the claimer can act on it". A second member is
+// what exercises the real rule -- any member of the claiming org may post
+// updates and change status, which is why isResponder() accepts both roles.
+export const orgMembershipTemplates: SeedOrgMembershipTemplate[] = [
+    { userEmail: userTemplates[0].email, orgSlug: 'midtown-cid', role: 'ORG_ADMIN' },
+    { userEmail: userTemplates[1].email, orgSlug: 'midtown-cid', role: 'ORG_MEMBER' },
 ];
 
 // Issue templates with real St. Louis location data
