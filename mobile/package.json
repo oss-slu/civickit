@@ -14,8 +14,9 @@
   },
   "dependencies": {
     "@civickit/shared": "file:../shared",
+    "@expo/ui": "~57.0.22",
     "@expo/vector-icons": "^15.1.1",
-    "@gorhom/bottom-sheet": "^5.2.8",
+    "@gorhom/bottom-sheet": "^5.2.14",
     "@react-native-masked-view/masked-view": "0.3.2",
     "@react-native-vector-icons/evil-icons": "^12.4.1",
     "@react-native-vector-icons/fontawesome6": "^12.3.1",
