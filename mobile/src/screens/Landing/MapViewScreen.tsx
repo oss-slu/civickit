@@ -210,7 +210,7 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
 
     return (
         <View style={{ flex: 1 }}>
-            <MapView
+            {/* <MapView
                 provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
                 ref={ref}
                 showsUserLocation={true}
@@ -243,7 +243,7 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
                     strokeWidth={0}
                     fillColor='rgba(0,0,0,0.25)'
                 />
-            </MapView>
+            </MapView> */}
 
             <Animated.View
                 style={[{

@@ -16,6 +16,9 @@ interface AuthContextType {
     user: User | null;
     role: Role | null
     organization: any
+    registeringOrg: boolean
+    setRegisteringOrg: (registeringOrg: boolean) => void;
+    refresh: any
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -27,6 +30,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [user, setUser] = useState<User | null>(null);
     const [role, setRole] = useState<Role | null>(null)
     const [organization, setOrganization] = useState<any>(null)
+    const [registeringOrg, setRegisteringOrg] = useState(false)
     const queryClient = useQueryClient()
 
     // On mount, check for token to determine if user is logged in
@@ -63,9 +67,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
 
         }
-
-
     }, [user])
+
+    const refresh = async () => {
+        const { data, error } = await refetch()
+        if (error == null && data) {
+            setUser(data)
+            setIsLoggedIn(true)
+        }
+
+    }
 
     //logout deletes token + updates state
     const logout = async () => {
@@ -84,7 +95,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         return () => setUnauthorizedHandler(null);
     }, []);
 
-    const { data, error } = useQuery({
+    const { data, error, refetch } = useQuery({
         queryKey: queryKeys.currentUser(authToken),
         enabled: !!authToken,
         queryFn: ({ signal }) => authApi.getCurrentUser(authToken, signal),
@@ -99,7 +110,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     if (error != null && isLoading == true) {
         logout()
-
         console.log(error)
         setIsLoading(false)
     }
@@ -114,7 +124,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
 
     return (
-        <AuthContext.Provider value={{ isLoggedIn, isLoading, authToken, login, logout, setUser, user, role, organization }}>
+        <AuthContext.Provider value={{ isLoggedIn, isLoading, authToken, login, logout, setUser, user, role, organization, registeringOrg, setRegisteringOrg, refresh }}>
             {children}
         </AuthContext.Provider>
     );

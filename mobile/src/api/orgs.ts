@@ -1,6 +1,7 @@
 // mobile/src/api/orgs.ts
 import type { CreateIssueDTO, GetNearbyIssueResponse, Issue, OrgRole, PostUpdateDTO, User } from '@civickit/shared';
 import { apiFetch } from './client';
+import { CreateOrgDTO } from '@civickit/shared/src/types/api';
 
 export interface Membership {
     userId: string;
@@ -26,4 +27,8 @@ export function getOrgByUserId(
         method: 'GET',
         auth: true
     });
+}
+
+export function createOrg(org: CreateOrgDTO): Promise<Issue> {
+    return apiFetch('/organizations/', { method: 'POST', body: org, auth: true });
 }

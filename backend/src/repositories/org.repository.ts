@@ -6,6 +6,8 @@ import db, { first } from '../db';
 import { Issue, issues, organizations } from '../db/schema';
 import { CreateOrgDTO } from '@civickit/shared/src/types/api';
 import { MembershipRepository } from './membership.repository';
+import { RecordNotFoundError } from '../db/errors';
+import { PhotoRepository } from './photo.repository';
 
 /**
  * A row from findOrgsForIssue. Raw SQL, so the shape is asserted rather than
@@ -23,11 +25,26 @@ const membershipRepository = new MembershipRepository();
 export class OrgRepository {
 
   async create(data: CreateOrgDTO & { adminId: string }) {
+    const newSlug = await this.getUniqueSlug(data.slug)
+
+    let photo
+    if (data.profilePhoto) {
+      const photoRepository = new PhotoRepository();
+      const photos = await photoRepository.createMany(
+        [data.profilePhoto],
+        { userId: data.adminId },
+      );
+
+      if (photos.length > 0) {
+        photo = photos[0]
+      }
+    }
+
     const [inserted] = await db
       .insert(organizations)
       .values({
         name: data.name,
-        slug: data.slug,
+        slug: newSlug,
         type: data.type,
         status: data.status,
         tier: data.tier,
@@ -35,7 +52,8 @@ export class OrgRepository {
         boundaryRef: data.boundaryRef,
         boundarySource: data.boundarySource,
         boundarySyncedAt: data.boundarySyncedAt,
-        //TODO: add in geofence
+        geofence: data.geofence,
+        profilePhotoId: photo && photo.id
       })
       .returning({ id: organizations.id });
 
@@ -47,6 +65,21 @@ export class OrgRepository {
 
     // Re-read so create returns the same shape as findById.
     return (await this.findById(inserted.id))!;
+  }
+
+  async getUniqueSlug(slug: string) {
+    let result: any[] = []
+    let newSlug = slug
+    let i = 1
+    do {
+      result = await db.select().from(organizations).where(eq(organizations.slug, newSlug));
+      if (result.length > 0) {
+        newSlug = slug + "-" + i
+      }
+      i++
+    } while (result.length > 0)
+    return newSlug
+
   }
 
   async findById(id: string) {

@@ -42,11 +42,13 @@ export interface CreateOrgDTO {
     slug: string;
     type: OrgType;
     status: OrgStatus;
-    tier: OrgTier;
+    tier?: OrgTier;
     categoryScope: IssueCategory[];
     boundarySource?: BoundarySource;
     boundaryRef?: string;
     boundarySyncedAt?: Date;
+    geofence?: string;
+    profilePhoto?: CreatePhotoDTO;
 }
 
 export interface OrgMembershipDTO {

@@ -6,7 +6,7 @@ import { Checkbox } from 'expo-checkbox';
 import WrapperButton from "./WrapperButton";
 import { FilterIcon } from "./Icons";
 
-export default function CheckList({ data, selectedValues, setSelectedValues, checkBoxColor = palette.ckYellow }: any) {
+export default function CheckList({ data, selectedValues, setSelectedValues, checkBoxColor = palette.ckYellow, linesVisible = true }: any) {
     const [selected, setSelected] = useState<boolean[]>([])
 
     useEffect(() => {
@@ -47,7 +47,7 @@ export default function CheckList({ data, selectedValues, setSelectedValues, che
 
     const checklist = data.map((item: any, index: number) =>
         <TouchableOpacity
-            style={styles.option}
+            style={{ ...styles.option, borderBottomWidth: linesVisible ? 2 : 0 }}
             onPress={() => handleSelect(item, index)}
             key={index.toString()}>
             <Checkbox
@@ -56,6 +56,7 @@ export default function CheckList({ data, selectedValues, setSelectedValues, che
             />
             <Text style={styles.optionText}>{item}</Text>
         </TouchableOpacity>
+
     )
 
     return (
@@ -75,7 +76,7 @@ const styles = StyleSheet.create({
         borderBottomColor: palette.ckLightGray,
         color: colors.textPrimary,
         flexDirection: "row",
-        columnGap: spacing.xs
+        columnGap: spacing.sm
     },
     optionText: {
         color: colors.textPrimary,

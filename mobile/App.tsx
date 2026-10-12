@@ -28,6 +28,8 @@ import Constants from 'expo-constants';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import QueueNav from './src/screens/Queue/QueueNav';
 import DispatchNav from './src/screens/Dispatch/DispatchNav';
+import OrgRegisterScreen from './src/screens/Login/OrgRegisterScreen';
+import ErrorScreen from './src/screens/Misc/ErrorScreen';
 
 const Tab = createBottomTabNavigator<TabParams>();
 
@@ -178,14 +180,14 @@ function MainTabNavigator() {
 }
 
 function AppNavigator() {
-  const { isLoggedIn, isLoading } = useAuth();
+  const { isLoggedIn, isLoading, registeringOrg } = useAuth();
   const insets = useSafeAreaInsets();
 
   if (isLoading) return <LoadingScreen />
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ animation: 'slide_from_right' }}>
-        {isLoggedIn ? (
+        {(isLoggedIn && !registeringOrg) ? (
           <>
             <Stack.Screen
               name="Main"
@@ -197,6 +199,8 @@ function AppNavigator() {
           <>
             <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false, animation: 'slide_from_right' }} />
             <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: false, animation: 'slide_from_right' }} />
+            <Stack.Screen name="OrgRegister" component={OrgRegisterScreen} options={{ headerShown: false, animation: 'slide_from_right' }} />
+            <Stack.Screen name="Error" component={ErrorScreen} options={{ headerShown: false, animation: 'slide_from_right' }} />
           </>
         )}
       </Stack.Navigator>

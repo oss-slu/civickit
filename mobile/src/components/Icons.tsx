@@ -475,3 +475,12 @@ export function MenuIcon(props: IconProps) {
             style={props.style} />
     )
 }
+
+export function UploadIcon(props: IconProps) {
+    return (
+        <Feather name="upload"
+            color={props.color}
+            size={props.size}
+            style={props.style} />
+    )
+}
