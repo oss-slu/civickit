@@ -1,4 +1,5 @@
 // mobile/src/services/cloudinaryService.ts
+import { File, UploadType } from 'expo-file-system';
 import type { CreatePhotoDTO, PhotoMetadataSource } from '@civickit/shared';
 import { uploadApi } from '../api';
 import type { UploadSignature } from '../api/upload';
@@ -76,43 +77,55 @@ export async function uploadImageToCloudinary(imageUri: string): Promise<Uploade
         const uploadSignature = await getUploadSignature();
         timings.signatureMs = Date.now() - signatureStartTime;
 
-        // Step 2: Create FormData with signed credentials
-        const formDataStartTime = Date.now();
-        // In React Native, we can pass the URI directly to FormData
-        const formData = new FormData();
-        formData.append('file', {
-            uri: imageUri,
-            type: 'image/jpeg',
-            name: 'photo.jpg',
-        } as any);
-        formData.append('api_key', uploadSignature.apiKey);
-        formData.append('timestamp', uploadSignature.timestamp.toString());
-        formData.append('signature', uploadSignature.signature);
-        formData.append('folder', 'civickit/issues');
-        timings.formDataMs = Date.now() - formDataStartTime;
-
-        // Step 3: Upload to Cloudinary
+        // Step 2: Upload to Cloudinary.
+        //
+        // This used to build a FormData with React Native's proprietary
+        // `{ uri, type, name }` file part and hand it to global fetch. Expo SDK
+        // 56 made expo/fetch the global fetch, and it is WinterTC-compliant:
+        // it has no concept of a part that names a file on disk, and throws
+        // "Unsupported FormDataPart implementation" on one. Expo tests that
+        // behavior deliberately, so it is not going to come back.
+        //
+        // File.upload streams the file from disk in the native layer instead.
+        // That matters here beyond just working: uploadPhotos runs these in
+        // parallel, and reading each image into a JS Blob to satisfy the
+        // spec-compliant FormData would put every photo in memory at once.
         const cloudinaryStartTime = Date.now();
         const uploadUrl = `https://api.cloudinary.com/v1_1/${uploadSignature.cloudName}/image/upload`;
 
-        const uploadResponse = await fetch(uploadUrl, {
-            method: 'POST',
-            body: formData,
+        const uploadResponse = await new File(imageUri).upload(uploadUrl, {
+            uploadType: UploadType.MULTIPART,
+            fieldName: 'file',
+            mimeType: 'image/jpeg',
+            parameters: {
+                api_key: uploadSignature.apiKey,
+                timestamp: uploadSignature.timestamp.toString(),
+                signature: uploadSignature.signature,
+                folder: 'civickit/issues',
+            },
         });
 
         timings.cloudinaryNetworkMs = Date.now() - cloudinaryStartTime;
 
-        if (!uploadResponse.ok) {
-            const error = await uploadResponse.json();
-            throw new Error(`Cloudinary upload failed: ${error.error?.message || 'Unknown error'}`);
+        // upload() resolves for any completed response, 2xx or not, and hands
+        // back the body as an unparsed string.
+        let data: CloudinaryUploadResponse;
+        try {
+            data = JSON.parse(uploadResponse.body);
+        } catch {
+            throw new Error(
+                `Cloudinary upload failed: HTTP ${uploadResponse.status}, unreadable response`,
+            );
         }
 
-        const data: CloudinaryUploadResponse = await uploadResponse.json();
+        if (uploadResponse.status < 200 || uploadResponse.status >= 300) {
+            throw new Error(`Cloudinary upload failed: ${data.error?.message || 'Unknown error'}`);
+        }
+
         timings.totalMs = Date.now() - uploadStartTime;
 
         console.log(`Single Image Upload Breakdown:`, {
             signature: `${timings.signatureMs}ms`,
-            formData: `${timings.formDataMs}ms`,
             cloudinaryNetwork: `${timings.cloudinaryNetworkMs}ms`,
             total: `${timings.totalMs}ms`,
         });
