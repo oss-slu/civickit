@@ -36,16 +36,25 @@ export const LocationProvider = ({ children }: any) => {
         }
     }
 
+    const handleLocationError = (err: unknown) => {
+        console.error('Failed to get location:', err)
+        checkForErrors(null, locationServicesEnabled)
+    }
+
     //get user location
     useEffect(() => {
         checkIfLocationEnabled();
-        getCurrentLocation().then(() => setIsLoading(false))
+        getCurrentLocation()
+            .catch(handleLocationError)
+            .then(() => setIsLoading(false))
     }, [])
 
     const refetch = () => {
         setIsLoading(true)
         checkIfLocationEnabled();
         getCurrentLocation()
+            .catch(handleLocationError)
+            .finally(() => setIsLoading(false))
         checkForErrors(location, locationServicesEnabled)
     }
 
@@ -74,6 +83,9 @@ export const LocationProvider = ({ children }: any) => {
             ])
             setLocationServicesEnabled(false)
             checkForErrors(null, false)
+            // Without permission, getCurrentPositionAsync() below rejects on iOS --
+            // stop here instead of calling it.
+            return
         }
 
         //get lat and long
