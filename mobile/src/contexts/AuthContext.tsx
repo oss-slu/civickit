@@ -55,19 +55,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 setRole(membership.role)
                 const org = await orgsApi.getOrgByUserId(userId)
                 setOrganization(org)
-                setGeofence(org.geofence.rows[0].st_asgeojson.coordinates[0][0].map((point: any) => ({ latitude: point[1], longitude: point[0] })))
+                // New orgs are created without a geofence (backend TODO), so
+                // org.geofence.rows[0].st_asgeojson can be null -- skip it rather
+                // than crash.
+                const geojson = org.geofence?.rows?.[0]?.st_asgeojson
+                setGeofence(
+                    geojson
+                        ? geojson.coordinates[0][0].map((point: any) => ({ latitude: point[1], longitude: point[0] }))
+                        : undefined
+                )
             }
-        }
-
-        const getOrgByUserId = async (userId: any) => {
-            const org = await orgsApi.getOrgByUserId(userId)
-            setOrganization(org)
-            setGeofence(org.geofence.rows[0].st_asgeojson.coordinates[0][0].map((point: any) => ({ latitude: point[1], longitude: point[0] })))
         }
 
         if (user != null) {
             if (user.role == "REPORTER") {
-                getOrgRole(user.id)
+                getOrgRole(user.id).catch((err) => console.error('Failed to resolve org role:', err))
             } else if (user.role == "ADMIN") {
                 setRole("ADMIN")
             }

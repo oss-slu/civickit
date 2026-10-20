@@ -116,19 +116,23 @@ export default function MapViewScreen({ ref, issues, refetch, visibleOrgs }: any
     }, [visibleOrgs])
 
     const getVisiblePolygons = () => {
-        setVisiblePolygons(visibleOrgs.map((p: any) => {
-            return (
-                <Polygon
-                    key={p.id}
-                    coordinates={toCoords(p.geofence)}
-                    strokeColor={p.color}
-                    strokeWidth={1}
-                    fillColor={`rgba(${parseInt(p.color.slice(1, 3), 16)},
+        setVisiblePolygons(visibleOrgs
+            // New orgs are created without a geofence (backend TODO), so there's
+            // nothing to draw for them yet -- skip rather than crash.
+            .filter((p: any) => p.geofence?.rows?.[0]?.st_asgeojson)
+            .map((p: any) => {
+                return (
+                    <Polygon
+                        key={p.id}
+                        coordinates={toCoords(p.geofence)}
+                        strokeColor={p.color}
+                        strokeWidth={1}
+                        fillColor={`rgba(${parseInt(p.color.slice(1, 3), 16)},
                                     ${parseInt(p.color.slice(3, 5), 16)},
                                     ${parseInt(p.color.slice(5), 16)}, 0.25 )`}
-                />
-            )
-        }))
+                    />
+                )
+            }))
 
     }
 
