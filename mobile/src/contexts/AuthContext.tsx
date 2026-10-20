@@ -59,6 +59,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             }
         }
 
+        const getOrgByUserId = async (userId: any) => {
+            const org = await orgsApi.getOrgByUserId(userId)
+            setOrganization(org)
+            setGeofence(org.geofence.rows[0].st_asgeojson.coordinates[0][0].map((point: any) => ({ latitude: point[1], longitude: point[0] })))
+        }
+
         if (user != null) {
             if (user.role == "REPORTER") {
                 getOrgRole(user.id)
