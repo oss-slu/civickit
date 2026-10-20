@@ -3,7 +3,7 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Platform, View, Animated, useAnimatedValue } from 'react-native';
-import { Marker, PROVIDER_GOOGLE, Polygon } from 'react-native-maps';
+import { Marker, PROVIDER_DEFAULT, PROVIDER_GOOGLE, Polygon } from 'react-native-maps';
 import { StackParams } from '../../types/StackParams';
 import { useLocation } from '../../contexts/LocationContext';
 import Pin from '../../components/Pin';
@@ -103,6 +103,7 @@ export default function MapViewScreen({ ref, issues, refetch, visibleOrgs }: any
         }
 
     }
+
 
     if (currentElement != undefined && bottomSheetInd == 2) {
         closeCallout()
@@ -238,10 +239,12 @@ export default function MapViewScreen({ ref, issues, refetch, visibleOrgs }: any
     //every render, which rebuilds the native path and can drop the overlay
     const boundaryHoles = useMemo(() => [stlPoints], [stlPoints])
 
+
     return (
         <View style={{ flex: 1 }}>
             <MapView
-                provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
+                // provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
+                provider={PROVIDER_DEFAULT}
                 ref={ref}
                 showsUserLocation={true}
                 showsMyLocationButton={false}
@@ -307,6 +310,7 @@ export default function MapViewScreen({ ref, issues, refetch, visibleOrgs }: any
                 }
 
             </Animated.View>
+
             <BottomSheet
                 ref={bottomSheetRef}
                 snapPoints={snapPoints}
@@ -315,7 +319,7 @@ export default function MapViewScreen({ ref, issues, refetch, visibleOrgs }: any
                 handleStyle={{
                     backgroundColor: colors.background,
                     height: size.xl,
-                    justifyContent: "center"
+                    justifyContent: "center",
                 }}
                 backgroundStyle={{
                     backgroundColor: colors.background
