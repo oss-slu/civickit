@@ -17,6 +17,11 @@ interface LocationContextType {
 
 const LocationContext = createContext<LocationContextType | undefined>(undefined)
 
+// Set in .env.local to test against the seeded St. Louis data from
+// anywhere, instead of wherever the device's real GPS says you are.
+const DEV_LAT = process.env.EXPO_PUBLIC_DEV_LAT ? parseFloat(process.env.EXPO_PUBLIC_DEV_LAT) : undefined
+const DEV_LNG = process.env.EXPO_PUBLIC_DEV_LNG ? parseFloat(process.env.EXPO_PUBLIC_DEV_LNG) : undefined
+
 export const LocationProvider = ({ children }: any) => {
     const [location, setLocation] = useState<userLocation>()
     const [locationServicesEnabled, setLocationServicesEnabled] = useState(false)
@@ -43,6 +48,13 @@ export const LocationProvider = ({ children }: any) => {
 
     //get user location
     useEffect(() => {
+        if (DEV_LAT !== undefined && DEV_LNG !== undefined) {
+            setLocation({ latitude: DEV_LAT, longitude: DEV_LNG })
+            setLocationServicesEnabled(true)
+            checkForErrors({ latitude: DEV_LAT, longitude: DEV_LNG }, true)
+            setIsLoading(false)
+            return
+        }
         checkIfLocationEnabled();
         getCurrentLocation()
             .catch(handleLocationError)
@@ -50,6 +62,7 @@ export const LocationProvider = ({ children }: any) => {
     }, [])
 
     const refetch = () => {
+        if (DEV_LAT !== undefined && DEV_LNG !== undefined) return
         setIsLoading(true)
         checkIfLocationEnabled();
         getCurrentLocation()
