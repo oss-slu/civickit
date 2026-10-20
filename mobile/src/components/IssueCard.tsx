@@ -21,6 +21,7 @@ import { BrokenIcon, DefaultCategoryIcon, ExclamationPointIcon, LightBulbIcon, L
 import { palette, statusColors } from '../styles/theme';
 import StatusBadge from './StatusBadge';
 import CategoryIcon from './CategoryIcon';
+import { METERS_PER_MILE } from '../api/issues';
 
 interface IssueCardProps {
   issue: GetNearbyIssueResponse;
@@ -103,7 +104,7 @@ export default function IssueCard({ issue, variant = 'compact', onPress, style, 
             <>
               {issue.distance !== undefined && (
                 <Text style={styles.distance}>
-                  {parseFloat(issue.distance).toFixed(1)} meters away
+                  {(parseFloat(issue.distance) / METERS_PER_MILE).toFixed(1)} miles away
                 </Text>
               )}
             </>
@@ -128,7 +129,7 @@ export default function IssueCard({ issue, variant = 'compact', onPress, style, 
                 <>
                   {issue.distance !== undefined && (
                     <Text style={{ ...styles.distance, textAlign: "left" }}>
-                      {parseFloat(issue.distance).toFixed(1)} m away
+                      {(parseFloat(issue.distance) / METERS_PER_MILE).toFixed(1)} mi away
                     </Text>
                   )}
                 </>

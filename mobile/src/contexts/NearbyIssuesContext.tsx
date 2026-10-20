@@ -18,7 +18,7 @@ export const NearbyIssuesProvider = ({ children }: any) => {
 
     const queryClient = useQueryClient()
     const location = useLocation().location
-    const [radius, setRadius] = useState<number>(5)
+    const [radius, setRadius] = useState<number>(20)
 
     //fetch issues from database
     const { data, isLoading, isFetching, error, refetch } = useQuery({
