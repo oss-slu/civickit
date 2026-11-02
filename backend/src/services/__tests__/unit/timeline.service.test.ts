@@ -101,10 +101,14 @@ describe('TimelineService', () => {
 
     describe('updateIssue', () => {
         it('should add update successfully', async () => {
+            // One instant shared by the mock and the expectation. Two separate
+            // new Date() calls differ whenever the millisecond ticks between
+            // them, which is rare locally and regular on CI.
+            const now = new Date();
             const mockUpdate = {
                 issueId: 'issue1',
                 id: 'update1',
-                createdAt: new Date(),
+                createdAt: now,
                 userId: 'user1',
                 message: 'test message 1',
                 status: 'ACKNOWLEDGED',
@@ -113,7 +117,7 @@ describe('TimelineService', () => {
             const mockReturn = {
                 issueId: 'issue1',
                 id: 'update1',
-                createdAt: new Date(),
+                createdAt: now,
                 userId: 'user1',
                 message: 'test message 1',
                 status: 'ACKNOWLEDGED',
@@ -148,10 +152,11 @@ describe('TimelineService', () => {
     describe('get', () => {
         it('should return updates attached to issue1', async () => {
             const mockIssue = { id: 'issue1' };
+            const now = new Date();
             const mockUpdate = [{
                 issueId: 'issue1',
                 id: 'update1',
-                createdAt: new Date(),
+                createdAt: now,
                 userId: 'user1',
                 message: 'test message 1',
                 status: 'ACKNOWLEDGED',
@@ -161,7 +166,7 @@ describe('TimelineService', () => {
             const mockReturn = [{
                 issueId: 'issue1',
                 id: 'update1',
-                createdAt: new Date(),
+                createdAt: now,
                 userId: 'user1',
                 message: 'test message 1',
                 status: 'ACKNOWLEDGED',
@@ -177,10 +182,11 @@ describe('TimelineService', () => {
 
         it('should return updates attached to user1', async () => {
             const mockUser = { id: 'user1' };
+            const now = new Date();
             const mockUpdate = [{
                 issueId: 'issue1',
                 id: 'update1',
-                createdAt: new Date(),
+                createdAt: now,
                 userId: 'user1',
                 message: 'test message 1',
                 status: 'ACKNOWLEDGED',
@@ -192,7 +198,7 @@ describe('TimelineService', () => {
             const mockReturn = [{
                 issueId: 'issue1',
                 id: 'update1',
-                createdAt: new Date(),
+                createdAt: now,
                 userId: 'user1',
                 message: 'test message 1',
                 status: 'ACKNOWLEDGED',
