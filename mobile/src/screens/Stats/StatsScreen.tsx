@@ -197,7 +197,7 @@ export default function StatsScreen() {
                 style={{ paddingTop: headerOffset + spacing.md }}
                 refreshControl={<RefreshControl
                     refreshing={refreshing}
-                    onRefresh={refetch} />}
+                    onRefresh={() => { refetch() }} />}
             >
 
 

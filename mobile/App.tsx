@@ -58,7 +58,6 @@ function MainTabNavigator() {
       flex: 1,
     }}>
       <StatusBar style="dark"
-        translucent={true}
         hidden={false}
       />
       <LocationProvider>
