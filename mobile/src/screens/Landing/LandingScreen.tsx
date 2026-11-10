@@ -77,9 +77,9 @@ export default function LandingScreen() {
         if (!isFetching && !isMinLoading) {
             setIsMinLoading(true);
             if (refetch != undefined) {
-                refetch();
+                void refetch();
             }
-            getAreaOrgs()
+            void getAreaOrgs()
             // Ensure animation plays for at least 800ms (one full spin)
             setTimeout(() => {
                 setIsMinLoading(false);
@@ -89,32 +89,38 @@ export default function LandingScreen() {
 
     const getAreaOrgs = async () => {
         setIsMinLoading(true)
-        let orgs = await orgsApi.getAllActiveOrgs(false)
-        let i = 0
-        orgs = orgs.map((org) => {
-            const o = {
-                ...org,
-                color: orgColors[i]
-            }
-
-            i = (i + 1) % orgColors.length
-            return o
-        })
-        if (role == 'ORG_ADMIN' || role == 'ORG_MEMBER') {
-            orgs.forEach((org) => {
-                if (org.id == organization.id) {
-                    setVisibleOrgs([org])
+        try {
+            let orgs = await orgsApi.getAllActiveOrgs(false)
+            let i = 0
+            orgs = orgs.map((org) => {
+                const o = {
+                    ...org,
+                    color: orgColors[i]
                 }
+
+                i = (i + 1) % orgColors.length
+                return o
             })
+            if (role == 'ORG_ADMIN' || role == 'ORG_MEMBER') {
+                orgs.forEach((org) => {
+                    if (org.id == organization.id) {
+                        setVisibleOrgs([org])
+                    }
+                })
+            }
+            setVisibleClaimers(orgs)
+            setAvailableOrgs(orgs)
+        } catch (err) {
+            console.error('Failed to fetch active orgs:', err)
+        } finally {
+            // Always clear, or handleRefresh stays locked out after a failed fetch.
+            setIsMinLoading(false)
         }
-        setVisibleClaimers(orgs)
-        setAvailableOrgs(orgs)
-        setIsMinLoading(false)
     }
 
 
     useEffect(() => {
-        getAreaOrgs()
+        void getAreaOrgs()
     }, [])
 
 

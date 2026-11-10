@@ -127,9 +127,9 @@ export default function MapViewScreen({ ref, issues, refetch, visibleOrgs }: any
                         coordinates={toCoords(p.geofence)}
                         strokeColor={p.color}
                         strokeWidth={1}
-                        fillColor={`rgba(${parseInt(p.color.slice(1, 3), 16)},
-                                    ${parseInt(p.color.slice(3, 5), 16)},
-                                    ${parseInt(p.color.slice(5), 16)}, 0.25 )`}
+                        fillColor={`rgba(${Number.parseInt(p.color.slice(1, 3), 16)},
+                                    ${Number.parseInt(p.color.slice(3, 5), 16)},
+                                    ${Number.parseInt(p.color.slice(5), 16)}, 0.25 )`}
                     />
                 )
             }))

@@ -104,7 +104,7 @@ export default function IssueCard({ issue, variant = 'compact', onPress, style, 
             <>
               {issue.distance !== undefined && (
                 <Text style={styles.distance}>
-                  {(parseFloat(issue.distance) / METERS_PER_MILE).toFixed(1)} miles away
+                  {(Number.parseFloat(issue.distance) / METERS_PER_MILE).toFixed(1)} miles away
                 </Text>
               )}
             </>
@@ -129,7 +129,7 @@ export default function IssueCard({ issue, variant = 'compact', onPress, style, 
                 <>
                   {issue.distance !== undefined && (
                     <Text style={{ ...styles.distance, textAlign: "left" }}>
-                      {(parseFloat(issue.distance) / METERS_PER_MILE).toFixed(1)} mi away
+                      {(Number.parseFloat(issue.distance) / METERS_PER_MILE).toFixed(1)} mi away
                     </Text>
                   )}
                 </>

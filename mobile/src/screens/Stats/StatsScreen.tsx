@@ -47,7 +47,7 @@ export default function StatsScreen() {
     const [availableOrgs, setAvailableOrgs] = useState<any[]>([])
     const cityName = "St. Louis"
     const cityRadius = 20 //approximate and overshooting
-    const [radiusMiles, setRadiusMiles] = useState(parseInt(radius))
+    const [radiusMiles, setRadiusMiles] = useState(Number.parseInt(radius, 10))
     const [radiusOptions, setRadiusOptions] = useState<any[]>([...baseOptions, cityName])
     const [polygonFilter, setPolygonFilter] = useState(false)
 
@@ -69,22 +69,26 @@ export default function StatsScreen() {
     }, queryClient);
 
     const getAreaOrgs = async () => {
-        let orgs = await orgsApi.getAllActiveOrgs(false)
-        const orgNames = orgs.map((org) => {
-            return org.name
-        })
-        setAvailableOrgs(orgs)
-        setRadiusOptions([...baseOptions, cityName, ...orgNames])
+        try {
+            let orgs = await orgsApi.getAllActiveOrgs(false)
+            const orgNames = orgs.map((org) => {
+                return org.name
+            })
+            setAvailableOrgs(orgs)
+            setRadiusOptions([...baseOptions, cityName, ...orgNames])
+        } catch (err) {
+            console.error('Failed to fetch active orgs:', err)
+        }
     }
 
     useEffect(() => {
-        getAreaOrgs()
+        void getAreaOrgs()
     }, [])
 
     useFocusEffect(
         useCallback(() => {
-            refetch()
-            getAreaOrgs()
+            void refetch()
+            void getAreaOrgs()
 
         }, [])
     )
@@ -222,8 +226,8 @@ export default function StatsScreen() {
     //filter by radius (refetch with new radius)
     const handleRadiusChange = (newRadius: any) => {
         setRadius(newRadius)
-        if (!Number.isNaN(parseInt(newRadius))) {
-            setRadiusMiles(parseInt(newRadius))
+        if (!Number.isNaN(Number.parseInt(newRadius, 10))) {
+            setRadiusMiles(Number.parseInt(newRadius, 10))
             setPolygonFilter(false)
         } else {
             setRadiusMiles(cityRadius)
