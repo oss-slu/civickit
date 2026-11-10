@@ -52,7 +52,7 @@ export default function DuplicateCheckScreen() {
                 keyExtractor={(item, index) => index.toString()}
                 refreshControl={<RefreshControl
                     refreshing={refreshing}
-                    onRefresh={refetch} />}
+                    onRefresh={() => { refetch?.() }} />}
                 renderItem={({ item, index }) => (
                     <View style={styles.container}>
                         <IssueCard issue={item}
