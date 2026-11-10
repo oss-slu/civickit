@@ -40,3 +40,5 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+google-services.json
+civickit-f67b4-firebase-adminsdk-fbsvc-e7d6b559c9.json
