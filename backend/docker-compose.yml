@@ -1,7 +1,8 @@
 services:
   db:
     image: postgis/postgis:15-3.3
-    container_name: civickit-db
+    platform: linux/amd64
+    container_name: civickit
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres

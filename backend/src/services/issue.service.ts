@@ -128,6 +128,11 @@ export class IssueService {
     return await this.getExtendedIssueInfo(issues)
   }
 
+  async getIssuesByUserClaim(id: string, limit?: number) {
+    const issues = await this.issueRepository.findByClaimer(id, limit);
+    return await this.getExtendedIssueInfo(issues)
+  }
+
   // update status tag
   // Callers must gate this behind requirePermission('update:issue_status').
   async updateStatus(id: string, status: IssueStatus) {

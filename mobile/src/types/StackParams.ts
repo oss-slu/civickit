@@ -49,6 +49,13 @@ export type StackParams = {
         dateUpdatedOption?: boolean
         distanceOption?: boolean
     },
+    "My Claimed Issues": {
+        issues: any[]
+        endorsementsOption?: boolean
+        dateReportedOption?: boolean
+        dateUpdatedOption?: boolean
+        distanceOption?: boolean
+    },
     "DuplicateCheck": {},
     "Queue": {}
     "Dispatch": {}
