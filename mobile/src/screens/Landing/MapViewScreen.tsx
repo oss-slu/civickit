@@ -2,8 +2,8 @@
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { View, Animated, useAnimatedValue } from 'react-native';
-import { Marker, PROVIDER_GOOGLE, Polygon } from 'react-native-maps';
+import { Platform, View, Animated, useAnimatedValue } from 'react-native';
+import { Marker, PROVIDER_DEFAULT, PROVIDER_GOOGLE, Polygon } from 'react-native-maps';
 import { StackParams } from '../../types/StackParams';
 import { useLocation } from '../../contexts/LocationContext';
 import Pin from '../../components/Pin';
@@ -100,6 +100,7 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
         }
 
     }
+
 
     if (currentElement != undefined && bottomSheetInd == 2) {
         closeCallout()
@@ -208,15 +209,18 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
     //every render, which rebuilds the native path and can drop the overlay
     const boundaryHoles = useMemo(() => [stlPoints], [stlPoints])
 
+
     return (
         <View style={{ flex: 1 }}>
             <MapView
-                provider={PROVIDER_GOOGLE}
+                // provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
+                provider={PROVIDER_DEFAULT}
                 ref={ref}
                 showsUserLocation={true}
                 showsMyLocationButton={false}
-                followsUserLocation={true}
+                followsUserLocation={false}
                 style={{ flex: 1 }}
+                pitchEnabled={false}
                 toolbarEnabled={false}
                 onRegionChangeComplete={(Region) => onRegionChange(Region)}
                 onUserLocationChange={(e) => { checkUserLocation(e.nativeEvent.coordinate) }}
@@ -275,6 +279,7 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
                 }
 
             </Animated.View>
+
             <BottomSheet
                 ref={bottomSheetRef}
                 snapPoints={snapPoints}
@@ -283,7 +288,7 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
                 handleStyle={{
                     backgroundColor: colors.background,
                     height: size.xl,
-                    justifyContent: "center"
+                    justifyContent: "center",
                 }}
                 backgroundStyle={{
                     backgroundColor: colors.background

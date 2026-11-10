@@ -45,20 +45,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const getOrgRole = async (userId: string) => {
             const membership = await orgsApi.getMembershipByUserId(userId)
             if (!membership) {
+                // Plain reporters have no membership row -- getOrgByUserId 404s
+                // for them, so only fetch the org once a membership confirms one exists.
                 setRole("REPORTER")
             } else {
                 setRole(membership.role)
+                setOrganization(await orgsApi.getOrgByUserId(userId))
             }
-        }
-
-        const getOrgByUserId = async (userId: any) => {
-            setOrganization(await orgsApi.getOrgByUserId(userId))
         }
 
         if (user != null) {
             if (user.role == "REPORTER") {
                 getOrgRole(user.id)
-                getOrgByUserId(user.id)
             } else if (user.role == "ADMIN") {
                 setRole("ADMIN")
             }
