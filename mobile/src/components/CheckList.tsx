@@ -6,14 +6,19 @@ import { Checkbox } from 'expo-checkbox';
 import WrapperButton from "./WrapperButton";
 import { FilterIcon } from "./Icons";
 
-export default function CheckList({ data, selectedValues, setSelectedValues, checkBoxColor = palette.ckYellow }: any) {
+export default function CheckList({ data, selectedValues, setSelectedValues, toDisplay, checkBoxColor = palette.ckYellow, dataProvidesColor = false, compareTransform: transformToCompare }: any) {
     const [selected, setSelected] = useState<boolean[]>([])
-
     useEffect(() => {
         let list: boolean[] = []
 
         for (let i = 0; i < data.length; i++) {
-            if (selectedValues.includes(data[i])) {
+            let s = selectedValues.map((s: any) => JSON.stringify(s))
+            let d = JSON.stringify(data[i])
+            if (transformToCompare) {
+                s = transformToCompare(s)
+                d = transformToCompare(d)
+            }
+            if (s.includes(d)) {
                 list.push(true);
             } else {
                 list.push(false)
@@ -21,9 +26,15 @@ export default function CheckList({ data, selectedValues, setSelectedValues, che
         }
         setSelected(list)
 
-    }, [selectedValues])
+    }, [selectedValues, data])
 
-
+    //allow parent to pass a function controlling how the item is displayed 
+    const localToDisplay = (item: any) => {
+        if (toDisplay) {
+            return toDisplay(item)
+        }
+        return <Text style={{ ...styles.optionText }}>{item}</Text>
+    }
 
     const handleSelect = (item: any, i: any) => {
         // setSelectedValue(item);
@@ -45,6 +56,7 @@ export default function CheckList({ data, selectedValues, setSelectedValues, che
         setSelectedValues(newSelectedValues)
     }
 
+
     const checklist = data.map((item: any, index: number) =>
         <TouchableOpacity
             style={styles.option}
@@ -52,9 +64,9 @@ export default function CheckList({ data, selectedValues, setSelectedValues, che
             key={index.toString()}>
             <Checkbox
                 value={selected[index]}
-                color={selected[index] ? checkBoxColor : undefined}
+                color={selected[index] ? (dataProvidesColor ? item.color : checkBoxColor) : undefined}
             />
-            <Text style={styles.optionText}>{item}</Text>
+            {localToDisplay(item)}
         </TouchableOpacity>
     )
 
@@ -67,19 +79,19 @@ export default function CheckList({ data, selectedValues, setSelectedValues, che
 }
 
 const styles = StyleSheet.create({
-
-
     option: {
         padding: spacing.md,
         borderBottomWidth: 1,
         borderBottomColor: palette.ckLightGray,
         color: colors.textPrimary,
         flexDirection: "row",
+        alignItems: "center",
         columnGap: spacing.xs
     },
     optionText: {
         color: colors.textPrimary,
-        fontSize: typography.sizeLg
+        fontSize: typography.sizeLg,
+        paddingHorizontal: spacing.sm
     },
 
 })

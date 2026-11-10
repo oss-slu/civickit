@@ -57,6 +57,19 @@ export class OrgController {
     }
   }
 
+  async getAllActiveOrgs(req: Request, res: Response, next: NextFunction) {
+    try {
+      let shortened = false
+      if (req.route.path == '/active/short') {
+        shortened = true
+      }
+      const orgs = await orgService.getAllActiveOrgs(shortened);
+      res.json(orgs);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async getOrgByUserId(req: Request, res: Response, next: NextFunction) {
     try {
       const org = await orgService.getOrgByUserId(String(req.params.userId));
@@ -79,6 +92,15 @@ export class OrgController {
     try {
       const org = await membershipService.getMembershipByUserId(String(req.params.userId));
       res.json(org);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getGeofence(req: Request, res: Response, next: NextFunction) {
+    try {
+      const geofence = await orgService.getGeofence(String(req.params.orgId));
+      res.json(geofence);
     } catch (error) {
       next(error);
     }
