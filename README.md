@@ -23,6 +23,7 @@ In Development - SLU New Venture Accelerator(Summer 2026)
 ## Documentation
 - [Architecture](docs/ARCHITECTURE.md)
 - [Setup Guide](docs/SETUP.md)
+- [Testing Instructions](docs/testing-instructions.md) (test accounts per role)
 - [Contributing](docs/CONTRIBUTING.md)
 - [User Flows](docs/USER_FLOWS.md)
 - [Security](docs/SECURITY.md)
