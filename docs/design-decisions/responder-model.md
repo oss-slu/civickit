@@ -54,6 +54,33 @@ Going the other way — allowing writes anywhere in the service area — lets tw
 overlapping areas edit the same issue simultaneously with nothing arbitrating between
 them. The claim is what settles ownership.
 
+## Who can read organization data
+
+Which org someone belongs to, and who else is in it, is not public. A responder sees
+their own org; platform `ADMIN` sees all of it. All routes are under
+`/api/organizations` and require a signed-in user.
+
+| Method | Path | Who can call it | Scope |
+| --- | --- | --- | --- |
+| GET | `/me` | Any signed-in user | Caller's own org, or `null` |
+| GET | `/me/membership` | Any signed-in user | Caller's own membership, or `null` |
+| GET | `/:orgId/getOrgById` | Any signed-in user | One org's public profile (name, service area, photo) |
+| GET | `/:orgId/getMembershipsbyOrgId` | Members of that org, platform `ADMIN` | That org's member list |
+| GET | `/:userId/getOrgByUserId` | That user, platform `ADMIN` | That user's org |
+| GET | `/:userId/getMembershipByUserId` | That user, platform `ADMIN` | That user's membership |
+| POST | `/createMembership` | `ORG_ADMIN` of the target org | Adds a member to that org |
+
+The `/me` routes take identity from the token only (`req.userId`), never from the URL.
+An ID in the URL can be swapped by anyone, so it must never decide whose data comes back
+without an authorization check. Before #249 the `:userId` routes did exactly that, and
+any signed-in user could read another user's org. The app uses the `/me` routes; the
+`:userId` routes stay for admin tooling.
+
+Every refusal is the same `403 Forbidden`, whether or not the org exists, so a 403 does
+not confirm an org or a membership. A reporter with no org gets `200` with `null` from
+the `/me` routes rather than a 404. The checks are `requireSelfOrAdmin` and
+`requireOrgMemberOrAdmin` in `backend/src/middleware/authorize.middleware.ts`.
+
 ## Why membership-derived instead of a `RESPONDER` role
 
 Adding `RESPONDER` to the platform `Role` enum would slot into the existing permission

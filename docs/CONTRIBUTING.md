@@ -37,6 +37,7 @@ last updated: 7/21/2026
 2. Link to related issue
 3. Request review from maintainer
 4. Wait for CI to pass
+5. Any route that returns or changes another user's or org's data must check the caller's access, with a 403 test.
 
 ## Communication
 - Slack: [link]

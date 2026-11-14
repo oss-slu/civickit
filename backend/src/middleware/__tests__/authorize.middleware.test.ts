@@ -34,7 +34,7 @@ vi.mock('../../repositories/issue.repository', () => ({
   },
 }));
 
-import { requirePermission } from '../authorize.middleware';
+import { requireOrgMemberOrAdmin, requirePermission, requireSelfOrAdmin } from '../authorize.middleware';
 
 describe('requirePermission', () => {
   let req: Request;
@@ -196,5 +196,72 @@ describe('requirePermission', () => {
 
     expect(next).toHaveBeenCalledWith();
     expect(findByUser).not.toHaveBeenCalled();
+  });
+});
+
+// The HTTP behavior is covered end to end in org.integration.test.ts. These pin
+// the cases a real database cannot easily produce.
+describe('requireSelfOrAdmin and requireOrgMemberOrAdmin', () => {
+  let next: NextFunction;
+  const res = {} as Response;
+  const errorPassedToNext = () => (next as unknown as ReturnType<typeof vi.fn>).mock.calls[0][0];
+
+  beforeEach(() => {
+    findById.mockReset();
+    findByUserAndOrg.mockReset();
+    next = vi.fn();
+  });
+
+  const guards = [
+    {
+      name: 'requireSelfOrAdmin',
+      run: (req: Request) => requireSelfOrAdmin('userId')(req, res, next),
+      params: { userId: 'someone-else' },
+    },
+    {
+      name: 'requireOrgMemberOrAdmin',
+      run: (req: Request) => requireOrgMemberOrAdmin('orgId')(req, res, next),
+      params: { orgId: 'org-1' },
+    },
+  ];
+
+  for (const guard of guards) {
+    describe(guard.name, () => {
+      it('rejects an unauthenticated request with 401 without hitting the database', async () => {
+        await guard.run({ params: guard.params } as unknown as Request);
+
+        expect(errorPassedToNext()).toMatchObject({ statusCode: 401 });
+        expect(findById).not.toHaveBeenCalled();
+        expect(findByUserAndOrg).not.toHaveBeenCalled();
+      });
+
+      it('forwards a repository failure instead of allowing the request through', async () => {
+        const failure = new Error('connection refused');
+        findById.mockRejectedValue(failure);
+        findByUserAndOrg.mockResolvedValue(null);
+
+        await guard.run({ userId: 'user-1', params: guard.params } as unknown as Request);
+
+        expect(errorPassedToNext()).toBe(failure);
+      });
+    });
+  }
+
+  it('lets a user read their own records without a role lookup', async () => {
+    await requireSelfOrAdmin('userId')({ userId: 'user-1', params: { userId: 'user-1' } } as unknown as Request, res, next);
+
+    expect(next).toHaveBeenCalledWith();
+    expect(findById).not.toHaveBeenCalled();
+  });
+
+  it('checks membership in the org from the URL, not just any org', async () => {
+    findByUserAndOrg.mockResolvedValue(null);
+    findById.mockResolvedValue({ id: 'user-1', role: 'REPORTER' });
+
+    await requireOrgMemberOrAdmin('orgId')({ userId: 'user-1', params: { orgId: 'org-1' } } as unknown as Request, res, next);
+
+    expect(findByUserAndOrg).toHaveBeenCalledWith('user-1', 'org-1');
+    expect(errorPassedToNext()).toBeInstanceOf(AppError);
+    expect(errorPassedToNext()).toMatchObject({ statusCode: 403 });
   });
 });

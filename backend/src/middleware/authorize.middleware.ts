@@ -88,4 +88,57 @@ function requirePermission(permission: string) {
     };
 }
 
-export { requirePermission };
+/** Platform ADMIN, read fresh from the DB like requirePermission. */
+async function isPlatformAdmin(userId: string): Promise<boolean> {
+    const user = await authRepo.findById(userId);
+    return user?.role === "ADMIN";
+}
+
+/**
+ * The :param user must be the caller, unless the caller is a platform ADMIN.
+ * An ID in the URL can be swapped, so it never decides access on its own.
+ */
+function requireSelfOrAdmin(param: string) {
+    return async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const userId = req.userId;
+            if (!userId) {
+                throw new UnauthorizedError("Not authenticated");
+            }
+            if (req.params[param] !== userId && !(await isPlatformAdmin(userId))) {
+                throw new AppError("Forbidden", 403);
+            }
+            next();
+        } catch (err) {
+            next(err);
+        }
+    };
+}
+
+/**
+ * The caller must belong to the :param org, or be a platform ADMIN. Scoped with
+ * findByUserAndOrg, same as createMembership. One message whether or not the
+ * org exists, so a 403 does not confirm it.
+ */
+function requireOrgMemberOrAdmin(param: string) {
+    return async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const userId = req.userId;
+            if (!userId) {
+                throw new UnauthorizedError("Not authenticated");
+            }
+            const membership = await orgMembershipRepo.findByUserAndOrg(
+                userId,
+                String(req.params[param]),
+            );
+            if (!membership && !(await isPlatformAdmin(userId))) {
+                throw new AppError("Forbidden", 403);
+            }
+            next();
+        } catch (err) {
+            next(err);
+        }
+    };
+}
+
+export { requirePermission, requireSelfOrAdmin, requireOrgMemberOrAdmin };

@@ -42,29 +42,35 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     //get user role
     useEffect(() => {
-        const getOrgRole = async (userId: string) => {
-            const membership = await orgsApi.getMembershipByUserId(userId)
-            if (!membership) {
-                // Plain reporters have no membership row -- getOrgByUserId 404s
-                // for them, so only fetch the org once a membership confirms one exists.
-                setRole("REPORTER")
-            } else {
-                setRole(membership.role)
-                setOrganization(await orgsApi.getOrgByUserId(userId))
+        if (user == null) return
+        if (user.role == "ADMIN") {
+            setRole("ADMIN")
+            return
+        }
+
+        let cancelled = false
+        const loadOrgRole = async () => {
+            try {
+                // Both come from the token; a reporter with no org gets null, not a 404.
+                const [membership, org] = await Promise.all([
+                    orgsApi.getMyMembership(),
+                    orgsApi.getMyOrg(),
+                ])
+                if (cancelled) return
+                setRole(membership ? membership.role : "REPORTER")
+                setOrganization(membership ? org : null)
+            } catch (error) {
+                // Fall back to the least-privileged role rather than leaving it unset.
+                console.log(error)
+                if (!cancelled) {
+                    setRole("REPORTER")
+                    setOrganization(null)
+                }
             }
         }
 
-        if (user != null) {
-            if (user.role == "REPORTER") {
-                getOrgRole(user.id)
-            } else if (user.role == "ADMIN") {
-                setRole("ADMIN")
-            }
-
-
-        }
-
-
+        void loadOrgRole()
+        return () => { cancelled = true }
     }, [user])
 
     //logout deletes token + updates state
@@ -73,6 +79,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setAuthToken(null);
         setUser(null)
         setRole(null)
+        setOrganization(null)
         setIsLoggedIn(false);
         queryClient.clear();
     };

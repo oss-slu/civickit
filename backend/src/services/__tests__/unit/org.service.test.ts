@@ -10,6 +10,15 @@ import { OrgRepository } from '../../../repositories/org.repository';
 import { PhotoRepository } from '../../../repositories/photo.repository';
 import { IssueRepository } from '../../../repositories/issue.repository';
 
+// OrgService builds its MembershipRepository at module load, so it is mocked
+// here rather than injected.
+const { findByUser } = vi.hoisted(() => ({ findByUser: vi.fn() }));
+vi.mock('../../../repositories/membership.repository', () => ({
+  MembershipRepository: class {
+    findByUser = findByUser;
+  },
+}));
+
 describe('OrgService', () => {
   let orgService: OrgService;
   let mockOrgRepository: Mocked<OrgRepository>;
@@ -20,7 +29,9 @@ describe('OrgService', () => {
     mockOrgRepository = {
       findOrgsForIssue: vi.fn(),
       findIssuesForOrg: vi.fn(),
+      findById: vi.fn(),
     } as unknown as Mocked<OrgRepository>;
+    findByUser.mockReset();
 
     mockPhotoRepository = {
       createMany: vi.fn(),
@@ -90,6 +101,40 @@ describe('OrgService', () => {
         'organizationId is required'
       );
       expect(mockOrgRepository.findIssuesForOrg).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('getOrgForUser', () => {
+    it("returns the user's org, with its photo resolved", async () => {
+      findByUser.mockResolvedValue({ userId: 'user-1', organizationId: 'org-1', role: 'ORG_MEMBER' });
+      mockOrgRepository.findById.mockResolvedValue({ id: 'org-1', name: 'Org', profilePhotoId: null } as any);
+
+      const org = await orgService.getOrgForUser('user-1');
+
+      expect(mockOrgRepository.findById).toHaveBeenCalledWith('org-1');
+      expect(org).toEqual({ id: 'org-1', name: 'Org', profilePhoto: null });
+    });
+
+    it('returns null for a user with no membership, without looking up an org', async () => {
+      findByUser.mockResolvedValue(null);
+
+      await expect(orgService.getOrgForUser('user-1')).resolves.toBeNull();
+      expect(mockOrgRepository.findById).not.toHaveBeenCalled();
+    });
+
+    it('returns null when the membership points at an org that no longer exists', async () => {
+      findByUser.mockResolvedValue({ userId: 'user-1', organizationId: 'gone', role: 'ORG_MEMBER' });
+      mockOrgRepository.findById.mockResolvedValue(null);
+
+      await expect(orgService.getOrgForUser('user-1')).resolves.toBeNull();
+    });
+  });
+
+  describe('getOrgByUserId', () => {
+    it('throws a 404 for a user with no org', async () => {
+      findByUser.mockResolvedValue(null);
+
+      await expect(orgService.getOrgByUserId('user-1')).rejects.toMatchObject({ statusCode: 404 });
     });
   });
 });

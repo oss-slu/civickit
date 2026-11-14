@@ -53,18 +53,25 @@ export class OrgService {
     return await this.getOrgWithPhoto(org);
   }
 
+  /** Same as getOrgForUser, but a user with no org is a 404 (admin lookups). */
   async getOrgByUserId(userId: string) {
-    const membership = await membershipRepository.findByUser(userId)
-    if (!membership) {
-      throw new AppError('Member not found', 404);
-    }
-
-    const org = await this.orgRepository.findById(membership.organizationId);
+    const org = await this.getOrgForUser(userId);
     if (!org) {
       throw new AppError('Organization not found', 404);
     }
 
-    return await this.getOrgWithPhoto(org);
+    return org;
+  }
+
+  /** The caller's own org, or null for a reporter with no membership. */
+  async getOrgForUser(userId: string) {
+    const membership = await membershipRepository.findByUser(userId);
+    if (!membership) {
+      return null;
+    }
+
+    const org = await this.orgRepository.findById(membership.organizationId);
+    return org ? await this.getOrgWithPhoto(org) : null;
   }
 
 

@@ -4,9 +4,9 @@
 // keep working across the ORM cutover.
 
 import { CreateIssueDTO, IssueCategory, OrgRole, OrgStatus } from '@civickit/shared';
-import { sql } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import db from '../../db';
-import { orgMemberships, organizations } from '../../db/schema';
+import { orgMemberships, organizations, users } from '../../db/schema';
 import { AuthRepository } from '../../repositories/auth.repository';
 import { IssueRepository } from '../../repositories/issue.repository';
 
@@ -26,6 +26,17 @@ export async function makeUser(
     passwordHash: 'not-a-real-hash',
     ...overrides,
   });
+}
+
+/** A user with the platform ADMIN role. createUser has no role field, so it is set after. */
+export async function makePlatformAdmin() {
+  const user = await makeUser();
+  const [admin] = await db
+    .update(users)
+    .set({ role: 'ADMIN' })
+    .where(eq(users.id, user.id))
+    .returning();
+  return admin;
 }
 
 /** Downtown St. Louis, matching the seed data's area. */
