@@ -165,6 +165,21 @@ set REACT_NATIVE_PACKAGER_HOSTNAME=<your tailscale ip> && npx expo start
 Image uploads go from the phone straight to Cloudinary, so they keep working on
 cellular either way.
 
+### Developing outside St. Louis
+
+The seeded issues are all in Midtown St. Louis, so from anywhere else the map is
+empty and the app says you are outside the service area. To stand in for your
+GPS during development, set both of these in `mobile/.env.local` (gitignored):
+
+```bash
+EXPO_PUBLIC_DEV_LAT=38.63965
+EXPO_PUBLIC_DEV_LNG=-90.23581
+```
+
+Restart Metro after changing them. They are ignored outside development, and
+setting only one, or a value that isn't a valid coordinate, shows an error
+instead of silently using GPS.
+
 ## Web Setup
 ```bash
 cd web

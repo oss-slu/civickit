@@ -5,6 +5,9 @@ import { Alert } from "react-native";
 import * as Location from 'expo-location'
 import LoadingScreen from "../screens/Misc/LoadingScreen";
 import { MessageView } from "../components/MessageView";
+import { getDevLocationOverride } from "../config/env";
+import { stlPoints } from "../constants/cityBounds";
+import { isPointInPolygon } from "geolib";
 
 interface LocationContextType {
     location: userLocation;
@@ -36,16 +39,31 @@ export const LocationProvider = ({ children }: any) => {
         }
     }
 
+    //surface a bad dev override or failed lookup instead of hanging; keep an
+    //earlier, clearer error such as the permission denial
+    const onLocationError = (e: unknown) => {
+        setError((prev) => prev ?? (e instanceof Error ? e : new Error(generalErrorMessage)))
+    }
+
     //get user location
     useEffect(() => {
         checkIfLocationEnabled();
-        getCurrentLocation().then(() => setIsLoading(false))
+        getCurrentLocation()
+            .catch(onLocationError)
+            .finally(() => setIsLoading(false))
     }, [])
+
+    //single source of truth for inBounds, dev override included
+    useEffect(() => {
+        if (location) {
+            setInBounds(isPointInPolygon(location, stlPoints))
+        }
+    }, [location])
 
     const refetch = () => {
         setIsLoading(true)
         checkIfLocationEnabled();
-        getCurrentLocation()
+        getCurrentLocation().catch(onLocationError)
         checkForErrors(location, locationServicesEnabled)
     }
 
@@ -64,6 +82,14 @@ export const LocationProvider = ({ children }: any) => {
     }
 
     const getCurrentLocation = async () => {
+        //dev override skips the permission prompt and GPS entirely
+        const override = getDevLocationOverride();
+        if (override) {
+            setLocation(override);
+            checkForErrors(override, true);
+            return;
+        }
+
         //check permission
         let { status } = await Location.requestForegroundPermissionsAsync()
         if (status !== 'granted') {
@@ -83,7 +109,6 @@ export const LocationProvider = ({ children }: any) => {
         if (coords) {
             const { latitude, longitude } = coords;
             setLocation({ latitude: latitude, longitude: longitude })
-            // setLocation({ latitude: 34.7465, longitude: -92.2896 })
             checkForErrors({ latitude: latitude, longitude: longitude }, true)
         }
     }

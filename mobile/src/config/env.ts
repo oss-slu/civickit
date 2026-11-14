@@ -97,3 +97,45 @@ export function getApiBaseUrl(): string {
     }
     return cachedBaseUrl;
 }
+
+/**
+ * Fixed location from EXPO_PUBLIC_DEV_LAT/LNG to use instead of GPS, or null.
+ * Lets developers outside St. Louis see the seeded issues. Always null outside
+ * __DEV__, so release builds use real GPS. Throws on a malformed pair.
+ */
+export function getDevLocationOverride(): { latitude: number; longitude: number } | null {
+    if (!__DEV__) return null;
+
+    const lat = process.env.EXPO_PUBLIC_DEV_LAT;
+    const lng = process.env.EXPO_PUBLIC_DEV_LNG;
+
+    if (!lat && !lng) return null;
+
+    // Half a pair is a typo; ignoring it would look like the override failed.
+    if (!lat || !lng) {
+        throw new Error(
+            'EXPO_PUBLIC_DEV_LAT and EXPO_PUBLIC_DEV_LNG must be set together; ' +
+            `got ${lat ? 'only EXPO_PUBLIC_DEV_LAT' : 'only EXPO_PUBLIC_DEV_LNG'}.`,
+        );
+    }
+
+    const latitude = Number(lat);
+    const longitude = Number(lng);
+
+    // NaN would otherwise reach the map as a blank screen.
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+        throw new Error(
+            'EXPO_PUBLIC_DEV_LAT and EXPO_PUBLIC_DEV_LNG must be numbers; ' +
+            `got "${lat}" and "${lng}".`,
+        );
+    }
+
+    if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
+        throw new Error(
+            'EXPO_PUBLIC_DEV_LAT must be within [-90, 90] and EXPO_PUBLIC_DEV_LNG ' +
+            `within [-180, 180]; got ${latitude} and ${longitude}.`,
+        );
+    }
+
+    return { latitude, longitude };
+}
