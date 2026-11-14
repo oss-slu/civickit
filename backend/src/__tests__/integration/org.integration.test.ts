@@ -32,56 +32,49 @@ async function makeResponder() {
   return { user, org, membership };
 }
 
-describe('GET /organizations/me', () => {
-  it('returns 200 with null for a reporter with no org', async () => {
-    const reporter = await makeUser();
-
-    const response = await get('/me', reporter.id);
-
-    expect(response.status).toBe(200);
-    expect(response.body).toBeNull();
-  });
-
-  it("returns the member's own org", async () => {
-    const { user, org } = await makeResponder();
-
-    const response = await get('/me', user.id);
-
-    expect(response.status).toBe(200);
-    expect(response.body.id).toBe(org.id);
-    expect(response.body.name).toBe(org.name);
-  });
-
-  it('rejects a request with no token', async () => {
-    const response = await request(app).get('/api/organizations/me');
-
-    expect(response.status).toBe(401);
-  });
-});
-
-describe('GET /organizations/me/membership', () => {
-  it('returns 200 with null for a reporter with no org', async () => {
-    const reporter = await makeUser();
-
-    const response = await get('/me/membership', reporter.id);
-
-    expect(response.status).toBe(200);
-    expect(response.body).toBeNull();
-  });
-
-  it("returns the member's own membership", async () => {
-    const { user, org } = await makeResponder();
-
-    const response = await get('/me/membership', user.id);
-
-    expect(response.status).toBe(200);
-    expect(response.body).toMatchObject({
+// Same cases for both /me routes; only the expected record differs.
+const meRoutes = [
+  {
+    path: '/me',
+    expected: (_user: { id: string }, org: { id: string; name: string }) => ({ id: org.id, name: org.name }),
+  },
+  {
+    path: '/me/membership',
+    expected: (user: { id: string }, org: { id: string }) => ({
       userId: user.id,
       organizationId: org.id,
       role: 'ORG_MEMBER',
+    }),
+  },
+];
+
+for (const route of meRoutes) {
+  describe(`GET /organizations${route.path}`, () => {
+    it('returns 200 with null for a reporter with no org', async () => {
+      const reporter = await makeUser();
+
+      const response = await get(route.path, reporter.id);
+
+      expect(response.status).toBe(200);
+      expect(response.body).toBeNull();
+    });
+
+    it("returns the caller's own record", async () => {
+      const { user, org } = await makeResponder();
+
+      const response = await get(route.path, user.id);
+
+      expect(response.status).toBe(200);
+      expect(response.body).toMatchObject(route.expected(user, org));
+    });
+
+    it('rejects a request with no token', async () => {
+      const response = await request(app).get(`/api/organizations${route.path}`);
+
+      expect(response.status).toBe(401);
     });
   });
-});
+}
 
 describe("another user's :userId routes", () => {
   const routes = [
