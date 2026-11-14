@@ -82,12 +82,27 @@ on the auth surface), request logging, the route modules, a 404 handler, and a
 global error handler. BetterAuth is mounted separately at
 `/api/better-auth/auth/*`.
 
-### Authorization
+### Authentication and authorization
 
-Roles (`REPORTER`, `ADMIN`) and their permissions are defined in
-`backend/src/config/permissions.ts`. `requirePermission(...)` loads the caller's
-role fresh from the database on each request (so access can be revoked
-immediately) and gates sensitive actions such as `update:issue_status`.
+These are two separate steps, and a route usually needs both.
+
+- **Authentication** answers "who is calling". `authMiddleware` verifies the JWT
+  and sets `req.userId`. That is the only trusted identity on the request.
+- **Authorization** answers "may this caller do this, to this record". Roles
+  (`REPORTER`, `ADMIN`) and their permissions are defined in
+  `backend/src/config/permissions.ts`. `requirePermission(...)` loads the
+  caller's role fresh from the database on each request (so access can be
+  revoked immediately) and gates sensitive actions such as
+  `update:issue_status`. Org-scoped data is checked against the caller's
+  membership in that specific org (`findByUserAndOrg`), through
+  `requireOrgMemberOrAdmin` and `requireSelfOrAdmin` in
+  `authorize.middleware.ts`.
+
+**Rule:** never trust a user or org ID from the URL or body without checking the
+caller may access it. Being signed in is not permission to read someone else's
+record. Prefer `/me`-style routes that read `req.userId` when the caller wants
+their own data. See
+[Who can read organization data](design-decisions/responder-model.md#who-can-read-organization-data).
 
 ## Data model
 
