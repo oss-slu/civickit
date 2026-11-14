@@ -16,6 +16,7 @@ import * as schema from './db/schema.js';
 import {
     organizationTemplates,
     orgMembershipTemplates,
+    testAccountEmails,
     userTemplates,
     type SeedIssueTemplate,
     type SeedOrgMembershipTemplate,
@@ -23,6 +24,7 @@ import {
     type SeedUserTemplate,
 } from './seed-data.js';
 import { uploadImageToCloudinary } from './utils/cloudinary-upload.js';
+import { assertSafeSeedTarget } from './seed-guard.js';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as crypto from 'crypto';
@@ -60,6 +62,8 @@ export async function cleanupDatabase() {
         return;
     }
 
+    assertSafeSeedTarget();
+
     log('info', 'Deleting all rows...');
 
     // Delete in reverse FK order
@@ -79,10 +83,19 @@ export async function cleanupDatabase() {
     log('info', 'All tables cleared');
 }
 
+export interface SeedOptions {
+    // False skips Cloudinary and stores placeholder URLs. The fixture tests use
+    // this so they never make network calls.
+    uploadImages?: boolean;
+}
+
 /**
  * Seed the database with users and issues
  */
-export async function seedDatabase(issueTemplates: SeedIssueTemplate[]) {
+export async function seedDatabase(
+    issueTemplates: SeedIssueTemplate[],
+    { uploadImages = true }: SeedOptions = {},
+) {
     if (DRY_RUN) {
         log('info', 'DRY RUN MODE - No changes will be written');
         log('info', `Would create ${userTemplates.length} users and ${issueTemplates.length} issues`);
@@ -92,6 +105,8 @@ export async function seedDatabase(issueTemplates: SeedIssueTemplate[]) {
         );
         return;
     }
+
+    assertSafeSeedTarget();
 
     // 1. Create users
     log('info', 'Creating users...');
@@ -109,7 +124,7 @@ export async function seedDatabase(issueTemplates: SeedIssueTemplate[]) {
 
     // 3. Upload images and create issues
     log('info', 'Processing images and creating issues...');
-    await createIssues(issueTemplates, users);
+    await createIssues(issueTemplates, users, uploadImages);
 
     // 4. Print summary
     await printSummary();
@@ -199,6 +214,9 @@ async function createOrgMemberships(
  */
 async function createUsers(userTemplates: SeedUserTemplate[]) {
     const users = [];
+    // Every fixture shares one password, so hash it once rather than 45 times.
+    // Same salt across users is fine for throwaway dev accounts.
+    const hashes = new Map<string, string>();
 
     for (const userTemplate of userTemplates) {
         // Check if user already exists
@@ -214,21 +232,26 @@ async function createUsers(userTemplates: SeedUserTemplate[]) {
             continue;
         }
 
-        // Hash password
-        const passwordHash = await bcrypt.hash(userTemplate.password, 10);
+        let passwordHash = hashes.get(userTemplate.password);
+        if (!passwordHash) {
+            passwordHash = await bcrypt.hash(userTemplate.password, 10);
+            hashes.set(userTemplate.password, passwordHash);
+        }
 
-        // Create user
+        // bcrypt passwordHash is what the legacy /api/auth/login checks. These
+        // users have no BetterAuth Account row, so BetterAuth sign-in fails.
         const [user] = await db
             .insert(schema.users)
             .values({
                 email: userTemplate.email,
                 name: userTemplate.name,
                 passwordHash,
+                role: userTemplate.role ?? 'REPORTER',
                 profilePhotoId: userTemplate.profilePhotoId || null,
             })
             .returning();
 
-        log('info', `  Created user: ${user.email}`);
+        log('info', `  Created user: ${user.email}${user.role === 'ADMIN' ? ' (ADMIN)' : ''}`);
         users.push(user);
     }
 
@@ -240,22 +263,44 @@ async function createUsers(userTemplates: SeedUserTemplate[]) {
  */
 async function createIssues(
     issueTemplates: SeedIssueTemplate[],
-    users: { id: string }[]
+    users: { id: string; email: string }[],
+    uploadImages: boolean,
 ) {
+    // Test accounts are left out of the random pools so their issues and
+    // endorsements are exactly the ones the fixtures name.
+    const background = users.filter((user) => !testAccountEmails.has(user.email));
+    const byEmail = (email: string) => {
+        const user = users.find((u) => u.email === email);
+        if (!user) throw new Error(`No seeded user for ${email}`);
+        return user;
+    };
+
     for (const template of issueTemplates) {
-        // Pick a random user as the creator
-        const randomUser = users[crypto.randomInt(users.length)];
+        const creator = template.reporterEmail
+            ? byEmail(template.reporterEmail)
+            : background[crypto.randomInt(background.length)];
 
         // Photos are inserted after the issue so they can carry issueId, so the
         // uploaded links are collected first. A placeholder is a link like any
         // other -- the row is what an id points at, which is why the previous
         // version pushing a placeholder URL into an id array could not work.
         const photoLinks: { url: string; publicId: string | null }[] = [];
+        const placeholder = {
+            url: `https://placehold.co/600x400?text=${encodeURIComponent(template.category)}`,
+            publicId: null,
+        };
+
+        // No photo of its own: a placeholder keeps its card like the others.
+        if (template.imageFiles.length === 0) {
+            photoLinks.push(placeholder);
+        }
 
         for (const imageFile of template.imageFiles) {
             const imagePath = path.join(IMAGES_DIR, imageFile);
 
-            if (fs.existsSync(imagePath)) {
+            if (!uploadImages) {
+                photoLinks.push(placeholder);
+            } else if (fs.existsSync(imagePath)) {
                 try {
                     log('info', ` Uploading ${imageFile}...`);
                     const imageBuffer = fs.readFileSync(imagePath);
@@ -264,18 +309,11 @@ async function createIssues(
                     log('info', `   Uploaded: ${imageFile}`);
                 } catch (error) {
                     log('warn', `  Failed to upload ${imageFile}: ${error}`);
-                    // Use a placeholder URL if upload fails
-                    photoLinks.push({
-                        url: `https://placehold.co/600x400?text=${encodeURIComponent(template.category)}`,
-                        publicId: null,
-                    });
+                    photoLinks.push(placeholder);
                 }
             } else {
                 log('warn', `  Image not found: ${imageFile}, using placeholder`);
-                photoLinks.push({
-                    url: `https://placehold.co/600x400?text=${encodeURIComponent(template.category)}`,
-                    publicId: null,
-                });
+                photoLinks.push(placeholder);
             }
         }
 
@@ -293,7 +331,7 @@ async function createIssues(
                 district: template.district || null,
                 subregion: template.subregion || null,
                 name: template.name || null,
-                userId: randomUser.id,
+                userId: creator.id,
             })
             .returning();
 
@@ -302,7 +340,7 @@ async function createIssues(
                 photoLinks.map((photo, index) => ({
                     url: photo.url,
                     publicId: photo.publicId,
-                    userId: randomUser.id,
+                    userId: creator.id,
                     issueId: issue.id,
                     position: index,
                     photoTakenAt: new Date(),
@@ -311,27 +349,34 @@ async function createIssues(
             );
         }
 
-        await createRandomEndorsements(issue.id, randomUser.id, users);
+        const fixed = (template.endorsedBy ?? []).map(byEmail);
+        await createEndorsements(issue.id, creator.id, fixed, background);
 
         log('info', `  Created issue: ${issue.title} (${photoLinks.length} photos)`);
     }
 }
 
-async function createRandomEndorsements(
+/** The fixture's named endorsers, plus a random handful of background users. */
+async function createEndorsements(
     issueId: string,
     creatorUserId: string,
-    users: { id: string }[]
+    fixed: { id: string }[],
+    background: { id: string }[],
 ) {
-    const eligibleUsers = users.filter((user) => user.id !== creatorUserId);
-    const maxEndorsements = Math.min(30, eligibleUsers.length);
+    const eligibleUsers = background.filter(
+        (user) => user.id !== creatorUserId && !fixed.some((f) => f.id === user.id),
+    );
+    const maxRandom = Math.min(30, eligibleUsers.length);
+    const randomCount = maxRandom === 0 ? 0 : crypto.randomInt(1, maxRandom + 1);
+    const shuffledUsers = [...eligibleUsers].sort(() => Math.random() - 0.5);
 
-    if (maxEndorsements === 0) {
+    const selectedUsers = [
+        ...fixed.filter((user) => user.id !== creatorUserId),
+        ...shuffledUsers.slice(0, randomCount),
+    ];
+    if (selectedUsers.length === 0) {
         return;
     }
-
-    const endorsementCount = crypto.randomInt(1, maxEndorsements + 1);
-    const shuffledUsers = [...eligibleUsers].sort(() => Math.random() - 0.5);
-    const selectedUsers = shuffledUsers.slice(0, endorsementCount);
 
     await db.insert(schema.upvotes).values(
         selectedUsers.map((user) => ({
@@ -340,7 +385,7 @@ async function createRandomEndorsements(
         })),
     );
 
-    log('info', `   Added ${endorsementCount} endorsements`);
+    log('info', `   Added ${selectedUsers.length} endorsements`);
 }
 
 /**
