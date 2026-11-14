@@ -1,5 +1,6 @@
 // mobile/src/api/orgs.ts
-import type { CreateIssueDTO, GetNearbyIssueResponse, Issue, OrgRole, PostUpdateDTO, User } from '@civickit/shared';
+import type { OrgRole } from '@civickit/shared';
+import type { Org } from '@civickit/shared/src/types/org';
 import { apiFetch } from './client';
 
 export interface Membership {
@@ -8,22 +9,24 @@ export interface Membership {
     role: OrgRole
 }
 
-export function getMembershipByUserId(
-    userId: string,
-    options: { limit?: number; signal?: AbortSignal } = {},
-): Promise<Membership> {
-    return apiFetch(`/organizations/${encodeURIComponent(userId)}/getMembershipByUserId`, {
+// Both read the caller from the token. null means a plain reporter with no org.
+
+export function getMyMembership(
+    options: { signal?: AbortSignal } = {},
+): Promise<Membership | null> {
+    return apiFetch('/organizations/me/membership', {
         method: 'GET',
-        auth: true
+        auth: true,
+        signal: options.signal,
     });
 }
 
-export function getOrgByUserId(
-    userId: string,
-    options: { limit?: number; signal?: AbortSignal } = {},
-): Promise<Membership> {
-    return apiFetch(`/organizations/${encodeURIComponent(userId)}/getOrgByUserId`, {
+export function getMyOrg(
+    options: { signal?: AbortSignal } = {},
+): Promise<Org | null> {
+    return apiFetch('/organizations/me', {
         method: 'GET',
-        auth: true
+        auth: true,
+        signal: options.signal,
     });
 }

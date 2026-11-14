@@ -57,6 +57,25 @@ export class OrgController {
     }
   }
 
+  // The /me routes read the user from the token only, never from the URL.
+  async getMyOrg(req: Request, res: Response, next: NextFunction) {
+    try {
+      const org = await orgService.getOrgForUser(req.userId!);
+      res.json(org);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getMyMembership(req: Request, res: Response, next: NextFunction) {
+    try {
+      const membership = await membershipService.getMembershipByUserId(req.userId!);
+      res.json(membership);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async getOrgByUserId(req: Request, res: Response, next: NextFunction) {
     try {
       const org = await orgService.getOrgByUserId(String(req.params.userId));

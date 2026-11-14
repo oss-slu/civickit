@@ -30,8 +30,7 @@ export default function DispatchScreen() {
     const sortOptions = ["Endorsements", "Date Reported", "Distance"]
 
     //TODO replace with formatted function when merged
-    //organization is null until AuthContext resolves getOrgByUserId, and that is
-    //a separate fetch from the one that sets role -- role can win, so this screen
+    //organization is null until AuthContext resolves getMyOrg, so this screen
     //can mount before the scope exists. Read it defensively here and hold the
     //loading state below until it arrives.
     const orgCategories: string[] = organization?.categoryScope

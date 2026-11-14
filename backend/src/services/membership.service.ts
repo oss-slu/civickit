@@ -54,22 +54,14 @@ export class MembershipService {
     }
   }
 
+  // Access is checked by requireOrgMemberOrAdmin before this runs.
   async getOrgMemberships(orgId: string) {
-    const members = await this.membershipRepository.findByOrganization(orgId);
-    if (!members) {
-      throw new AppError('Organization not found', 404);
-    }
-
-    return members;
+    return this.membershipRepository.findByOrganization(orgId);
   }
 
+  /** null for a user with no org; callers treat that as a plain reporter. */
   async getMembershipByUserId(userId: string) {
-    const member = await this.membershipRepository.findByUser(userId);
-    // if (!member) {
-    //   throw new AppError('Member not found', 404);
-    // }
-
-    return member;
+    return this.membershipRepository.findByUser(userId);
   }
 
   async getMembershipById(id: string) {
