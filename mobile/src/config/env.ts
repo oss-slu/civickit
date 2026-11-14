@@ -99,18 +99,9 @@ export function getApiBaseUrl(): string {
 }
 
 /**
- * A fixed location to use instead of the device's GPS, or null for real GPS.
- *
- * The seeded issues sit in Midtown St. Louis, so anyone developing from
- * elsewhere sees an empty map and cannot exercise the nearby-issues flow at
- * all. Setting both EXPO_PUBLIC_DEV_LAT and EXPO_PUBLIC_DEV_LNG in
- * mobile/.env.local (which is gitignored) moves the app there.
- *
- * This replaces a commented-out setLocation call in LocationContext that had
- * to be edited in place, and so was one `git add -A` away from shipping.
- *
- * Ignored outside development, so setting these in a release environment can
- * never move real users.
+ * Fixed location from EXPO_PUBLIC_DEV_LAT/LNG to use instead of GPS, or null.
+ * Lets developers outside St. Louis see the seeded issues. Always null outside
+ * __DEV__, so release builds use real GPS. Throws on a malformed pair.
  */
 export function getDevLocationOverride(): { latitude: number; longitude: number } | null {
     if (!__DEV__) return null;
@@ -120,8 +111,7 @@ export function getDevLocationOverride(): { latitude: number; longitude: number 
 
     if (!lat && !lng) return null;
 
-    // Half a coordinate is always a mistake, and silently ignoring it would
-    // look identical to the override not being picked up at all.
+    // Half a pair is a typo; ignoring it would look like the override failed.
     if (!lat || !lng) {
         throw new Error(
             'EXPO_PUBLIC_DEV_LAT and EXPO_PUBLIC_DEV_LNG must be set together; ' +
@@ -132,9 +122,7 @@ export function getDevLocationOverride(): { latitude: number; longitude: number 
     const latitude = Number(lat);
     const longitude = Number(lng);
 
-    // Number('') is 0 and Number('abc') is NaN. Both would otherwise reach the
-    // map as a plausible-looking location off the coast of Africa, or as a
-    // blank screen, with nothing pointing back at the typo.
+    // NaN would otherwise reach the map as a blank screen.
     if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
         throw new Error(
             'EXPO_PUBLIC_DEV_LAT and EXPO_PUBLIC_DEV_LNG must be numbers; ' +

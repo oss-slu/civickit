@@ -16,7 +16,8 @@ import Cluster from '../../components/Cluster';
 import { getDistance, isPointInPolygon } from 'geolib';
 import CalloutListPopup from '../../components/CalloutListPopup';
 import { GetNearbyIssueResponse } from '@civickit/shared';
-import cityBounds from '../../../assets/shapes/stl_boundary_inverted.json'
+import { stlPoints, worldPoints } from '../../constants/cityBounds';
+import { getDevLocationOverride } from '../../config/env';
 // import Geojson from 'react-native-geojson';
 
 interface IssueCluster {
@@ -32,6 +33,10 @@ type MapElement = GetNearbyIssueResponse | IssueCluster
 function isCluster(element: MapElement): element is IssueCluster {
     return (element as IssueCluster).issues != undefined
 }
+
+//module-level so Polygon gets a stable array; a new one per render can drop
+//the overlay on iOS
+const boundaryHoles = [stlPoints]
 
 export default function MapViewScreen({ ref, issues, refetch }: any) {
     const navigation = useNavigation<StackNavigationProp<StackParams>>();
@@ -189,25 +194,10 @@ export default function MapViewScreen({ ref, issues, refetch }: any) {
 
 
     const checkUserLocation = (coordinate: any) => {
+        //real GPS would overwrite the dev override's inBounds
+        if (getDevLocationOverride()) return
         setInBounds(isPointInPolygon(coordinate, stlPoints))
     }
-
-    //cityBounds is a static import, so these never change — build them once.
-    //rebuilding them per render hands Polygon new arrays every time, which
-    //rebuilds the native path and can drop the overlay on iOS
-    const stlPoints = useMemo(
-        () => cityBounds.features[0].geometry.coordinates[0][1].map((point: any) => ({ latitude: point[1], longitude: point[0] })),
-        []
-    )
-
-    const worldPoints = useMemo(
-        () => cityBounds.features[0].geometry.coordinates[0][0].map((point: any) => ({ latitude: point[1], longitude: point[0] })),
-        []
-    )
-
-    //wrap the hole once too — an inline [stlPoints] literal is a new array on
-    //every render, which rebuilds the native path and can drop the overlay
-    const boundaryHoles = useMemo(() => [stlPoints], [stlPoints])
 
 
     return (

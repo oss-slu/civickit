@@ -6,6 +6,8 @@ import * as Location from 'expo-location'
 import LoadingScreen from "../screens/Misc/LoadingScreen";
 import { MessageView } from "../components/MessageView";
 import { getDevLocationOverride } from "../config/env";
+import { stlPoints } from "../constants/cityBounds";
+import { isPointInPolygon } from "geolib";
 
 interface LocationContextType {
     location: userLocation;
@@ -37,16 +39,31 @@ export const LocationProvider = ({ children }: any) => {
         }
     }
 
+    //surface a bad dev override or failed lookup instead of hanging; keep an
+    //earlier, clearer error such as the permission denial
+    const onLocationError = (e: unknown) => {
+        setError((prev) => prev ?? (e instanceof Error ? e : new Error(generalErrorMessage)))
+    }
+
     //get user location
     useEffect(() => {
         checkIfLocationEnabled();
-        getCurrentLocation().then(() => setIsLoading(false))
+        getCurrentLocation()
+            .catch(onLocationError)
+            .finally(() => setIsLoading(false))
     }, [])
+
+    //single source of truth for inBounds, dev override included
+    useEffect(() => {
+        if (location) {
+            setInBounds(isPointInPolygon(location, stlPoints))
+        }
+    }, [location])
 
     const refetch = () => {
         setIsLoading(true)
         checkIfLocationEnabled();
-        getCurrentLocation()
+        getCurrentLocation().catch(onLocationError)
         checkForErrors(location, locationServicesEnabled)
     }
 
@@ -65,9 +82,7 @@ export const LocationProvider = ({ children }: any) => {
     }
 
     const getCurrentLocation = async () => {
-        // A configured dev location stands in for GPS entirely, ahead of the
-        // permission request -- so it also works where location is denied or,
-        // on a simulator, never set at all.
+        //dev override skips the permission prompt and GPS entirely
         const override = getDevLocationOverride();
         if (override) {
             setLocation(override);
