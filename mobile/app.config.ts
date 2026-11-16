@@ -26,10 +26,14 @@ function getAppId() {
 
 export default ({ config }: ConfigContext): any => ({
     ...config,
-    name: getName(config.name ?? "Civickit"),
-    ios: { ...config.ios, bundleIdentifier: getAppId() },
-    android: {
-        ...config.android, package: getAppId(),
-        config: { googleMaps: { apiKey: process.env.GOOGLE_MAPS_API_KEY } }
-    },
+    plugins: [
+        ...(config.plugins ?? []),
+        [
+            'react-native-maps',
+            {
+                androidGoogleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY,
+                iosGoogleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY,
+            },
+        ],
+    ],
 });
