@@ -189,3 +189,20 @@ npm run dev
 * `npm run build` builds for production
 * `npm run deploy` builds and deploys to Cloudflare Workers (requires Wrangler access)
 * `npm run check` formats and lints
+
+## Creating a Development Build
+1. install and configure eas ([https://docs.expo.dev/build/setup/](url))
+   1. to install, run `npm install --global eas-cli`
+   2. then install expo-dev-client: `npx expo install expo-dev-client`
+2. run `eas credentials` (from /mobile) to connect to an expo account
+3. configure a google maps key
+   1. follow platform specific instructions on obtaining a key from here: [https://docs.expo.dev/versions/latest/sdk/map-view/](url)
+   2. add the key to an .env file as in the mobile directory as `GOOGLE_MAPS_API_KEY="your-key-here"`
+   3. do not add the key directly to `app.json` and commit it to git
+4. to build, run either `eas build --platform=android --profile=development` or `eas build --platform=ios --profile=development` from the mobile directory
+  * any basic changes made, like frontend component changes, will live update in the app
+  * any configuration changes (installing a new package, changing `app.json`/`app.config.ts`, etc.) will require a rebuild
+    * eas build is only free for 15 dev builds on each platform a month, use wisely
+  * You may have to remove `/android` from `.gitignore` for eas to pick up on necessary files, just don't commit this to the repo
+5. install and open build on appropriate device, then launch backend with `npm run dev`, and frontend with `npx expo start --dev-client`
+
