@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "mobile",
+    "name": "Civickit",
     "slug": "mobile",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -15,7 +15,7 @@
         "backgroundColor": "#ffffff"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.mobile",
+      "package": "org.civickit.civickit",
       "softwareKeyboardLayoutMode": "pan"
     },
     "web": {
