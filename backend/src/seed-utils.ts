@@ -10,11 +10,21 @@
  * - Detailed logging
  */
 
-import { count, eq } from 'drizzle-orm';
+import { count, eq, sql } from 'drizzle-orm';
 import db from './db/index.js';
 import * as schema from './db/schema.js';
-import { userTemplates, type SeedIssueTemplate, type SeedUserTemplate } from './seed-data.js';
+import {
+    organizationTemplates,
+    orgMembershipTemplates,
+    testAccountEmails,
+    userTemplates,
+    type SeedIssueTemplate,
+    type SeedOrgMembershipTemplate,
+    type SeedOrgTemplate,
+    type SeedUserTemplate,
+} from './seed-data.js';
 import { uploadImageToCloudinary } from './utils/cloudinary-upload.js';
+import { assertSafeSeedTarget } from './seed-guard.js';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as crypto from 'crypto';
@@ -36,14 +46,23 @@ function log(level: 'info' | 'warn' | 'error', message: string, data?: unknown) 
 }
 
 /**
- * Clean all data from the database (issues, timeline entries, upvotes, events, users)
+ * Clean all data from the database (issues, timeline entries, upvotes, events,
+ * organizations, memberships, users)
  * Deletes in reverse FK order to respect foreign key constraints
+ *
+ * Photo is absent on purpose: issue and timeline photos cascade from their
+ * parent rows. A *profile* photo has neither issueId nor timelineEntryId, so it
+ * cascades from nothing, and Photo.userId is onDelete: restrict -- if the users
+ * delete below ever starts failing on a Photo FK, that is why. No seed fixture
+ * writes a profile photo today.
  */
 export async function cleanupDatabase() {
     if (DRY_RUN) {
         log('info', 'DRY RUN: Would delete all rows');
         return;
     }
+
+    assertSafeSeedTarget();
 
     log('info', 'Deleting all rows...');
 
@@ -53,32 +72,141 @@ export async function cleanupDatabase() {
     await db.delete(schema.eventRsvps);
     await db.delete(schema.events);
     await db.delete(schema.issues);
+    // OrgMembership.organizationId references Organization, so it goes first.
+    // Its userId is onDelete: cascade, so deleting users first would also work
+    // -- but Organization has no FK to user to lean on, and this function's
+    // contract is reverse-FK order, so both are listed explicitly.
+    await db.delete(schema.orgMemberships);
+    await db.delete(schema.organizations);
     await db.delete(schema.users);
 
     log('info', 'All tables cleared');
 }
 
+export interface SeedOptions {
+    // False skips Cloudinary and stores placeholder URLs. The fixture tests use
+    // this so they never make network calls.
+    uploadImages?: boolean;
+}
+
 /**
  * Seed the database with users and issues
  */
-export async function seedDatabase(issueTemplates: SeedIssueTemplate[]) {
+export async function seedDatabase(
+    issueTemplates: SeedIssueTemplate[],
+    { uploadImages = true }: SeedOptions = {},
+) {
     if (DRY_RUN) {
         log('info', 'DRY RUN MODE - No changes will be written');
         log('info', `Would create ${userTemplates.length} users and ${issueTemplates.length} issues`);
+        log(
+            'info',
+            `Would create ${organizationTemplates.length} organizations and ${orgMembershipTemplates.length} memberships`,
+        );
         return;
     }
+
+    assertSafeSeedTarget();
 
     // 1. Create users
     log('info', 'Creating users...');
     const users = await createUsers(userTemplates);
     log('info', `  Inserted ${users.length} users`);
 
-    // 2. Upload images and create issues
-    log('info', 'Processing images and creating issues...');
-    await createIssues(issueTemplates, users);
+    // 2. Create organizations and their memberships. Independent of issues --
+    // geo-matching joins the two by geometry, not by foreign key.
+    log('info', 'Creating organizations...');
+    const orgs = await createOrganizations(organizationTemplates);
+    log('info', `  Inserted ${orgs.length} organizations`);
 
-    // 3. Print summary
+    log('info', 'Creating org memberships...');
+    await createOrgMemberships(orgMembershipTemplates, users, orgs);
+
+    // 3. Upload images and create issues
+    log('info', 'Processing images and creating issues...');
+    await createIssues(issueTemplates, users, uploadImages);
+
+    // 4. Print summary
     await printSummary();
+}
+
+/**
+ * Create pilot organizations.
+ *
+ * This deliberately does not go through OrgRepository.create -- that path still
+ * carries a `TODO: add in geofence` and would produce orgs with a NULL geofence,
+ * which findOrgsForIssue can never match.
+ */
+async function createOrganizations(orgTemplates: SeedOrgTemplate[]) {
+    const orgs = [];
+
+    for (const template of orgTemplates) {
+        // `geofence` is geography(MultiPolygon,4326) behind an opaque customType
+        // with no toDriver, so the value has to arrive as SQL rather than as a
+        // bound string. Three things here break if changed:
+        //
+        // - ST_Multi is required. The column is MultiPolygon and a bare POLYGON
+        //   is rejected with "Geometry type (Polygon) does not match column
+        //   type (MultiPolygon)". ST_Multi promotes one polygon at no cost.
+        // - It is ST_GeomFromText(wkt, 4326)::geography, not ST_GeogFromText --
+        //   ST_Multi operates on geometry, so build the geometry and cast after.
+        // - The insert stays in Drizzle rather than db.execute because `id` and
+        //   `updatedAt` are client-generated ($defaultFn); a hand-written raw
+        //   INSERT would have to supply both.
+        const [org] = await db
+            .insert(schema.organizations)
+            .values({
+                name: template.name,
+                slug: template.slug,
+                type: template.type,
+                status: template.status,
+                tier: template.tier,
+                categoryScope: template.categoryScope,
+                boundarySource: template.boundarySource,
+                boundaryRef: template.boundaryRef,
+                geofence: sql`ST_Multi(ST_GeomFromText(${template.geofenceWKT}, 4326))::geography`,
+            })
+            // Narrowed on purpose: the seed needs id/name/slug, and reading the
+            // opaque geography column back is not something any repository does.
+            .returning({
+                id: schema.organizations.id,
+                name: schema.organizations.name,
+                slug: schema.organizations.slug,
+            });
+
+        log('info', `  Created org: ${org.name} (${org.slug})`);
+        orgs.push(org);
+    }
+
+    return orgs;
+}
+
+/**
+ * Attach seeded users to seeded orgs. Membership is what makes a responder --
+ * see docs/design-decisions/responder-model.md.
+ */
+async function createOrgMemberships(
+    templates: SeedOrgMembershipTemplate[],
+    users: { id: string; email: string }[],
+    orgs: { id: string; slug: string }[],
+) {
+    for (const template of templates) {
+        const user = users.find((u) => u.email === template.userEmail);
+        const org = orgs.find((o) => o.slug === template.orgSlug);
+
+        // A typo in a fixture should fail loudly here rather than silently
+        // seeding an org with no members and a Dispatch screen with no login.
+        if (!user) throw new Error(`No seeded user for ${template.userEmail}`);
+        if (!org) throw new Error(`No seeded org for ${template.orgSlug}`);
+
+        await db.insert(schema.orgMemberships).values({
+            userId: user.id,
+            organizationId: org.id,
+            role: template.role,
+        });
+
+        log('info', `  ${template.userEmail} -> ${template.orgSlug} (${template.role})`);
+    }
 }
 
 /**
@@ -86,6 +214,9 @@ export async function seedDatabase(issueTemplates: SeedIssueTemplate[]) {
  */
 async function createUsers(userTemplates: SeedUserTemplate[]) {
     const users = [];
+    // Every fixture shares one password, so hash it once rather than 45 times.
+    // Same salt across users is fine for throwaway dev accounts.
+    const hashes = new Map<string, string>();
 
     for (const userTemplate of userTemplates) {
         // Check if user already exists
@@ -101,21 +232,26 @@ async function createUsers(userTemplates: SeedUserTemplate[]) {
             continue;
         }
 
-        // Hash password
-        const passwordHash = await bcrypt.hash(userTemplate.password, 10);
+        let passwordHash = hashes.get(userTemplate.password);
+        if (!passwordHash) {
+            passwordHash = await bcrypt.hash(userTemplate.password, 10);
+            hashes.set(userTemplate.password, passwordHash);
+        }
 
-        // Create user
+        // bcrypt passwordHash is what the legacy /api/auth/login checks. These
+        // users have no BetterAuth Account row, so BetterAuth sign-in fails.
         const [user] = await db
             .insert(schema.users)
             .values({
                 email: userTemplate.email,
                 name: userTemplate.name,
                 passwordHash,
+                role: userTemplate.role ?? 'REPORTER',
                 profilePhotoId: userTemplate.profilePhotoId || null,
             })
             .returning();
 
-        log('info', `  Created user: ${user.email}`);
+        log('info', `  Created user: ${user.email}${user.role === 'ADMIN' ? ' (ADMIN)' : ''}`);
         users.push(user);
     }
 
@@ -127,22 +263,44 @@ async function createUsers(userTemplates: SeedUserTemplate[]) {
  */
 async function createIssues(
     issueTemplates: SeedIssueTemplate[],
-    users: { id: string }[]
+    users: { id: string; email: string }[],
+    uploadImages: boolean,
 ) {
+    // Test accounts are left out of the random pools so their issues and
+    // endorsements are exactly the ones the fixtures name.
+    const background = users.filter((user) => !testAccountEmails.has(user.email));
+    const byEmail = (email: string) => {
+        const user = users.find((u) => u.email === email);
+        if (!user) throw new Error(`No seeded user for ${email}`);
+        return user;
+    };
+
     for (const template of issueTemplates) {
-        // Pick a random user as the creator
-        const randomUser = users[crypto.randomInt(users.length)];
+        const creator = template.reporterEmail
+            ? byEmail(template.reporterEmail)
+            : background[crypto.randomInt(background.length)];
 
         // Photos are inserted after the issue so they can carry issueId, so the
         // uploaded links are collected first. A placeholder is a link like any
         // other -- the row is what an id points at, which is why the previous
         // version pushing a placeholder URL into an id array could not work.
         const photoLinks: { url: string; publicId: string | null }[] = [];
+        const placeholder = {
+            url: `https://placehold.co/600x400?text=${encodeURIComponent(template.category)}`,
+            publicId: null,
+        };
+
+        // No photo of its own: a placeholder keeps its card like the others.
+        if (template.imageFiles.length === 0) {
+            photoLinks.push(placeholder);
+        }
 
         for (const imageFile of template.imageFiles) {
             const imagePath = path.join(IMAGES_DIR, imageFile);
 
-            if (fs.existsSync(imagePath)) {
+            if (!uploadImages) {
+                photoLinks.push(placeholder);
+            } else if (fs.existsSync(imagePath)) {
                 try {
                     log('info', ` Uploading ${imageFile}...`);
                     const imageBuffer = fs.readFileSync(imagePath);
@@ -151,18 +309,11 @@ async function createIssues(
                     log('info', `   Uploaded: ${imageFile}`);
                 } catch (error) {
                     log('warn', `  Failed to upload ${imageFile}: ${error}`);
-                    // Use a placeholder URL if upload fails
-                    photoLinks.push({
-                        url: `https://placehold.co/600x400?text=${encodeURIComponent(template.category)}`,
-                        publicId: null,
-                    });
+                    photoLinks.push(placeholder);
                 }
             } else {
                 log('warn', `  Image not found: ${imageFile}, using placeholder`);
-                photoLinks.push({
-                    url: `https://placehold.co/600x400?text=${encodeURIComponent(template.category)}`,
-                    publicId: null,
-                });
+                photoLinks.push(placeholder);
             }
         }
 
@@ -180,7 +331,7 @@ async function createIssues(
                 district: template.district || null,
                 subregion: template.subregion || null,
                 name: template.name || null,
-                userId: randomUser.id,
+                userId: creator.id,
             })
             .returning();
 
@@ -189,7 +340,7 @@ async function createIssues(
                 photoLinks.map((photo, index) => ({
                     url: photo.url,
                     publicId: photo.publicId,
-                    userId: randomUser.id,
+                    userId: creator.id,
                     issueId: issue.id,
                     position: index,
                     photoTakenAt: new Date(),
@@ -198,27 +349,34 @@ async function createIssues(
             );
         }
 
-        await createRandomEndorsements(issue.id, randomUser.id, users);
+        const fixed = (template.endorsedBy ?? []).map(byEmail);
+        await createEndorsements(issue.id, creator.id, fixed, background);
 
         log('info', `  Created issue: ${issue.title} (${photoLinks.length} photos)`);
     }
 }
 
-async function createRandomEndorsements(
+/** The fixture's named endorsers, plus a random handful of background users. */
+async function createEndorsements(
     issueId: string,
     creatorUserId: string,
-    users: { id: string }[]
+    fixed: { id: string }[],
+    background: { id: string }[],
 ) {
-    const eligibleUsers = users.filter((user) => user.id !== creatorUserId);
-    const maxEndorsements = Math.min(30, eligibleUsers.length);
+    const eligibleUsers = background.filter(
+        (user) => user.id !== creatorUserId && !fixed.some((f) => f.id === user.id),
+    );
+    const maxRandom = Math.min(30, eligibleUsers.length);
+    const randomCount = maxRandom === 0 ? 0 : crypto.randomInt(1, maxRandom + 1);
+    const shuffledUsers = [...eligibleUsers].sort(() => Math.random() - 0.5);
 
-    if (maxEndorsements === 0) {
+    const selectedUsers = [
+        ...fixed.filter((user) => user.id !== creatorUserId),
+        ...shuffledUsers.slice(0, randomCount),
+    ];
+    if (selectedUsers.length === 0) {
         return;
     }
-
-    const endorsementCount = crypto.randomInt(1, maxEndorsements + 1);
-    const shuffledUsers = [...eligibleUsers].sort(() => Math.random() - 0.5);
-    const selectedUsers = shuffledUsers.slice(0, endorsementCount);
 
     await db.insert(schema.upvotes).values(
         selectedUsers.map((user) => ({
@@ -227,7 +385,7 @@ async function createRandomEndorsements(
         })),
     );
 
-    log('info', `   Added ${endorsementCount} endorsements`);
+    log('info', `   Added ${selectedUsers.length} endorsements`);
 }
 
 /**
@@ -237,6 +395,10 @@ async function printSummary() {
     const [{ value: userCount }] = await db.select({ value: count() }).from(schema.users);
     const [{ value: issueCount }] = await db.select({ value: count() }).from(schema.issues);
     const [{ value: upvoteCount }] = await db.select({ value: count() }).from(schema.upvotes);
+    const [{ value: orgCount }] = await db.select({ value: count() }).from(schema.organizations);
+    const [{ value: membershipCount }] = await db
+        .select({ value: count() })
+        .from(schema.orgMemberships);
 
     // Count by category
     const categoryCounts = await db
@@ -254,6 +416,8 @@ async function printSummary() {
         users: userCount,
         issues: issueCount,
         endorsements: upvoteCount,
+        organizations: orgCount,
+        orgMemberships: membershipCount,
         byCategory: Object.fromEntries(categoryCounts.map(c => [c.category, c.total])),
         byStatus: Object.fromEntries(statusCounts.map(s => [s.status, s.total])),
     });

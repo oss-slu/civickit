@@ -20,7 +20,13 @@
 
 import "dotenv/config";
 import { seedDatabase, cleanupDatabase } from './seed-utils.js';
-import { issueTemplates, userTemplates } from './seed-data.js';
+import {
+    issueTemplates,
+    organizationTemplates,
+    orgMembershipTemplates,
+    SEED_ACCOUNTS,
+    userTemplates,
+} from './seed-data.js';
 
 // Logging utility
 function log(level: 'info' | 'warn' | 'error', message: string, data?: unknown) {
@@ -106,7 +112,14 @@ Examples:
 Data:
   Users:    ${userTemplates.length} (password: password123)
   Issues:   ${issueTemplates.length}
-  Location: St. Louis, MO (Midtown area)
+  Orgs:     ${organizationTemplates.length} (${organizationTemplates.map((o) => o.slug).join(', ')})
+  Members:  ${orgMembershipTemplates.length} (${orgMembershipTemplates.map((m) => `${m.userEmail} ${m.role} ${m.orgSlug}`).join(', ')})
+  Admin:    ${SEED_ACCOUNTS.admin} (User.role ADMIN)
+  Reporter: ${SEED_ACCOUNTS.reporter} (no org)
+  Location: St. Louis, MO (Midtown and Tower Grove South)
+
+Test accounts log in through POST /api/auth/login, not BetterAuth.
+Refuses NODE_ENV=production and non-local DATABASE_URL hosts (see src/seed-guard.ts).
   `);
 }
 

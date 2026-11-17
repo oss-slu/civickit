@@ -43,7 +43,48 @@ npm run seed:clean
 *Reset (clean + seed)*
 npm run seed:reset
 
-Seeding creates 40 users and ~24 issues around Midtown St. Louis (photos are uploaded to your Cloudinary account). All seeded users share the password `password123` — e.g. log in as `alice@example.com` to test with an account that already has issues and endorsements.
+`seed:reset` and `seed:clean` **delete every row**, including accounts you
+registered by hand. The seed refuses to run when `NODE_ENV=production` or when
+`DATABASE_URL` is not a local host (`localhost`, `127.0.0.1`, `db`). To seed a
+disposable remote database anyway, set `SEED_ALLOW_REMOTE_DB=true`.
+
+What gets seeded:
+
+- **45 users**: five test accounts (below) and 40 background reporters
+  (`alice@`, `bob@`, ... `owen.phillips@example.com`) who create and endorse
+  issues at random. Background users belong to no org.
+- **14 issues**: 12 in Midtown, 2 in Tower Grove South. Photos are uploaded to
+  your Cloudinary account, or replaced by placeholders if that fails.
+- **2 organizations**:
+  - **Midtown CID** (org A): geofence over Midtown, scope `BROKEN_SIDEWALK`,
+    `STREETLIGHT`, `TRAFFIC_SIGNAL`, `POTHOLE`. 12 issues in its geofence, 11
+    in scope (the `ILLEGAL_DUMPING` one is out of scope on purpose).
+  - **Southside Neighbors** (org B): geofence over Tower Grove South, scope
+    `GRAFFITI`, `ILLEGAL_DUMPING`. Its 2 issues are both in scope.
+- **3 org memberships**, listed in the table.
+
+#### Test accounts
+
+All passwords are `password123`.
+
+| Email | Platform role | Org (role) | Use it to test |
+|---|---|---|---|
+| `reporter@example.com` | REPORTER | none | Reporting, endorsing, the reporter UI. Owns 3 issues, endorses 2. Gets 403 on every responder action. |
+| `orgadmin@example.com` | REPORTER | Midtown CID (ORG_ADMIN) | Dispatch and Queue, claiming, member lists. |
+| `orgmember@example.com` | REPORTER | Midtown CID (ORG_MEMBER) | Same as above as a plain member. With `orgadmin@`, shows that any member of the claiming org can act on its claim. |
+| `otherorg@example.com` | REPORTER | Southside Neighbors (ORG_MEMBER) | Cross-org 403s: org A's member list and org A's claimed issues. |
+| `admin@example.com` | ADMIN | none | Platform admin routes: any user's org lookup, any org's member list, status changes and updates on any issue. Cannot claim or release (no org). |
+
+The org role is separate from the platform role, which is why responders show
+`role: "REPORTER"` in the login response. The app reads the org role from
+`GET /api/organizations/me/membership`.
+
+These accounts sign in through the legacy `POST /api/auth/login` (bcrypt
+`passwordHash` on `user`, JWT), which is what the mobile app uses. They have no
+BetterAuth credentials, so BetterAuth sign-in at `/api/better-auth` fails for
+them. This has to change when the app moves to BetterAuth (#156).
+
+For step-by-step flows per role, see [testing-instructions.md](testing-instructions.md).
 
 ### Testing Backend API
 1. Seed the database (above), or browse/edit data with `npm run db:studio`
@@ -53,7 +94,7 @@ Seeding creates 40 users and ~24 issues around Midtown St. Louis (photos are upl
 ```bash
 curl -X POST http://localhost:3000/api/auth/login \
 -H "Content-Type: application/json" \
--d '{"email": "alice@example.com", "password": "password123"}'
+-d '{"email": "reporter@example.com", "password": "password123"}'
 # then use the returned token:
 curl -X POST http://localhost:3000/api/issues \
 -H "Content-Type: application/json" \
