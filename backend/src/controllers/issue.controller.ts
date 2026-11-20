@@ -123,6 +123,15 @@ export class IssueController {
     }
   }
 
+  async getIssuesByUserClaim(req: Request, res: Response, next: NextFunction) {
+    try {
+      const limit = parseLimit(req.query.limit);
+      const issues = await issueService.getIssuesByUserClaim(String(req.query.id), limit);
+      res.json({ issues });
+    } catch (error) {
+      next(error);
+    }
+  }
 
   // update issue status
   async updateStatus(req: Request, res: Response, next: NextFunction) {
