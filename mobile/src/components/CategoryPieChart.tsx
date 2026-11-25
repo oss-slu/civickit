@@ -128,14 +128,15 @@ const styles = StyleSheet.create({
     },
     center: {
         width: "100%",
+        paddingHorizontal: spacing.sm,
         alignContent: "center",
         justifyContent: "center",
-        textAlign: "center",
         alignItems: "center"
     },
     centerLabels: {
         fontSize: typography.sizeMd,
         color: colors.textPrimary,
         fontWeight: typography.weightMedium,
+        textAlign: "center"
     }
 })
