@@ -202,13 +202,13 @@ const IssueDetailScreen = () => {
               <Image source={{ uri: issue.claimedByOrg.profilePhoto.url }} style={styles.orgProfilePic} />
             }
 
-            <View style={{ paddingLeft: !issue.claimedByOrg?.profilePhoto ? spacing.sm : 0 }}>
+            <View style={{ flexShrink: 1, paddingLeft: !issue.claimedByOrg?.profilePhoto ? spacing.sm : 0 }}>
               <Text style={styles.claimedByLabel}>Issue Claimed By</Text>
-              <View style={{ flexDirection: "row", columnGap: spacing.xs, paddingLeft: !issue.claimedByOrg?.profilePhoto ? spacing.xs : 0 }}>
-                <Text style={{ ...styles.claimedByText, fontWeight: typography.weightBold }}>{issue.claimedByUser?.name}</Text>
-                <Text style={styles.claimedByText}>with</Text>
-                <Text style={{ ...styles.claimedByText, fontWeight: typography.weightBold, }}>{issue.claimedByOrg?.name}</Text>
-              </View>
+              <Text style={{ ...styles.claimedByText, paddingLeft: !issue.claimedByOrg?.profilePhoto ? spacing.xs : 0 }}>
+                <Text style={{ fontWeight: typography.weightBold }}>{issue.claimedByUser?.name}</Text>
+                {" with "}
+                <Text style={{ fontWeight: typography.weightBold }}>{issue.claimedByOrg?.name}</Text>
+              </Text>
             </View>
           </View>
         }
@@ -416,6 +416,7 @@ const styles = StyleSheet.create({
   infoRowText: {
     fontSize: typography.sizeLg,
     color: colors.textPrimary,
+    flexShrink: 1,
     //textTransform: 'capitalize' causes region to lowercase, and Pm to act weird, need to fix categories without doing this line because now tags is all lowercase
   },
 
