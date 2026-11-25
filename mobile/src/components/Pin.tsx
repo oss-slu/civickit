@@ -1,7 +1,7 @@
 // mobile/src/components/Pin.tsx
 import { View, StyleSheet } from "react-native";
 import { BrokenIcon, ExclamationPointIcon, LightBulbIcon, LocationPinIcon, SprayPaintIcon, TrafficConeIcon, TrafficLightIcon, TrashIcon } from "./Icons";
-import { colors, size, spacing, typography } from "../styles";
+import { colors, size, typography } from "../styles";
 import { useState, useEffect } from "react";
 import Svg, { Path } from "react-native-svg";
 import { statusColors } from "../styles/theme";
@@ -10,7 +10,7 @@ export default function Pin({ issue }: any) {
     const statusColor = statusColors[issue.status.toLowerCase()] || statusColors.default;
 
     const [icon, setIcon] = useState(
-        <View style={{ ...styles.icon, paddingTop: spacing.xs + 2 }}>
+        <View style={styles.icon}>
             <ExclamationPointIcon size={typography.sizeLg} color={colors.textPrimary} />
         </View>
     )
@@ -19,13 +19,13 @@ export default function Pin({ issue }: any) {
     useEffect(() => {
         if (issue.category == "POTHOLE") {
             setIcon(
-                <View style={{ ...styles.icon, paddingTop: spacing.xs + 2 }}>
+                <View style={styles.icon}>
                     <TrafficConeIcon size={size.md} color={colors.textPrimary} />
                 </View>
             )
         } else if (issue.category == "STREETLIGHT") {
             setIcon(
-                <View style={{ ...styles.icon, paddingTop: spacing.xs + 2 }}>
+                <View style={styles.icon}>
                     <LightBulbIcon size={size.md} color={colors.textPrimary} />
                 </View>
             )
@@ -37,25 +37,25 @@ export default function Pin({ issue }: any) {
             )
         } else if (issue.category == "ILLEGAL_DUMPING") {
             setIcon(
-                <View style={{ ...styles.icon, paddingTop: spacing.xs + 1 }}>
+                <View style={styles.icon}>
                     <TrashIcon size={size.md} color={colors.textPrimary} />
                 </View>
             )
         } else if (issue.category == "BROKEN_SIDEWALK") {
             setIcon(
-                <View style={{ ...styles.icon, paddingTop: spacing.xs + 1 }}>
+                <View style={styles.icon}>
                     <BrokenIcon size={size.md} color={colors.textPrimary} />
                 </View>
             )
         } else if (issue.category == "TRAFFIC_SIGNAL") {
             setIcon(
-                <View style={{ ...styles.icon, paddingTop: spacing.xs + 2 }}>
+                <View style={styles.icon}>
                     <TrafficLightIcon size={size.md} color={colors.textPrimary} />
                 </View>
             )
         } else {
             setIcon(
-                <View style={{ ...styles.icon, paddingTop: spacing.xs + 2 }}>
+                <View style={styles.icon}>
                     <ExclamationPointIcon size={typography.sizeLg} color={colors.textPrimary} />
                 </View>
             )
@@ -89,6 +89,10 @@ const styles = StyleSheet.create({
     },
     icon: {
         position: "absolute",
-        paddingTop: spacing.xs
+        top: 1,
+        width: 27,
+        height: 27,
+        alignItems: "center",
+        justifyContent: "center"
     }
 })

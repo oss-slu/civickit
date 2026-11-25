@@ -11,7 +11,8 @@ export default function CategoryIcon({ category, size, color, style }: any) {
             style={{ marginRight: spacing.xs, ...style }} />
 
     } else if (category == "GRAFFITI") {
-        return <SprayPaintIcon size={size ? size : typography.sizeXl} color={color ? color : colors.textPrimary} />
+        return <SprayPaintIcon size={size ? size : typography.sizeLg} color={color ? color : colors.textPrimary}
+            style={{ marginRight: spacing.xs, ...style }} />
 
     } else if (category == "ILLEGAL_DUMPING") {
         return <TrashIcon size={size ? size : typography.sizeLg} color={color ? color : colors.textPrimary}
